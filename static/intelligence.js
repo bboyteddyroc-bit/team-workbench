@@ -28,7 +28,7 @@ function render(){window.hubVideoCases?.close();root.querySelectorAll('[data-int
  if(active==='reuse' && window.hubVideoCases){window.hubVideoCases.open(body);return;}
  if(active==='own'){
   const pane=document.createElement('div');pane.innerHTML='<p role="status">正在打开自营商品…</p>';body.append(pane);
-  import('/static/own-goods.js?v=listing-cover1').then(m=>{if(pane.parentElement===body)m.open(pane);}).catch(()=>{if(pane.parentElement===body){const p=pane.firstElementChild;p.textContent='自营商品加载失败，请刷新页面后再试。';p.setAttribute('role','alert');}});return;
+  import('/static/own-goods.js?v=auto-cover1').then(m=>{if(pane.parentElement===body)m.open(pane);}).catch(()=>{if(pane.parentElement===body){const p=pane.firstElementChild;p.textContent='自营商品加载失败，请刷新页面后再试。';p.setAttribute('role','alert');}});return;
  }
  if(active==='copy' && window.hubScriptLibrary){window.hubScriptLibrary.open(body);return;}
  if(active==='tasks' && window.hubCreativeTasks){window.hubCreativeTasks.open(body);return;}

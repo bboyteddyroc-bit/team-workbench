@@ -26,15 +26,19 @@ class CoverFetchError(ValueError):
         self.reason, self.status = reason, status
 
 
+_SHOP_EXTRA_CDNS = frozenset(('p16-oec-sg.ibyteimg.com', 'p16-oec-general.ttcdn-us.com',
+                             'p16-oec-general-useast5.ttcdn-us.com', 'p19-oec-general-useast5.ttcdn-us.com'))
+
+
 def image_url(url, *, product=False):
-    """Validate without network. Product details also use ByteDance's Shop image host."""
+    """Validate without network. Only product photos may use these fixed Shop image origins."""
     try:
         if not isinstance(url, str) or len(url)>4096 or not re.fullmatch(r'[!-~]+',url) or '\\' in url:
             raise ValueError()
         p = urlsplit(url)
         host = p.hostname or ''
         cdn = any(host.endswith('.' + d) for d in CDN_SUFFIXES)
-        shop = product and host == 'p16-oec-sg.ibyteimg.com'
+        shop = product and host in _SHOP_EXTRA_CDNS
         if (p.scheme != 'https' or p.username is not None or p.password is not None
                 or p.port not in (None,443) or p.fragment or not p.path.startswith('/') or not (cdn or shop)):
             raise ValueError()
@@ -69,8 +73,8 @@ _PROXY_HOSTS = {
 
 # Known public Shop photo origins. The proxy is never used for product pages,
 # redirects, or arbitrary hosts on a general TikTok CDN suffix.
-_SHOP_PROXY_HOSTS = frozenset(('p16-oec-sg.ibyteimg.com', 'p16-oec-ttp.tiktokcdn-us.com',
-                               'p16-oec-useast8.tiktokcdn-us.com'))
+_SHOP_PROXY_HOSTS = _SHOP_EXTRA_CDNS | frozenset(('p16-oec-ttp.tiktokcdn-us.com',
+                                                 'p16-oec-useast8.tiktokcdn-us.com'))
 
 
 def _shop_proxy(host, addresses):

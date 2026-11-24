@@ -69,10 +69,15 @@ def latest(db, goods):
 
 
 def dossier_profile(db, goods, override=''):
+    from own_goods_cover_tasks import resolved_short
     row = latest(db, goods)
+    if fallback := resolved_short(db, goods, row):
+        identity = {k: fallback[k] for k in ('product_id','resolved_url')}
+    else:
+        identity = dict(row) if row else None
     confirmed = {json.loads(r[0])[1] for r in db.execute('''SELECT tag_key FROM research_tag_reviews
         WHERE entity='goods' AND ref=? AND decision='confirmed' AND json_extract(tag_key,'$[0]')='细品类' ''', (goods['id'],))}
-    return product_profile(goods, override, dict(row) if row else None, confirmed)
+    return product_profile(goods, override, identity, confirmed)
 
 
 def eligible(goods):
@@ -86,23 +91,13 @@ def eligible(goods):
     return ''
 
 
-def listing_image(db, goods, lookup, *, picture=False):
-    from tiktok_shop_link import listing_parts
-    if not lookup or lookup['state'] != 'ready' or lookup['market'] != goods['market']:
-        return None
-    pid = listing_parts(lookup['resolved_url'], goods['market'])[1]
-    if not pid or pid != lookup['product_id'] or lookup['link_key'] != link_key(goods['url']):
-        return None
-    columns = 'version,observed,picture' if picture else 'version,observed'
-    return db.execute(f'SELECT {columns} FROM own_goods_listing_images WHERE market=? AND product_id=?',
-                      (goods['market'], pid)).fetchone()
-
-
 def status(db, goods):
     from own_goods_cover import displayed_cover
+    from own_goods_cover_tasks import progress
     reason = eligible(goods)
     row = latest(db, goods) if not reason else None
     cover = displayed_cover(db, goods, row)
+    cover['cover_fill'] = progress(db, goods, cover, row)
     if reason:
         return {'state': 'unsupported', 'error': reason, 'can_lookup': False, **cover}
     if not row:
@@ -241,10 +236,21 @@ class Lookup:
         # Image problems must not turn an observed Kalodata response into an unknown charge.
         have_image = db.execute('SELECT 1 FROM own_goods_listing_images WHERE market=? AND product_id=?',
                                 (job['market'], pid)).fetchone()
-        if have_image and (reused or not url):
+        if have_image:
             url, image_state = '', 'ready'
-        elif url and (self.hub.stop.is_set() or not self._current(db, job)):
+        elif url and not self._current(db, job):
             url, image_state = '', 'unavailable'
+        if url:
+            # Keep a short-lived, sealed copy for a photo-only retry, not another paid lookup.
+            from own_goods_cover_tasks import remember
+            db.execute('SAVEPOINT retain_photo')
+            try:
+                remember(self.hub, db, job['market'], pid, url, 'kalodata_cache' if reused else 'kalodata', time.time(), goods=job['goods'])
+            except Exception:
+                db.execute('ROLLBACK TO retain_photo')
+                LOG.warning('Could not retain the image address; product text is unaffected')
+            finally:
+                db.execute('RELEASE retain_photo')
         self._set(db, job, 'ready', values=(data, observed, int(reused)))
         db.execute('UPDATE own_goods_lookup SET image_state=? WHERE id=?', (image_state, job['id']))
         return url
@@ -274,10 +280,11 @@ class Lookup:
                 return
             fetched = bool(picture and self._current(db, job))
             if fetched:
-                db.execute('''INSERT INTO own_goods_listing_images(market, product_id, version, observed, picture)
-                              VALUES(?,?,?,?,?) ON CONFLICT(market,product_id) DO UPDATE SET
-                              version=excluded.version, observed=excluded.observed, picture=excluded.picture''',
-                           (job['market'], pid, hashlib.sha256(picture).hexdigest()[:16], time.time(), picture))
+                from own_goods_cover_tasks import release_candidate, store_image
+                reused = db.execute('SELECT reused FROM own_goods_lookup WHERE id=?', (job['id'],)).fetchone()[0]
+                source = 'kalodata_cache' if reused else 'kalodata'
+                store_image(db, job['market'], pid, picture, source, time.time())
+                release_candidate(db, job['market'], pid)
             db.execute('UPDATE own_goods_lookup SET image_state=?,updated=? WHERE id=?',
                        ('ready' if fetched else 'unavailable', time.time(), job['id']))
 
@@ -439,11 +446,13 @@ def attach(app, hub, user, body):
                 raise HTTPException(429, '自营商品取数队列已满，请稍后查看。')
             if db.execute('SELECT count(*) FROM own_goods_lookup WHERE owner=? AND created>?', (actor['id'], now-86400)).fetchone()[0] >= MAX_DAILY:
                 raise HTTPException(429, '已达自营商品 24 小时查询上限，请稍后再试。')
+            from own_goods_cover_tasks import resolved_short
+            resolved = resolved_short(db, goods, old) or old
             jid = uuid4().hex
             db.execute('''INSERT INTO own_goods_lookup(id,goods,owner,link_key,market,state,created,updated,resolved_url,product_id)
                         VALUES(?,?,?,?,?,'queued',?,?,?,?)''',
                         (jid, gid, actor['id'], link_key(goods['url']), goods['market'], now, now,
-                         old['resolved_url'] if old else '', old['product_id'] if old else ''))
+                         resolved['resolved_url'] if resolved else '', resolved['product_id'] if resolved else ''))
             hub.log(db, actor['id'], 'own_goods_lookup_requested', jid)
             return status(db, goods)
 

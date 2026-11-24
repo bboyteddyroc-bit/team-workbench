@@ -343,6 +343,7 @@ def create_app(directory=None, provider=None, worker=True):
         classification_thread = None
         kalodata_thread = None
         own_goods_thread = None
+        own_goods_cover_thread = None
         apify_thread = None
         enrichment_thread = None
         script_thread = None
@@ -403,6 +404,9 @@ def create_app(directory=None, provider=None, worker=True):
                 app.state.own_goods_lookup.recover()
                 own_goods_thread=threading.Thread(target=app.state.own_goods_lookup.loop,name='own-goods-lookup',daemon=True)
                 own_goods_thread.start()
+                app.state.own_goods_covers.recover()
+                own_goods_cover_thread=threading.Thread(target=app.state.own_goods_covers.loop,name='own-goods-cover',daemon=True)
+                own_goods_cover_thread.start()
                 app.state.feishu.recover()
                 feishu_thread=threading.Thread(target=app.state.feishu.loop,daemon=True)
                 feishu_thread.start()
@@ -417,7 +421,7 @@ def create_app(directory=None, provider=None, worker=True):
             from worker_lifecycle import drain_workers
             threads=[t for t in (thread,edit_thread,ai_edit_thread,voice_thread,classification_thread,
                      feishu_thread,script_thread,case_thread,case_data_thread,apify_thread,
-                     enrichment_thread,kalodata_thread,own_goods_thread,libtv_thread) if t is not None]
+                     enrichment_thread,kalodata_thread,own_goods_thread,own_goods_cover_thread,libtv_thread) if t is not None]
             app.state.worker_drain=drain_workers(hub.stop,threads+comment_threads,lock)
 
     app = FastAPI(docs_url=None,redoc_url=None,openapi_url=None,lifespan=lifespan)

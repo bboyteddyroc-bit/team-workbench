@@ -1,5 +1,5 @@
 import {mount as mountResearch,tags as researchTags} from './own-goods-research.js?v=scroll-report1';
-import {mountLookup} from './own-goods-lookup.js?v=listing-cover1';
+import {mountLookup} from './own-goods-lookup.js?v=auto-cover1';
 const base='/api/intelligence/own-goods';
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const kinds={comment:'视频评论',review:'商品评价',search:'搜索线索',video:'视频内容核查',own:'自家商品核实'};
@@ -16,29 +16,60 @@ function coverVisual(g,thumb=false){
  const url=typeof g.cover_url==='string'&&g.cover_url.startsWith(path+'?v=')&&/^[a-f\d]{16}$/.test(g.cover_url.slice(path.length+3))?g.cover_url:'';
  return url?`<img src="${esc(url)}" alt="${thumb?'':esc(g.name+'主图')}" ${thumb?'loading="lazy"':''} decoding="async">`:coverPlaceholder;
 }
-const productCell=g=>`<div class="og-list-product"><div class="og-list-thumb" aria-hidden="true">${coverVisual(g,true)}</div><div class="og-list-name"><strong>${esc(g.name)}</strong>${g.sku?`<small>SKU ${esc(g.sku)}</small>`:''}${researchTags(g.tag_profile,3)}<small class="og-compact-meta">${esc(g.shop)} · ${esc(g.market)}</small></div></div>`;
+const fillLabel={queued:'主图待补',running:'正在补主图',retry:'主图将重试',blocked:'主图待核对'};
+const productCell=g=>`<div class="og-list-product"><div class="og-list-thumb" aria-hidden="true">${coverVisual(g,true)}</div><div class="og-list-name"><strong>${esc(g.name)}</strong>${g.sku?`<small>SKU ${esc(g.sku)}</small>`:''}${researchTags(g.tag_profile,3)}<small data-image-fill ${fillLabel[g.cover_fill]?'':'hidden'}>${fillLabel[g.cover_fill]||''}</small><small class="og-compact-meta">${esc(g.shop)} · ${esc(g.market)}</small></div></div>`;
 async function api(path='',payload,signal){
  const post=payload!==undefined;
  const r=await fetch(base+path,{signal,method:post?'POST':'GET',headers:post?{'Content-Type':'application/json','X-Hub-Request':'1'}:{},body:post?JSON.stringify(payload):undefined});
- const data=await r.json();if(!r.ok){const e=Error(typeof data.detail==='string'?data.detail:'读取失败，请核对登录和服务状态');e.observed=r.status<500;throw e;}return data;
+ const data=await r.json();if(!r.ok){const e=Error(typeof data.detail==='string'?data.detail:'读取失败，请核对登录和服务状态');e.observed=r.status<500;e.status=r.status;throw e;}return data;
 }
 export function open(host){
  const screen=document.createElement('section');screen.className='vc own-goods';screen.setAttribute('aria-label','自营商品');host.replaceChildren(screen);
  screen.innerHTML=`<div class="intel-direct-tools"><form class="intel-direct-fields" data-search><input type="search" name="q" maxlength="160" placeholder="搜索商品、店铺、市场或 SKU" aria-label="搜索商品、店铺、市场或 SKU"><button type="submit">搜索</button></form><button type="button" class="primary intel-direct-action" data-add>添加自营商品</button></div><p role="status" data-status></p><div data-list></div><div class="vc-pagination" data-pages></div><aside class="vc-detail" role="region" aria-label="自营商品详情" hidden></aside>`;
  const $=q=>screen.querySelector(q), list=$('[data-list]'),pages=$('[data-pages]'),drawer=$('aside');
- let offset=0,query='',row=null,detailId='',req=0,serial=0,previousFocus=null,listAbort,detailAbort;
+ const sourceButton=document.createElement('button');sourceButton.type='button';sourceButton.textContent='主图图源';sourceButton.hidden=true;
+ const add=$('[data-add]'),tools=document.createElement('div');tools.className='intel-direct-actions';add.before(tools);add.classList.remove('intel-direct-action');tools.append(sourceButton,add);
+ let offset=0,query='',row=null,detailId='',req=0,serial=0,previousFocus=null,listAbort,detailAbort,listTimer,sourceOpening=false;
+ let visibleGoods=new Map();
  const active=()=>screen.isConnected;
+ const listPath=()=>`?q=${encodeURIComponent(query)}&offset=${offset}`;
  function message(text,error=false){const el=$('[data-status]');el.setAttribute('role',error?'alert':'status');el.textContent=text;}
+ function patchCover(g){
+  const old=visibleGoods.get(g.id);if(!old)return;
+  const tr=list.querySelector(`[data-cover-row="${CSS.escape(g.id)}"]`);if(!tr)return;
+  if(g.cover_url!==old.cover_url)tr.querySelector('.og-list-thumb').innerHTML=coverVisual(g,true);
+  const hint=tr.querySelector('[data-image-fill]'),label=fillLabel[g.cover_fill]||'';
+  if(hint.textContent!==label){hint.textContent=label;hint.hidden=!label;}
+  visibleGoods.set(g.id,g);
+ }
+ function pollSoon(){
+  clearTimeout(listTimer);
+  const states=[...visibleGoods.values()].map(g=>g.cover_fill);
+  const delay=states.some(s=>s==='queued'||s==='running'||s==='retry')?4500:states.includes('blocked')?30000:0;
+  if(active()&&delay)listTimer=setTimeout(()=>void pollCovers(),delay);
+ }
+ async function pollCovers(){
+  if(!active())return;
+  if(!drawer.hidden||document.hidden){pollSoon();return;}
+  const token=req;
+  try{const d=await api(listPath()+'&covers=true',undefined,listAbort.signal);if(token===req&&active())d.items.forEach(patchCover);}
+  catch{/* Only a read, never a resubmission. */}
+  finally{if(token===req)pollSoon();}
+ }
  async function load(){
+  clearTimeout(listTimer);
   const token=++req;listAbort?.abort();listAbort=new AbortController();message('正在读取商品…');
-  try{const d=await api(`?q=${encodeURIComponent(query)}&offset=${offset}`,undefined,listAbort.signal);if(token!==req||!active())return;
+  try{const d=await api(listPath(),undefined,listAbort.signal);if(token!==req||!active())return;
+   sourceButton.hidden=d.can_configure_cover_source!==true;
+   visibleGoods=new Map(d.items.map(g=>[g.id,g]));
    if(offset&&offset>=d.total){offset=Math.max(0,Math.floor((d.total-1)/d.page_size)*d.page_size);return load();}
    message(`${d.total} 款自营商品 · 团队共享`);
-   list.innerHTML=d.items.length?`<div class="intel-table-wrap"><table><thead><tr><th scope="col">商品</th><th scope="col" class="og-wide">店铺 / 市场</th><th scope="col" class="og-wide">人工证据</th><th scope="col">操作</th></tr></thead><tbody>${d.items.map(r=>`<tr><td>${productCell(r)}</td><td class="og-wide">${esc(r.shop)} · ${esc(r.market)}</td><td class="og-wide">${r.topics} 项判断 · ${r.links} 条参考</td><td class="og-open-cell"><button type="button" data-id="${esc(r.id)}" aria-label="查看 ${esc(r.name)}">查看详情</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="intel-empty"><h3>${query?'没有匹配商品':'还没有自营商品'}</h3><p>${query?'换一个关键词再查。':'先登记一款真实商品。不连接店铺、不付费取数也能开始。'}</p></div>`;
+   list.innerHTML=d.items.length?`<div class="intel-table-wrap"><table><thead><tr><th scope="col">商品</th><th scope="col" class="og-wide">店铺 / 市场</th><th scope="col" class="og-wide">人工证据</th><th scope="col">操作</th></tr></thead><tbody>${d.items.map(r=>`<tr data-cover-row="${esc(r.id)}"><td>${productCell(r)}</td><td class="og-wide">${esc(r.shop)} · ${esc(r.market)}</td><td class="og-wide">${r.topics} 项判断 · ${r.links} 条参考</td><td class="og-open-cell"><button type="button" data-id="${esc(r.id)}" aria-label="查看 ${esc(r.name)}">查看详情</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="intel-empty"><h3>${query?'没有匹配商品':'还没有自营商品'}</h3><p>${query?'换一个关键词再查。':'先登记一款真实商品。不连接店铺、不付费取数也能开始。'}</p></div>`;
    pages.innerHTML=d.total>d.page_size?`<button type="button" data-page="${offset-d.page_size}" ${offset===0?'disabled':''}>上一页</button><span>第 ${Math.floor(offset/d.page_size)+1} / ${Math.ceil(d.total/d.page_size)} 页</span><button type="button" data-page="${offset+d.page_size}" ${offset+d.page_size>=d.total?'disabled':''}>下一页</button>`:'';
+   pollSoon();
   }catch(e){if(e.name!=='AbortError'&&token===req&&active())message(e.message,true);}
  }
- function closeDetail(){serial++;detailAbort?.abort();detailId='';row=null;drawer.hidden=true;drawer.replaceChildren();if(previousFocus?.isConnected)previousFocus.focus();else $('[data-add]')?.focus();}
+ function closeDetail(){const id=detailId;serial++;detailAbort?.abort();detailId='';row=null;drawer.hidden=true;drawer.replaceChildren();(previousFocus?.isConnected?previousFocus:list.querySelector(`button[data-id="${CSS.escape(id)}"]`)||$('[data-add]'))?.focus();pollSoon();}
  async function detail(id,topic='',focus=true){
   const token=++serial; detailId=id;detailAbort?.abort();detailAbort=new AbortController();
   if(!row||row.id!==id){drawer.hidden=false;drawer.innerHTML=`<div class="vc-detail-top"><div class="vc-detail-head"><h3>正在读取商品…</h3><button type="button" data-close>关闭</button></div></div>`;if(focus)drawer.querySelector('[data-close]').focus();}
@@ -55,8 +86,9 @@ export function open(host){
   toggle.onclick=()=>showManual(manual.hidden);
   const gid=row.id,file=drawer.querySelector('input[type=file]'),visual=drawer.querySelector('.og-cover-visual');
    function showCover(next){
-    Object.assign(row,{cover_url:next.cover_url,cover_source:next.cover_source,cover_observed:next.cover_observed});
+    Object.assign(row,{cover_url:next.cover_url,cover_source:next.cover_source,cover_observed:next.cover_observed,cover_basis:next.cover_basis});
     visual.innerHTML=coverVisual(row);
+    if(visibleGoods.has(gid))patchCover({...visibleGoods.get(gid),...row,cover_fill:next.cover_fill?.state});
    }
   if(file)file.onchange=async()=>{
    const selected=file.files[0];if(!selected)return;
@@ -78,7 +110,7 @@ export function open(host){
   if(row.lookup){
    const lookup=document.createElement('section');lookup.className='og-lookup';lookup.setAttribute('aria-label','商品链接与资料');
    scroll.prepend(lookup);
-   const check=mountLookup(lookup,row,api,signal,()=>{void reloadReport();void load();},(next,refreshing)=>{showCover(next);if(!refreshing)void load();});
+   const check=mountLookup(lookup,row,api,signal,()=>{void reloadReport();void load();},showCover);
    research.querySelector('[data-research-refresh]').addEventListener('click',()=>void check(),{signal});
   }
   const slots=[];
@@ -100,15 +132,40 @@ export function open(host){
   }catch(e){delete d.dataset.loaded;area.innerHTML=`<p role="alert">${esc(e.message)}。请折叠后重新展开。</p>`;}
  },true);
  function modal(title,fields,onSave,setup){
+  const opener=document.activeElement;
   const d=document.createElement('dialog');d.className='vc-add-dialog';d.setAttribute('aria-label',title);
   d.innerHTML=`<form class="intel-form"><h3>${esc(title)}</h3>${fields}<div class="vc-actions"><button type="submit" class="primary">保存</button><button type="button" data-cancel>取消</button></div><p role="alert"></p></form>`;
   screen.append(d);const f=d.querySelector('form'),b=f.querySelector('[type=submit]');
   d.querySelector('[data-cancel]').onclick=()=>d.close();d.addEventListener('close',()=>d.remove(),{once:true});
-  f.onsubmit=async ev=>{ev.preventDefault();if(b.disabled)return;b.disabled=true;f.querySelector('[role=alert]').textContent='';try{await onSave(values(f));if(d.open){d.close();const heading=drawer.querySelector('details[open] summary,[data-close]');const summary=drawer.querySelector('details[open] summary');(summary||heading)?.focus();}}catch(e){f.querySelector('[role=alert]').textContent=e.message;}finally{b.disabled=false;}};
+  f.onsubmit=async ev=>{ev.preventDefault();if(b.disabled)return;b.disabled=true;const alert=f.querySelector('[role=alert]');alert.textContent='';
+   try{await onSave(values(f),f);if(d.open){d.close();if(!drawer.hidden)(drawer.querySelector('details[open] summary')||drawer.querySelector('[data-close]'))?.focus();else if(opener?.isConnected)opener.focus();}}
+   catch(e){alert.textContent=e.message;}finally{b.disabled=b.dataset.locked==='1';}
+  };
   d.showModal();setup?.(d,f,b);
  }
+ sourceButton.onclick=async()=>{
+  if(sourceOpening||sourceButton.hidden||$('dialog[open]'))return;
+  sourceOpening=true;sourceButton.setAttribute('aria-busy','true');
+  try{
+   const original=await api('/cover-source');if(!active()||$('dialog[open]')||!drawer.hidden)return;
+   const label=c=>c.configured?(c.enabled?'已启用（未验证连接）':'已暂停'):'未配置';
+   modal('主图图源',`<p>领星 MCP · 美国站（US）</p><p data-source-status role="status">${label(original)}</p><p>开启后会按准确商品 ID 补齐缺图档案，不发起 Kalodata 查询。请使用有对应商品分析读取权限的独立领星密钥。</p><label>自动读取<select name="enabled"><option value="on" ${!original.configured||original.enabled?'selected':''}>启用</option><option value="off" ${original.configured&&!original.enabled?'selected':''}>暂停</option></select></label><label>领星 MCP 密钥${original.configured?'（留空保留）':''}<input name="key" type="password" autocomplete="new-password" maxlength="512" spellcheck="false" ${original.configured?'':'required'}></label><p>密钥加密保存，不回显。暂停不删除已保存图片。<a href="https://www.lingxing.com/help/article/mcp" target="_blank" rel="noopener noreferrer">查看领星授权说明 ↗</a></p>`,async (data,form)=>{
+    try{
+     const saved=await api('/cover-source',{enabled:data.enabled==='on',key:data.key||'',expected_updated:original.updated});
+     message(`领星主图图源：${label(saved)}。`);void pollCovers();
+    }catch(e){
+     if(e.observed&&e.status!==409)throw e;
+     form.elements.key.value='';form.querySelector('[type=submit]').dataset.locked='1';
+     const fresh=await api('/cover-source').catch(()=>null);
+     if(fresh)form.querySelector('[data-source-status]').textContent=`当前：${label(fresh)}`;
+     throw Error(e.status===409?e.message:'本次保存结果未确认，未再次提交。请关闭后查看当前配置。');
+    }
+   },(_d,form)=>{const select=form.elements.enabled,key=form.elements.key;select.onchange=()=>{const enabled=select.value==='on';key.disabled=!enabled;key.required=enabled&&!original.configured;};select.onchange();});
+  }catch(e){if(active())message(e.message,true);}
+  finally{sourceOpening=false;sourceButton.removeAttribute('aria-busy');}
+ };
  const field=(name,label,max,value='',other='required')=>`<label>${label}<input name="${name}" maxlength="${max}" value="${esc(value)}" ${other}></label>`;
- function edit(r){modal(r?'编辑自营商品':'添加自营商品',`<p>仅登记自家运营的商品。不会访问外部链接或发起采集。</p>${field('name','商品名称',140,r?.name)}${field('shop','店铺名称',120,r?.shop)}${field('market','市场（两位国家代码）',2,r?.market||'US')}${field('url','商品 HTTPS 链接',1800,r?.url,'required type="url"')}${field('sku','SKU 或规格版本（选填）',140,r?.sku,'')}${field('category','细品类（选填，留空自动识别）',36,r?.tag_profile?.override,`placeholder="${esc(r?.tag_profile?.category||'例如：脏衣篮')}"`)}<p>细品类用于匹配案例，例如「脏衣篮」，不要填「家居」等大类。已保存的人工标签优先。</p><label>已核实规格和适用条件（选填）<textarea name="facts" rows="3" maxlength="3000">${esc(r?.facts)}</textarea></label>`,async d=>{const out=await api('',r?{...d,id:r.id,revision:r.revision}:d);if(!active())return;if(!r){query='';offset=0;$('[data-search]').elements.q.value='';}await Promise.all([load(),detail(out.id)]);});}
+ function edit(r){modal(r?'编辑自营商品':'添加自营商品',`<p>仅登记自家运营的商品。建议填完整的 TikTok Shop 商品页链接。新版支持在保存后自动补齐主图，不发起 Kalodata 查询。</p>${field('name','商品名称',140,r?.name)}${field('shop','店铺名称',120,r?.shop)}${field('market','市场（两位国家代码）',2,r?.market||'US')}${field('url','商品 HTTPS 链接',1800,r?.url,'required type="url"')}${field('sku','SKU 或规格版本（选填）',140,r?.sku,'')}${field('category','细品类（选填，留空自动识别）',36,r?.tag_profile?.override,`placeholder="${esc(r?.tag_profile?.category||'例如：脏衣篮')}"`)}<p>细品类用于匹配案例，例如「脏衣篮」，不要填「家居」等大类。已保存的人工标签优先。</p><label>已核实规格和适用条件（选填）<textarea name="facts" rows="3" maxlength="3000">${esc(r?.facts)}</textarea></label>`,async d=>{const out=await api('',r?{...d,id:r.id,revision:r.revision}:d);if(!active())return;if(!r){query='';offset=0;$('[data-search]').elements.q.value='';}await Promise.all([load(),detail(out.id)]);});}
  function reference(){
   const gid=row.id;
   modal('关联已有参考',`<label>来源<select name="kind"><option value="case">视频案例</option><option value="competitor">竞品商品</option></select></label><label>名称、账号或编号<input name="keywords" type="search" maxlength="160"></label><button type="button" data-find>查找</button><p data-find-status role="status"></p><label>匹配结果<select required name="ref"><option value="">先查找</option></select></label><label>与自家商品的关系<select name="relation">${options(relations,'analogy')}</select></label>`,async ({kind,ref,relation})=>{

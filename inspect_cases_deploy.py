@@ -19,6 +19,7 @@ checks={
     'video_case_jobs': "state IN ('queued','submitting','running')", 'goods_jobs': "state IN ('queued','claimed')",
     'preview_proxy_jobs': "state IN ('queued','running')",
     'own_goods_lookup': "state IN ('queued','resolving','fetching')",
+    'own_goods_cover_jobs': "state='running'",
     'comment_sample_jobs': "state='running' OR ai_state='running'", 'comment_sample_research': "state='running'",
 }
 

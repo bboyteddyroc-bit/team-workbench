@@ -168,33 +168,43 @@ def attach(app, hub, user, body):
     initialize(hub)
     initialize_lookup(hub)
     attach_lookup(app, hub, user, body)
+    from own_goods_cover_tasks import attach as attach_cover_tasks, progress as cover_progress, queue as queue_cover
+    attach_cover_tasks(app, hub, user, body)
 
     @app.get(PREFIX+'/available')
     def available():
-        return {'available':True, 'listing_cover_lookup':True}
+        return {'available':True, 'listing_cover_lookup':True, 'automatic_listing_cover':True}
 
     @app.get(PREFIX)
-    def listing(request:Request,q:str='',offset:int=0):
-        user(request)
+    def listing(request:Request,q:str='',offset:int=0,covers:bool=False):
+        member=user(request)
         if len(q)>160 or not 0<=offset<=100000:raise HTTPException(400,'搜索参数过长或分页无效')
         like='%'+q.strip().replace('!','!!').replace('%','!%').replace('_','!_')+'%'
         where=" FROM own_goods g WHERE archived IS NULL AND (g.name LIKE ? ESCAPE '!' OR g.shop LIKE ? ESCAPE '!' OR g.market LIKE ? ESCAPE '!' OR g.sku LIKE ? ESCAPE '!')"
         from own_goods_cover import displayed_cover
         with hub.db() as db:
             db.execute('BEGIN')
-            total=db.execute('SELECT count(*)'+where,(like,)*4).fetchone()[0]
-            rows=[dict(r) for r in db.execute('''SELECT g.id,g.name,g.shop,g.market,g.sku,g.url,g.facts,
-              (SELECT category FROM own_goods_research_category p WHERE p.goods=g.id) AS category_override,
-              (SELECT count(*) FROM own_goods_links l WHERE l.goods=g.id) AS links,
-              (SELECT count(*) FROM own_goods_topics t WHERE t.goods=g.id) AS topics'''+where+
+            fields = '''g.id,g.name,g.url,g.market'''
+            if not covers:
+                total=db.execute('SELECT count(*)'+where,(like,)*4).fetchone()[0]
+                fields += ''',g.shop,g.sku,g.facts,
+                  (SELECT category FROM own_goods_research_category p WHERE p.goods=g.id) AS category_override,
+                  (SELECT count(*) FROM own_goods_links l WHERE l.goods=g.id) AS links,
+                  (SELECT count(*) FROM own_goods_topics t WHERE t.goods=g.id) AS topics'''
+            rows=[dict(r) for r in db.execute('SELECT '+fields+where+
               ' ORDER BY g.updated DESC,g.id LIMIT 24 OFFSET ?',(*((like,)*4),offset))]
             for r in rows:
-                profile = dossier_profile(db, r,r.pop('category_override') or '')
-                profile['tags'] = reviews.review_tags(db,'goods',r['id'],profile['tags'])
-                r['tag_profile'] = profile
+                if not covers:
+                    profile = dossier_profile(db, r,r.pop('category_override') or '')
+                    profile['tags'] = reviews.review_tags(db,'goods',r['id'],profile['tags'])
+                    r['tag_profile'] = profile
+                    r.pop('facts')
                 r.update(displayed_cover(db, r, latest_lookup(db, r)))
-                r.pop('facts');r.pop('url')
-        return {'items':rows,'total':total,'page_size':24}
+                r['cover_fill'] = cover_progress(db, r, r, compact=True)
+                r.pop('url')
+        if covers:
+            return {'items':rows}
+        return {'items':rows,'total':total,'page_size':24,'can_configure_cover_source':member['role']=='admin'}
 
     @app.get(PREFIX+'/references')
     def references(request:Request,kind:str,q:str=''):
@@ -234,6 +244,8 @@ def attach(app, hub, user, body):
             else:db.execute('INSERT INTO own_goods(id,name,shop,market,url,sku,facts,owner,updated) VALUES(?,?,?,?,?,?,?,?,?)',(gid,*vals,u['id'],time.time()))
             if category is not None:
                 db.execute('INSERT INTO own_goods_research_category(goods,category) VALUES(?,?) ON CONFLICT(goods) DO UPDATE SET category=excluded.category',(gid,category))
+            # Save the dossier immediately; all source/CDN I/O is outside this request.
+            queue_cover(db, {'id':gid,'market':vals[2],'url':vals[3]}, time.time())
             hub.log(db,u['id'],'own_goods_saved',gid)
         return {'id':gid}
 
@@ -278,7 +290,7 @@ def attach(app, hub, user, body):
             r['tag_profile']=dossier_profile(db, r,saved[0] if saved else '')
             r['tag_profile']['tags']=reviews.review_tags(db,'goods',gid,r['tag_profile']['tags'])
             r['lookup']=lookup_status(db,r)
-            for k in ('cover_url','cover_source','cover_observed'):
+            for k in ('cover_url','cover_source','cover_observed','cover_basis'):
                 r[k]=r['lookup'][k]
             rows=db.execute('SELECT * FROM own_goods_links WHERE goods=? ORDER BY created DESC',(gid,)).fetchall()
             r['links']=[{k:v for k,v in {**link_view(db,x),'can_edit':can_edit(x,u)}.items() if k!='owner'} for x in rows]

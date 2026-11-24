@@ -12,6 +12,9 @@
 !/docs/
 !/rules/
 !/vendor/
+!/verification/
+/verification/*
+!/verification/verify_own_goods_listing_cover.py
 /static/competitor-prototype/
 /docs/*
 !/docs/AI_FEATURES.md

@@ -52,7 +52,7 @@ class OwnGoodsTests(unittest.TestCase):
     def dossier(self):return '/'+self.post(**PROFILE)['id']
 
     def test_team_auth_csrf_and_edit_revision(self):
-        self.assertEqual(self.anon.get(PREFIX+'/available').json(),{'available':True,'listing_cover_lookup':True})
+        self.assertEqual(self.anon.get(PREFIX+'/available').json(),{'available':True,'listing_cover_lookup':True,'automatic_listing_cover':True})
         self.assertEqual(self.anon.get(PREFIX).status_code,401)
         self.assertEqual(self.initial.get(PREFIX).status_code,403)
         self.assertEqual(self.a.post(PREFIX,json=PROFILE).status_code,403)
