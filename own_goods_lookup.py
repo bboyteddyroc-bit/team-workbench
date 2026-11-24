@@ -17,6 +17,7 @@ from fastapi import HTTPException, Request
 import task_feedback as feedback
 from kalodata_integration import QueryError
 from product_research_tags import product_profile
+from safe_cover import CoverFetchError, image_url
 from tiktok_shop_link import LinkError, check_market, parse, resolve
 
 US = 'US'  # Match the current Hub product integration, never silently query another market.
@@ -170,7 +171,6 @@ def exact_detail(data, pid, market):
 
 
 def image_candidate(value):
-    from safe_cover import image_url
     if value in (None, ''):
         return '', 'missing'
     try:
@@ -258,9 +258,15 @@ class Lookup:
                 if not self.hub.stop.is_set():
                     from own_goods_cover import listing_thumbnail
                     picture = listing_thumbnail(url)
-            except (HTTPException, ValueError, OSError):
-                pass  # Keep signed CDN paths and exception bodies out of logs and UI.
+            except CoverFetchError as exc:
+                step.error_type(exc.reason)
+                step.http(exc.status)
+            except HTTPException:
+                step.error_type('ListingImageRejected')
+            except (ValueError, OSError):
+                step.error_type('ListingImageUnavailable')
             if not picture:
+                # Only bounded diagnostics; never record a signed URL or response body.
                 step.mark('attention')
         with self.hub.db() as db:
             db.execute('BEGIN IMMEDIATE')

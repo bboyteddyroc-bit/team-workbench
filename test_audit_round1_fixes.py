@@ -1,4 +1,5 @@
 """Regression tests for first-round review fixes; fake providers only."""
+from io import BytesIO
 import json
 import os
 import socket
@@ -57,22 +58,78 @@ class CoverSecurityTests(unittest.TestCase):
                 response.read1.assert_not_called()
                 conn.request.assert_called_once()
 
-    def test_shop_cdn_uses_pinned_tls_without_environment_proxy(self):
+    def test_shop_cdn_default_or_bypassed_route_stays_pinned_direct(self):
         url='https://p16-oec-sg.ibyteimg.com/fixture.png?sig=fixture'
-        conn,response=self.connection([b'fixture',b''])
-        with patch('safe_cover.getproxies') as proxy,patch('safe_cover.socket.getaddrinfo',return_value=self.addresses()) as dns,patch('safe_cover.http.client.HTTPSConnection',return_value=conn) as cls,patch('safe_cover.socket.create_connection') as connect:
-            with self.assertRaises(ValueError):safe_cover.fetch(url)
-            self.assertEqual(safe_cover.fetch(url,product=True),b'fixture')
-            dns.assert_called_once();proxy.assert_not_called()
-            conn._create_connection(('p16-oec-sg.ibyteimg.com',443))
-            self.assertEqual(connect.call_args.args[0],('8.8.8.8',443))
-            self.assertEqual(cls.call_args.args[0],'p16-oec-sg.ibyteimg.com')
-            self.assertFalse({'Cookie','Authorization'} & conn.request.call_args.kwargs['headers'].keys())
-            response.close.assert_called_once()
+        for bypass,config in ((True,{'https':'http://127.0.0.1:7890'}),(False,{})):
+            with self.subTest(bypass=bypass):
+                conn,response=self.connection([b'fixture',b''])
+                with patch('safe_cover.proxy_bypass',return_value=bypass),patch('safe_cover.getproxies',return_value=config) as proxies,patch('safe_cover.socket.getaddrinfo',return_value=self.addresses()) as dns,patch('safe_cover.http.client.HTTPSConnection',return_value=conn) as cls,patch('safe_cover.socket.create_connection') as connect:
+                    with self.assertRaises(ValueError):safe_cover.fetch(url)
+                    self.assertEqual(safe_cover.fetch(url,product=True),b'fixture')
+                    dns.assert_called_once()
+                    if bypass:proxies.assert_not_called()
+                    conn._create_connection(('p16-oec-sg.ibyteimg.com',443))
+                    self.assertEqual(connect.call_args.args[0],('8.8.8.8',443))
+                    self.assertEqual(cls.call_args.args[0],'p16-oec-sg.ibyteimg.com')
+                    self.assertFalse({'Cookie','Authorization'} & conn.request.call_args.kwargs['headers'].keys())
+                    response.close.assert_called_once()
         for bad in (url.replace('.ibyteimg.com','.ibyteimg.com.example.test'),url.replace('p16-oec-sg','p17-unverified')):
             with patch('safe_cover.socket.getaddrinfo') as dns,self.assertRaises(ValueError):
                 safe_cover.fetch(bad,product=True)
             dns.assert_not_called()
+
+    def test_shop_proxy_pins_connect_address_and_keeps_tls_and_host(self):
+        host='p16-oec-ttp.tiktokcdn-us.com'
+        for status in (200,302):
+            with self.subTest(status=status):
+                proxy_sock,tls_sock,context=MagicMock(),MagicMock(),MagicMock()
+                proxy_sock.makefile.return_value=BytesIO(b'HTTP/1.1 200 Connection established\r\n\r\n')
+                tls_sock.makefile.return_value=BytesIO(f'HTTP/1.1 {status} Fixture\r\n'.encode()+
+                    b'Location: https://example.invalid/not-followed\r\nContent-Length: 7\r\nConnection: close\r\n\r\nfixture')
+                context.wrap_socket.return_value=tls_sock
+                with patch('safe_cover.proxy_bypass',return_value=False),patch('safe_cover.getproxies',return_value={'https':'http://127.0.0.1:7890'}),patch('safe_cover.socket.getaddrinfo',return_value=self.addresses()) as dns,patch('safe_cover.ssl.create_default_context',return_value=context),patch('safe_cover.socket.create_connection',return_value=proxy_sock) as dial:
+                    url=f'https://{host}/fixture.png?sig=fixture'
+                    if status==200:
+                        self.assertEqual(safe_cover.fetch(url,product=True),b'fixture')
+                    else:
+                        with self.assertRaises(safe_cover.CoverFetchError) as e:safe_cover.fetch(url,product=True)
+                        self.assertEqual((e.exception.reason,e.exception.status),('CdnHttpStatus',302))
+                        self.assertNotIn('sig=',str(e.exception))
+                dns.assert_called_once_with(host,443,type=socket.SOCK_STREAM)
+                self.assertEqual(dial.call_args.args[0],('127.0.0.1',7890))
+                dial.assert_called_once()
+                tunnel=b''.join(c.args[0] for c in proxy_sock.sendall.call_args_list)
+                self.assertTrue(tunnel.startswith(b'CONNECT 8.8.8.8:443 HTTP/1.'))
+                self.assertNotIn(b'fixture.png',tunnel)
+                context.wrap_socket.assert_called_once_with(proxy_sock,server_hostname=host)
+                request=b''.join(c.args[0] for c in tls_sock.sendall.call_args_list)
+                self.assertTrue(request.startswith(b'GET /fixture.png?sig=fixture HTTP/1.1\r\n'))
+                self.assertIn(f'\r\nHost: {host}\r\n'.encode(),request)
+                for header in (b'cookie:',b'authorization:',b'proxy-authorization:'):
+                    self.assertNotIn(header,request.lower()+tunnel.lower())
+
+    def test_shop_proxy_rejects_mixed_dns_and_unapproved_proxy_origins(self):
+        host='p16-oec-ttp.tiktokcdn-us.com'
+        with patch('safe_cover.socket.getaddrinfo',return_value=self.addresses()+self.addresses('10.1.1.1')),patch('safe_cover._PinnedShopTunnel') as tunnel,patch('safe_cover.getproxies') as proxies:
+            with self.assertRaises(safe_cover.CoverFetchError) as e:
+                safe_cover.fetch(f'https://{host}/photo',product=True)
+            self.assertEqual(e.exception.reason,'CdnAddressRejected')
+            tunnel.assert_not_called();proxies.assert_not_called()
+        for candidate in ('http://192.168.0.1:7890','http://user:pw@127.0.0.1:7890',
+                          'https://127.0.0.1:7890','http://127.0.0.1:99999','http://127.0.0.1:7890?query=1'):
+            with patch('safe_cover.proxy_bypass',return_value=False),patch('safe_cover.getproxies',return_value={'https':candidate}):
+                self.assertIsNone(safe_cover._shop_proxy(host,('8.8.8.8',)))
+        with patch('safe_cover.getproxies') as proxies:
+            self.assertIsNone(safe_cover._shop_proxy('other.tiktokcdn-us.com',('8.8.8.8',)))
+            proxies.assert_not_called()
+
+    def test_product_truncated_response_is_not_saved(self):
+        conn,response=self.connection([b'fixture',b''],headers={'Content-Length':'32768'})
+        with patch('safe_cover.socket.getaddrinfo',return_value=self.addresses()),patch('safe_cover.http.client.HTTPSConnection',return_value=conn):
+            with self.assertRaises(safe_cover.CoverFetchError) as e:
+                safe_cover.fetch('https://other.tiktokcdn-us.com/fixture.png',product=True)
+        self.assertEqual((e.exception.reason,e.exception.status),('CdnTruncated',200))
+        response.close.assert_called_once()
 
     def test_product_deadline_does_not_wait_for_dns_or_leave_a_success_result(self):
         import threading
@@ -108,6 +165,28 @@ class CoverSecurityTests(unittest.TestCase):
         response.fp.raw._sock.settimeout.assert_called()
         response.close.assert_called_once()
         conn.close.assert_called_once()
+
+    def test_detached_socket_is_not_touched_after_exact_length(self):
+        # Exercise the real HTTPResponse close-on-final-byte behavior. Windows
+        # rejects settimeout() on the detached socket once its file is closed.
+        from http.client import HTTPConnection
+        from types import SimpleNamespace
+        body=b'complete-image'
+        fp=BytesIO(f'HTTP/1.1 200 OK\r\nContent-Length: {len(body)}\r\nConnection: close\r\n\r\n'.encode()+body)
+        sock=MagicMock()
+        fp.raw=SimpleNamespace(_sock=sock)
+        sock.makefile.return_value=fp
+
+        def on_timeout(_seconds):
+            if fp.closed:
+                raise OSError('fixture detached socket already closed')
+
+        sock.settimeout.side_effect=on_timeout
+        host='other.tiktokcdn-us.com'
+        conn=HTTPConnection(host,443)
+        with patch('safe_cover.socket.getaddrinfo',return_value=self.addresses()),patch('safe_cover.http.client.HTTPSConnection',return_value=conn),patch('safe_cover.socket.create_connection',return_value=sock):
+            self.assertEqual(safe_cover.fetch(f'https://{host}/fixture.png',product=True),body)
+        self.assertTrue(fp.closed)
 
     def test_total_deadline_and_busy_limit(self):
         conn,response=self.connection([b'a',b'b'])

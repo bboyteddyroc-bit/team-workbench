@@ -1,4 +1,4 @@
-"""Bounded, DNS-pinned HTTPS fetch for public TikTok cover images. System proxy support for known TikTok image hosts."""
+"""Bounded HTTPS fetch for public TikTok covers, with a pinned route for Shop images."""
 import http.client
 import ipaddress
 import re
@@ -8,7 +8,7 @@ import threading
 import time
 from concurrent.futures import Future, TimeoutError
 from urllib.parse import urlsplit
-from urllib.request import getproxies
+from urllib.request import getproxies, proxy_bypass
 
 import httpx
 
@@ -17,6 +17,13 @@ MAX_SECONDS = 20
 CDN_SUFFIXES = ('tiktokcdn.com', 'tiktokcdn-row.com', 'tiktokcdn-us.com',
                 'tiktokcdn-eu.com', 'byteoversea.com', 'ibytedtos.com', 'muscdn.com')
 _slots = threading.BoundedSemaphore(4)
+
+
+class CoverFetchError(ValueError):
+    """Only a controlled reason/status may reach task feedback, not a signed URL."""
+    def __init__(self, reason, message, status=None):
+        super().__init__(message)
+        self.reason, self.status = reason, status
 
 
 def image_url(url, *, product=False):
@@ -33,7 +40,7 @@ def image_url(url, *, product=False):
             raise ValueError()
         return p._replace(netloc=host)
     except (ValueError, UnicodeError):
-        raise ValueError('封面地址不在允许的公开 HTTPS CDN 范围') from None
+        raise CoverFetchError('CdnUrlRejected', '封面地址不在允许的公开 HTTPS CDN 范围') from None
 
 
 def destination(url, *, product=False):
@@ -42,13 +49,14 @@ def destination(url, *, product=False):
         def public(ip):
             address=ipaddress.ip_address(ip)
             address=getattr(address,'ipv4_mapped',None) or address
-            return address.is_global and not address.is_multicast and not getattr(address,'scope_id',None)
+            return (address.is_global and not address.is_multicast and not address.is_reserved
+                    and not getattr(address, 'is_site_local', False) and not getattr(address, 'scope_id', None))
         addresses = socket.getaddrinfo(p.hostname, 443, type=socket.SOCK_STREAM)
         if not addresses or not all(public(a[4][0]) for a in addresses):
             raise ValueError()
         return p, tuple(dict.fromkeys(a[4][0] for a in addresses))
     except (ValueError, OSError):
-        raise ValueError('封面地址未解析到公开 CDN') from None
+        raise CoverFetchError('CdnAddressRejected', '封面地址未解析到公开 CDN') from None
 
 
 # Only these platform-owned signing endpoints may use system proxy resolution.
@@ -57,6 +65,43 @@ _PROXY_HOSTS = {
     for n in (16, 19)
     for domain in ('tiktokcdn.com', 'tiktokcdn-us.com', 'tiktokcdn-eu.com', 'tiktokcdn-row.com')
 }
+
+
+# Known public Shop photo origins. The proxy is never used for product pages,
+# redirects, or arbitrary hosts on a general TikTok CDN suffix.
+_SHOP_PROXY_HOSTS = frozenset(('p16-oec-sg.ibyteimg.com', 'p16-oec-ttp.tiktokcdn-us.com',
+                               'p16-oec-useast8.tiktokcdn-us.com'))
+
+
+def _shop_proxy(host, addresses):
+    if host not in _SHOP_PROXY_HOSTS or proxy_bypass(host):
+        return None
+    # HTTP CONNECT targets the exact, validated public address, not an unchecked
+    # hostname. Use only a configured credential-free loopback proxy.
+    ip = next((ip for ip in addresses if ipaddress.ip_address(ip).version == 4), None)
+    if not ip:
+        return None
+    value = getproxies().get('https') or ''
+    if not isinstance(value, str) or not re.fullmatch(r'http://(?:127\.0\.0\.1|\[::1\]):[1-9][0-9]{0,4}/?', value, re.I):
+        return None
+    proxy = urlsplit(value)
+    try:
+        return (proxy, ip) if proxy.port else None
+    except ValueError:
+        return None
+
+
+class _PinnedShopTunnel(http.client.HTTPSConnection):
+    def __init__(self, host, proxy, ip, *, timeout, context):
+        super().__init__(proxy.hostname, proxy.port, timeout=timeout, context=context)
+        self._image_host = host
+        self.set_tunnel(ip, 443)
+
+    def connect(self):
+        # Use the base HTTP connection for CONNECT, then verify the certificate
+        # and SNI of the actual CDN hostname rather than the IP in CONNECT.
+        http.client.HTTPConnection.connect(self)
+        self.sock = self._context.wrap_socket(self.sock, server_hostname=self._image_host)
 
 
 def proxy_image(p, proxy, deadline):
@@ -82,7 +127,7 @@ def fetch(url, *, product=False):
     # The slot is released only by the actual fetch, so timeouts do not pile up.
     image_url(url, product=True)
     if not _slots.acquire(blocking=False):
-        raise ValueError('封面下载繁忙，请稍后重试')
+        raise CoverFetchError('CdnBusy', '封面下载繁忙，请稍后重试')
     result = Future()
     def run():
         try:
@@ -97,12 +142,12 @@ def fetch(url, *, product=False):
     try:
         return result.result(timeout=MAX_SECONDS)
     except TimeoutError:
-        raise ValueError('商品主图下载超时') from None
+        raise CoverFetchError('CdnTimeout', '商品主图下载超时') from None
 
 
 def _fetch(url, *, product, slot_held=False):
     if not slot_held and not _slots.acquire(blocking=False):
-        raise ValueError('封面下载繁忙，请稍后重试')
+        raise CoverFetchError('CdnBusy', '封面下载繁忙，请稍后重试')
     conn = None
     response = None
     try:
@@ -118,56 +163,73 @@ def _fetch(url, *, product, slot_held=False):
         def remaining():
             value = deadline - time.monotonic()
             if value <= 0:
-                raise ValueError('封面下载超过总时间限制')
+                raise CoverFetchError('CdnTimeout', '封面下载超过总时间限制')
             return value
-        # HTTPSConnection still validates the original hostname and sends original
-        # SNI. The actual socket connects only to an already validated IP, preventing
-        # a second DNS lookup/rebinding. A proxy must not resolve an unchecked target.
-        conn = http.client.HTTPSConnection(p.hostname, 443, timeout=remaining(), context=ssl.create_default_context())
-        def connect_pinned(address, timeout=None, source_address=None):
-            last = None
-            for ip in addresses:
-                try:
-                    return socket.create_connection((ip, 443), timeout=remaining(), source_address=source_address)
-                except OSError as exc:
-                    last = exc
-            raise last or OSError('No public address')
-        conn._create_connection = connect_pinned
+
+        context = ssl.create_default_context()
+        route = _shop_proxy(p.hostname, addresses) if product else None
+        if route:
+            proxy, ip = route
+            conn = _PinnedShopTunnel(p.hostname, proxy, ip, timeout=remaining(), context=context)
+        else:
+            conn = http.client.HTTPSConnection(p.hostname, 443, timeout=remaining(), context=context)
+
+            def connect_pinned(address, timeout=None, source_address=None):
+                last = None
+                for ip in addresses:
+                    try:
+                        return socket.create_connection((ip, 443), timeout=remaining(), source_address=source_address)
+                    except OSError as exc:
+                        last = exc
+                raise last or OSError('No public address')
+
+            conn._create_connection = connect_pinned
+        # The request host and verified TLS name are the image origin, even when
+        # the TCP peer is a local proxy and the tunnel destination is an IP.
         conn.request('GET', p.path + ('?' + p.query if p.query else '') or '/',
-                     headers={'User-Agent': 'Mozilla/5.0', 'Referer': 'https://www.tiktok.com/',
+                     headers={'Host': p.hostname, 'User-Agent': 'Mozilla/5.0',
+                              'Referer': 'https://www.tiktok.com/',
                               'Accept-Encoding': 'identity', 'Connection': 'close'})
         if conn.sock:
             conn.sock.settimeout(remaining())
         response = conn.getresponse()
-        # No redirects at all: a signed URL that changes hosts needs fresh metadata.
-        if response.status != 200 or response.getheader('Content-Encoding', 'identity').lower() not in ('identity', ''):
-            raise ValueError('封面响应或编码不在允许范围')
+        # Never follow redirects or try a different photo URL.
+        if response.status != 200:
+            raise CoverFetchError('CdnHttpStatus', '图片 CDN 未返回主图', response.status)
+        if response.getheader('Content-Encoding', 'identity').lower() not in ('identity', ''):
+            raise CoverFetchError('CdnEncodingRejected', '封面响应编码不在允许范围', response.status)
         length = response.getheader('Content-Length')
-        if length is not None and (not length.isdigit() or int(length) > MAX_BYTES):
-            raise ValueError('封面超过下载限额')
+        if length is not None:
+            if not re.fullmatch(r'[0-9]{1,12}', length) or int(length) > MAX_BYTES:
+                raise CoverFetchError('CdnSizeRejected', '封面超过下载限额', response.status)
+            length = int(length)
         body = bytearray()
-        # HTTPConnection may detach its socket for Connection: close responses;
-        # update the response's actual socket too, so a late read cannot restart
-        # a fresh 20-second timeout on every chunk.
-        response_socket = getattr(getattr(getattr(response, 'fp', None), 'raw', None), '_sock', None)
         while True:
             timeout = remaining()
-            if conn.sock:
-                conn.sock.settimeout(timeout)
-            elif response_socket is not None:
-                response_socket.settimeout(timeout)
+            # Re-read the detached socket only while its file is open. A read
+            # of the last byte can close the file (and socket) before the next
+            # read1() returns EOF, notably on Windows with Connection: close.
+            sock = conn.sock or getattr(getattr(getattr(response, 'fp', None), 'raw', None), '_sock', None)
+            if sock is not None:
+                sock.settimeout(timeout)
             chunk = response.read1(min(16384, MAX_BYTES + 1 - len(body)))
             if not chunk:
                 break
             body.extend(chunk)
             if len(body) > MAX_BYTES:
-                raise ValueError('封面超过下载限额')
+                raise CoverFetchError('CdnSizeRejected', '封面超过下载限额', response.status)
         remaining()
         if not body:
-            raise ValueError('封面为空')
+            raise CoverFetchError('CdnEmpty', '封面为空', response.status)
+        if product and length is not None and len(body) != length:
+            raise CoverFetchError('CdnTruncated', '图片 CDN 响应不完整', response.status)
         return bytes(body)
+    except TimeoutError:
+        raise CoverFetchError('CdnTimeout', '封面下载超时', getattr(response, 'status', None)) from None
+    except ssl.SSLCertVerificationError:
+        raise CoverFetchError('CdnTlsRejected', '图片 CDN 证书校验失败') from None
     except (OSError, http.client.HTTPException):
-        raise ValueError('封面连接失败，请稍后重试') from None
+        raise CoverFetchError('CdnConnectionFailed', '封面连接失败，请稍后重试', getattr(response, 'status', None)) from None
     finally:
         try:
             if response is not None:

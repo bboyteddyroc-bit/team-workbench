@@ -250,6 +250,23 @@ class LookupTests(unittest.TestCase):
         self.assertEqual(self.submit(gid,last_lookup_id=first['id']).json()['id'],first['id'])
         self.assertFalse(self.worker.tick())
 
+    def test_image_transport_diagnostics_preserve_text_without_storing_addresses(self):
+        from safe_cover import CoverFetchError
+        gid = self.dossier(url=DIRECT)
+        self.stub.post.return_value = dict(REPLY, master_image_url=IMAGE_URL)
+        first = self.submit(gid).raise_for_status().json()
+        with patch('safe_cover.fetch',side_effect=CoverFetchError('CdnHttpStatus',IMAGE_URL,403)) as fetch:
+            self.assertTrue(self.worker.tick())
+        fetch.assert_called_once_with(IMAGE_URL,product=True)
+        d = self.lookup(gid)
+        self.assertEqual((d['state'],d['image_state'],d['source']['name']),('ready','unavailable','Hand Garden Cultivator'))
+        with self.hub.db() as db:
+            recorded=db.execute("SELECT outcome,error_type,http_status FROM task_feedback WHERE task=? AND stage='shop_listing_image'",(first['id'],)).fetchall()
+            self.assertEqual([tuple(r) for r in recorded],[('attention','CdnHttpStatus',403)])
+            self.assertNotIn('synthetic-only', '\n'.join(db.iterdump()))
+        self.assertFalse(self.worker.tick())
+        self.stub.post.assert_called_once()
+
     def test_image_only_exact_reply_and_fresh_competitor_cache(self):
         gid = self.dossier(url=DIRECT)
         end = (datetime.now(timezone.utc).date()-timedelta(days=1)).isoformat()
