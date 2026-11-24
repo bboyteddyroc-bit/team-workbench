@@ -1,0 +1,32 @@
+/* 图标侧栏：贴左边缘唤出、移开自动收起；悬浮覆盖、不占布局宽度。
+   首页不显示；剪辑台唤出时带一层模糊背景，与画面区分。 */
+.shell.icon-dock-shell:not([hidden]){display:block!important;padding-left:0!important;width:100%!important;min-width:0}
+.icon-dock-shell>.sidebar{position:fixed!important;inset:0 auto 0 0!important;width:72px!important;height:100dvh!important;padding:16px 10px!important;background:transparent!important;border:0!important;box-shadow:none!important;display:flex!important;flex-direction:column;align-items:center;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;z-index:100;transform:translateX(-100%)!important;visibility:hidden!important;pointer-events:none;transition:transform .25s cubic-bezier(.16,1,.3,1),visibility .25s}
+.icon-dock-shell.dock-open>.sidebar{transform:translateX(0)!important;visibility:visible!important;pointer-events:auto}
+.icon-dock-shell .sidebar .brand{display:none!important}
+.icon-dock-shell .sidebar nav{display:flex!important;flex-direction:column;gap:10px;margin:auto 0;padding:24px 0;align-items:center}
+.icon-dock-shell .sidebar .dock-button{width:42px!important;height:42px!important;min-height:42px;padding:10px!important;display:grid!important;place-items:center;background:transparent!important;border:0!important;border-radius:12px!important;box-shadow:none!important;color:#c9c9c9!important;transform:scale(var(--dock-scale,1))!important;transition:transform .22s cubic-bezier(.2,.8,.2,1),color .2s;position:relative;flex-shrink:0;font-size:0!important}
+.icon-dock-shell .sidebar .dock-button[hidden]{display:none!important}
+.icon-dock-shell .dock-button::before,.icon-dock-shell .dock-button::after,.icon-dock-shell .hub-selection-indicator{display:none!important}
+.icon-dock-shell .dock-button svg{display:block!important;width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.65;stroke-linecap:round;stroke-linejoin:round}
+.icon-dock-shell .sidebar .dock-button:hover,.icon-dock-shell .sidebar .dock-button:focus-visible{color:#fff!important}
+.icon-dock-shell .sidebar .dock-button.active{color:#70d9e6!important;filter:drop-shadow(0 0 7px #23a9bd59)}
+.icon-dock-shell .dock-button:focus-visible{outline:2px solid #70d9e6;outline-offset:3px}
+.icon-dock-shell .sidebar-bottom{padding:8px 0 0!important;margin-top:auto!important;display:flex!important;flex-direction:column;align-items:center;gap:10px}
+.icon-dock-shell .sidebar-bottom>p{display:none}
+.icon-dock-shell .profile{display:flex!important;flex-direction:column;gap:10px;padding:10px 0 0;border:0!important}
+.icon-dock-shell #username{font-size:10px;max-width:48px;overflow:hidden;text-overflow:ellipsis;text-align:center}
+.icon-dock-shell>main{min-width:0;width:100%;box-sizing:border-box}
+.dock-edge{position:fixed;left:0;top:0;bottom:0;width:8px!important;padding:0!important;border:0!important;background:transparent!important;border-radius:0!important;z-index:99}
+.dock-edge:focus-visible{outline:2px solid #70d9e6;outline-offset:-2px}
+.dock-tooltip{position:fixed;transform:translateY(-50%);z-index:1000;background:#303030;color:#f5f5f5;padding:8px 12px;border:1px solid #ffffff15;border-radius:7px;box-shadow:0 6px 18px #0005;font-size:12px;pointer-events:none;white-space:nowrap}
+.dock-tooltip[hidden]{display:none}
+/* 剪辑台：侧栏唤出时左侧一层模糊背景，把图标和画面分开 */
+.dock-backdrop{position:fixed;left:0;top:0;bottom:0;width:260px;z-index:98;pointer-events:none;opacity:0;transition:opacity .25s;background:linear-gradient(90deg,rgba(6,8,10,.72) 0%,rgba(6,8,10,.42) 45%,rgba(6,8,10,0) 100%);-webkit-backdrop-filter:blur(14px) saturate(1.05);backdrop-filter:blur(14px) saturate(1.05);-webkit-mask-image:linear-gradient(90deg,#000 55%,transparent);mask-image:linear-gradient(90deg,#000 55%,transparent)}
+body:has(#editor:not([hidden])) .icon-dock-shell.dock-open .dock-backdrop{opacity:1}
+/* 首页靠图库卡片跳转，不需要侧栏 */
+body:has(#home:not([hidden])) .icon-dock-shell>.sidebar,body:has(#home:not([hidden])) .dock-edge,body:has(#home:not([hidden])) .dock-backdrop{display:none!important}
+/* 专注剪辑模式全部隐藏 */
+body.editor-focus .icon-dock-shell>.sidebar,body.editor-focus .dock-edge,body.editor-focus .dock-backdrop{display:none!important}
+@media(max-height:720px){.icon-dock-shell .sidebar nav{gap:5px;padding:12px 0}.icon-dock-shell .sidebar .dock-button{height:36px!important;min-height:36px;width:38px!important;padding:8px!important}}
+@media(prefers-reduced-motion:reduce){.icon-dock-shell>.sidebar,.dock-backdrop{transition:none}.icon-dock-shell .sidebar .dock-button{transition:none;transform:none!important}}

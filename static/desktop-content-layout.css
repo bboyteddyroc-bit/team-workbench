@@ -1,0 +1,17 @@
+/* Scoped desktop proportions: no scaling, no changes to other workspaces. */
+@media(min-width:1000px){
+ #shell #ai-edit,#shell #intelligence{box-sizing:border-box;width:100%;max-width:none;margin:0;padding:clamp(20px,2vw,36px) clamp(24px,2.4vw,48px);min-width:0}
+ #ai-edit .aic-workspace{grid-template-columns:minmax(220px,19fr) minmax(380px,55fr) minmax(250px,26fr);gap:clamp(14px,1.2vw,24px)}
+ #ai-edit .aie-workspace{grid-template-columns:minmax(220px,20fr) minmax(380px,54fr) minmax(250px,26fr)}
+ #ai-edit #aic-messages{min-height:clamp(300px,40vh,580px);max-height:56vh}
+ #ai-edit .aic-result-panel{grid-column:auto}
+ #ai-edit .aic-source-panel,#ai-edit .aic-result-panel{min-width:0}
+ #intelligence .intel-tabs{flex-wrap:wrap;overflow-x:visible;gap:6px}
+ #intelligence .intel-form{max-width:none;width:100%;box-sizing:border-box}
+ #intelligence .intel-toolbar{flex-wrap:wrap}
+}
+@media(min-width:1000px) and (max-width:1279px){
+ #ai-edit .aic-workspace,#ai-edit .aie-workspace{grid-template-columns:minmax(200px,24fr) minmax(0,76fr)}
+ #ai-edit .aic-result-panel,#ai-edit .aie-preview{grid-column:1/-1}
+ #ai-edit #aic-messages{max-height:48vh}
+}

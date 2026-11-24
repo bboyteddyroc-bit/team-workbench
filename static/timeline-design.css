@@ -1,0 +1,97 @@
+/* Unified time surfaces. Geometry, hit areas and timeline coordinates remain owned by the editor. */
+#editor .edit-timeline{background:#171b1f!important;border-top:1px solid #343d43!important;gap:0;padding-top:0}
+#editor .edit-timeline>.edit-section-heading{min-height:44px;padding:0 16px;background:#1c2226;border-bottom:1px solid #30383d}
+#editor .edit-timeline>.edit-section-heading h2{font-size:14px;letter-spacing:.03em;color:#eef5f5}
+#editor .timeline-zoom{gap:10px;color:#9eafb4;font-size:11px}
+#editor .timeline-tools{margin:0;padding:7px 16px;gap:6px;background:#1a2023;border-bottom:1px solid #30383d}
+#editor .timeline-tools .tl-tool,#editor .clip-toolbar button{border-radius:5px!important;background:#252c30!important;border:1px solid #374148!important;color:#c9d4d6!important;box-shadow:none!important}
+#editor .timeline-tools .tl-tool:hover,#editor .clip-toolbar button:not(:disabled):hover{background:#303b40!important;border-color:#5d7277!important;color:#fff!important}
+#editor .timeline-tools .tl-tool[aria-pressed="true"]{background:#183e43!important;border-color:#2aa9b5!important;color:#8fe2e7!important}
+#editor .timeline-tools .range-label{color:#a6b7ba;opacity:1;margin-left:10px}
+#editor .edit-timeline .clip-toolbar{padding:6px 16px;background:#1a2023;border-bottom:1px solid #30383d}
+#editor .clip-toolbar button:disabled{opacity:.4}
+#editor .edit-timeline .track-scroll{margin-top:0;background:#111619!important;scrollbar-color:#52636a #171d20}
+#editor .timeline-ruler{height:30px;background:#20272a!important;border-bottom:1px solid #354047;color:#a4b3b7;font-size:11px;font-variant-numeric:tabular-nums}
+#editor .timeline-ruler span{border-left:1px solid #526168;padding:5px 0 0 5px;height:100%;box-sizing:border-box}
+#editor .edit-timeline .track-row{border-bottom:1px solid #283135}
+#editor .edit-timeline .track-label{background:#1c2326!important;border-right:1px solid #354047;color:#bccacc;padding:6px 8px;box-sizing:border-box}
+#multi-tracks .track-label{justify-content:space-between;gap:3px;font-size:11px}
+#multi-tracks .track-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;letter-spacing:.02em}
+#editor #multi-tracks .track-mute{flex:none;min-width:27px;min-height:27px;padding:2px 4px!important;border:0!important;background:transparent!important;font-size:12px}
+#editor #multi-tracks .track-mute:hover{background:#344248!important}
+#editor .track-lane{background:#151b1e!important}
+#editor #multi-tracks .multi-lane.drop-target,#editor #multi-tracks .new-track-drop.drop-target{background:#203d40!important;outline:2px dashed #4ec4ce;outline-offset:-3px}
+#editor #multi-tracks .edit-clip,#editor #multi-tracks .timeline-block,#editor #multi-tracks .audio-segment{border-radius:5px!important;border:1px solid #54727a!important;background:#263d43!important;color:#e6f3f3!important;box-shadow:inset 0 2px 0 #63a8b2!important;font-size:11px;text-align:left}
+#editor #multi-tracks .edit-clip{padding:3px 5px!important}
+#editor #multi-tracks .edit-clip .timeline-preview{border-radius:2px;filter:saturate(.85)}
+#editor #multi-tracks .edit-clip span,#editor #multi-tracks .edit-clip small{color:#d5e4e4}
+#editor #multi-tracks .caption-segment{background:#403b31!important;border-color:#796c51!important;box-shadow:inset 0 2px 0 #cbb37c!important;color:#f4e8cd!important}
+#editor #multi-tracks .audio-segment,#editor #multi-tracks [data-timeline-key^="audio:"]{background:#293b37!important;border-color:#56796c!important;box-shadow:inset 0 2px 0 #7ebca1!important;color:#dceee5!important}
+#editor #multi-tracks .track-selected,#editor #multi-tracks .edit-clip.selected,#editor #multi-tracks [aria-pressed="true"].timeline-block{outline:2px solid #80e2e6!important;outline-offset:-2px;z-index:3}
+#editor #multi-tracks .new-track{opacity:1}
+#editor #multi-tracks .new-track .track-label{color:#9bc6ca!important;font-size:18px}
+#editor #multi-tracks .new-track-drop{color:#74878c;font-size:11px}
+#editor .timeline-playhead:after{width:2px;background:#79e4e7!important;box-shadow:0 0 0 1px #113337}
+#editor .timeline-playhead:before{width:10px;height:11px;background:#79e4e7!important;clip-path:polygon(0 0,100% 0,100% 65%,50% 100%,0 65%);border-radius:1px}
+/* Progress and seek controls; keep native range semantics and keyboard access. */
+#editor input[type="range"], .source-scrub{accent-color:#54c7d0}
+#editor #edit-seek,#editor .source-scrub{appearance:none;-webkit-appearance:none;background:transparent!important;cursor:pointer}
+#editor #edit-seek::-webkit-slider-runnable-track,#editor .source-scrub::-webkit-slider-runnable-track{height:4px;border-radius:4px;background:#596b70}
+#editor #edit-seek::-webkit-slider-thumb,#editor .source-scrub::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:12px;height:12px;margin-top:-4px;border:2px solid #9be8eb;border-radius:50%;background:#25a9b5;box-shadow:0 0 0 2px #172326}
+#editor .source-scrub:focus-visible,#editor .timeline-playhead:focus-visible{outline:2px solid #8de4e8;outline-offset:3px}
+@media (prefers-reduced-motion:reduce){#editor .edit-timeline *{transition:none!important}}
+
+#editor .track-scroll > .timeline-hoverhead{position:absolute;top:0;width:1px;background:#e5b95c;pointer-events:none;z-index:40;}
+.timeline-hoverhead[hidden]{display:none!important;}
+.timeline-hoverhead::before{content:"";position:absolute;top:0;left:-3px;width:7px;height:7px;background:#e5b95c;border-radius:2px;}
+
+/* ============================================================
+   V2.1 三类素材轨：字幕条在视频上方（扁平平铺），
+   视频段=文件名/时长抬头 + 缩略图条，音频段=抬头 + 真实波形，
+   每个片段右上角有音量按钮。样式参考剪映/CapCut 轨道外观。
+   ============================================================ */
+#editor #multi-tracks .track-row[data-track-kind="caption"]{min-height:34px;height:34px;box-sizing:border-box}
+#editor #multi-tracks .track-row[data-track-kind="caption"] .multi-lane{height:100%;min-height:0;overflow:hidden;box-sizing:border-box}
+#editor #multi-tracks .track-row[data-track-kind="video"] .multi-lane,
+#editor #multi-tracks .track-row[data-track-kind="mixed"] .multi-lane{height:74px;min-height:74px}
+#editor #multi-tracks .track-row[data-track-kind="audio"] .multi-lane{height:62px;min-height:62px}
+#editor #multi-tracks .track-row[data-track-kind="empty"] .multi-lane{height:34px;min-height:34px}
+
+/* 文字/字幕：扁平单行，不再占满整条轨道 */
+#editor #multi-tracks .caption-segment{display:block!important;min-height:0!important;height:auto;padding:0 8px!important;background:#b4553c!important;border:1px solid #cf7057!important;border-radius:3px!important;box-shadow:none!important;color:#fff3ec!important;font-size:11.5px;line-height:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+#editor #multi-tracks{padding-top:0}
+#editor #multi-tracks .caption-drop-zone{height:clamp(50px,16vh,180px);box-sizing:border-box;display:flex;align-items:center;justify-content:center;border-bottom:1px dashed #385056;background:repeating-linear-gradient(0deg,#172226 0,#172226 33px,#23363a 34px);color:#799497;font-size:11px}
+#editor #multi-tracks .caption-drop-zone span{pointer-events:none;opacity:.75}
+#editor #multi-tracks .caption-block-text{display:block;overflow:hidden;white-space:nowrap;text-overflow:clip;pointer-events:none}
+#editor #multi-tracks .caption-segment .trim-handle{position:absolute;top:0;bottom:0;width:7px;z-index:4;cursor:ew-resize}
+#editor #multi-tracks .caption-segment .trim-start{left:0}#editor #multi-tracks .caption-segment .trim-end{right:0}
+#editor #multi-tracks .caption-segment.selected,
+#editor #multi-tracks .caption-segment[aria-pressed="true"]{background:#c66244!important;border-color:#f0a288!important;outline:2px solid #ffd9c9!important;outline-offset:-2px}
+
+/* 视频段：抬头 + 缩略图 */
+#editor #multi-tracks .edit-clip{display:flex!important;flex-direction:column;gap:0;padding:0!important;min-height:0!important;background:#1f4a52!important;border:1px solid #3f7c86!important;border-radius:4px!important;box-shadow:none!important;overflow:hidden;cursor:grab}
+#editor #multi-tracks .edit-clip .clip-meta{order:1;display:block;flex:none;height:17px;line-height:17px;padding:0 22px 0 6px;background:rgba(7,28,32,.6);color:#e8f6f7!important;font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-variant-numeric:tabular-nums}
+#editor #multi-tracks .edit-clip .timeline-preview{order:3;flex:1 1 auto;width:100%;height:0!important;max-height:none!important;min-height:0;object-fit:cover;object-position:center;filter:saturate(.9) brightness(.96);border-radius:0;background-repeat:repeat-x;background-position:left center;background-size:auto 100%}
+#editor #multi-tracks .edit-clip .clip-title,#editor #multi-tracks .edit-clip .clip-range{display:none!important}
+#editor #multi-tracks .edit-clip .embedded-audio{position:absolute;bottom:2px;right:4px;color:#a9e8ee;font-size:10px;text-shadow:0 1px 2px #000}
+
+/* 音频段：抬头 + 真实波形 */
+#editor #multi-tracks .audio-segment{display:flex!important;flex-direction:column;gap:0;padding:0!important;min-height:0!important;background:#1c3f3a!important;border:1px solid #3f7a68!important;border-radius:4px!important;box-shadow:none!important;overflow:hidden;color:#dceee5!important}
+#editor #multi-tracks .audio-head{flex:none;display:flex;align-items:center;height:17px;padding:0 22px 0 6px;background:rgba(5,24,22,.55);font-size:10.5px;line-height:17px;color:#cfeae1}
+#editor #multi-tracks .audio-title{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#editor #multi-tracks .audio-segment svg.wave{flex:1 1 auto;display:block;width:100%;height:0;min-height:0;padding:2px 4px;box-sizing:border-box;pointer-events:none}
+#editor #multi-tracks .audio-segment svg.wave path{stroke:#6fe0c4;stroke-width:1.2;stroke-linecap:butt;fill:none;vector-effect:non-scaling-stroke}
+#editor #multi-tracks .audio-segment[data-muted="true"] svg.wave path{stroke:#7f958f}
+#editor #multi-tracks .audio-segment .wave-note{align-self:center;margin:auto;color:#a9c9be;font-size:10px}
+#editor #multi-tracks [data-timeline-key^="audio:"]{display:flex;align-items:center;padding:0 8px!important;font-size:11.5px}
+
+/* 片段音量按钮 + 弹出滑杆 */
+#editor #multi-tracks .clip-vol{position:absolute;top:2px;right:12px;z-index:5;width:20px;height:14px;min-width:20px;min-height:14px!important;padding:0!important;border:0!important;border-radius:3px!important;background:rgba(4,24,26,.6)!important;color:#ddf4f5!important;font-size:9.5px;line-height:14px;cursor:pointer;box-shadow:none!important}
+#editor #multi-tracks .clip-vol:hover,#editor #multi-tracks .clip-vol:focus-visible{background:#127c85!important;outline:1px solid #8fe2e7!important}
+.volume-pop{position:fixed;z-index:6000;width:214px;padding:10px 12px 9px;background:#1d2629;border:1px solid #3c5157;border-radius:8px;box-shadow:0 14px 30px rgba(0,0,0,.55);color:#e6f1f2;font-size:12px}
+.volume-pop-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+.volume-pop-head strong{font-size:12px;font-weight:600;color:#eef7f8}
+.volume-pop-value{color:#8fe2e7;font-variant-numeric:tabular-nums}
+.volume-pop-range{width:100%;margin:0 0 8px}
+.volume-pop-foot{display:flex;gap:6px;justify-content:flex-end}
+.volume-pop-foot button{padding:3px 10px!important;min-height:26px!important;font-size:11px!important}

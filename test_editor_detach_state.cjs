@@ -1,0 +1,14 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const code=fs.readFileSync('static/editor.js','utf8');
+const start=code.indexOf('  function renderProperties(){'),end=code.indexOf('  const speedPanel=',start);
+const nodes=new Map();const get=id=>{if(!nodes.has(id))nodes.set(id,{disabled:false});return nodes.get(id);};
+const proxy={dataset:{editAction:'edit-detach'},disabled:false};
+let items=[];
+const ctx={selected:0,canDeleteSelection:()=>items.length>0,selectedRows:()=>items.length?[{key:'video:0',item:items[0]}]:[],clips:()=>items,$:get,seconds:String,source:()=>({duration:5}),document:{querySelectorAll:()=>[proxy]}};
+vm.createContext(ctx);vm.runInContext(code.slice(start,end),ctx);
+ctx.renderProperties();assert.equal(get('edit-detach').disabled,true);assert.equal(proxy.disabled,true);
+items=[{task_id:'first',start:0,end:5,volume:1}];
+ctx.renderProperties();assert.equal(get('edit-detach').disabled,false);assert.equal(proxy.disabled,false,'First clip must enable toolbar immediately');
+items=[];ctx.renderProperties();assert.equal(get('edit-detach').disabled,true);assert.equal(proxy.disabled,true);
+items=[{task_id:'again',start:0,end:5,volume:1}];ctx.renderProperties();assert.equal(proxy.disabled,false);
+console.log('Detach availability passed: empty, first clip, clear, reinsert.');

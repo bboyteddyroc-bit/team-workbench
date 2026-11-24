@@ -1,0 +1,11 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const source=fs.readFileSync(__dirname+'/static/editor.js','utf8');
+const code=source.slice(source.indexOf('  function speedClips(){'),source.indexOf("  window.addEventListener('hub-editor-shell-ready',renderSpeed);"));
+const clips=[{start:0,end:4,speed:1},{start:0,end:2,speed:2}], buttons=[.5,1,2].map(v=>({dataset:{speed:String(v)},classList:{toggle(k,v){this.active=v}},setAttribute(k,v){this[k]=v}}));
+let rows=clips.map((item,i)=>({key:'video:'+i,item})),edits=0,rendered=0,saved=[];
+const L=require('./static/timeline-layout.js');
+const sandbox={selectedRows:()=>rows,clips:()=>clips,renderAdjust:undefined,document:{getElementById:()=>null},speedFields:{},speedSelection:{},speedValue:{},speedRange:{},speedResult:{},presets:{querySelectorAll:()=>buttons},seconds:n=>String(n),length:c=>(c.end-c.start)/c.speed,fail:m=>{throw Error(m)},pause:()=>{},editTimeline:(fn,stay,exclude,options)=>{saved.push(JSON.stringify(clips));edits++;fn();assert.equal(options.preserveOrder,true)},mark:()=>{},render:()=>{rendered++},seek:()=>{},offset:()=>0,selected:0,Number,Math,Set};
+vm.createContext(sandbox);vm.runInContext(code,sandbox);sandbox.renderSpeed();assert.equal(sandbox.speedFields.disabled,false);assert.match(sandbox.speedSelection.textContent,/2 个/);assert.equal(sandbox.speedValue.value,'');assert.ok(buttons.every(b=>!b.classList.active));
+sandbox.applySpeed(0.5);assert.deepEqual(clips.map(c=>c.speed),[.5,.5]);assert.equal(edits,1);const undo=JSON.parse(saved.pop());clips.forEach((c,i)=>Object.assign(c,undo[i]));assert.deepEqual(clips.map(c=>c.speed),[1,2]);
+rows=[{key:'video:0',item:clips[0]},{key:'caption:0',item:{}}];sandbox.applySpeed(3);assert.deepEqual(clips.map(c=>c.speed),[3,2]);
+rows=[];sandbox.renderSpeed();assert.equal(sandbox.speedFields.disabled,true);console.log('Batch speed panel: mixed rates, apply, single history mutation and video-only selection OK');

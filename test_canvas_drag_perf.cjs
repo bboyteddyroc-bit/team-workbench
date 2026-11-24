@@ -1,0 +1,22 @@
+'use strict';
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const code=fs.readFileSync('static/workbench.js','utf8');
+const start=code.indexOf('    function persistView()'),end=code.indexOf('    function changeZoom',start);
+let raf=new Map(),id=0,writes=0,redraws=0,saves=0;
+const viewport={clientWidth:1200,clientHeight:800,classList:{remove(){}}},list={style:{}},links={style:{}},label={};
+const ctx={viewport,list,links,label,me:{id:'test'},viewRestored:true,view:{x:32,y:32,z:1},gesture:null,localStorage:{setItem(){writes++;}},window:{hubCanvas:{redraw(){redraws++;}},hubAutoSave:{schedule(){saves++;}}},requestAnimationFrame(f){raf.set(++id,f);return id;},cancelAnimationFrame(i){raf.delete(i);},drawLinks(){redraws++;}};
+vm.createContext(ctx);vm.runInContext(code.slice(start,end),ctx);
+function run(s){vm.runInContext(s,ctx);}
+run("gesture={kind:'pan',pointer:1,origin:{x:32,y:32,z:1}};");
+for(let n=0;n<500;n++)run(`view.x=${32+n};view.y=${32+n};queueGesture();`);
+assert.equal(raf.size,1);assert.equal(writes,0);assert.equal(redraws,0);
+let f=[...raf.values()][0];raf.clear();f();assert.equal(writes,0);assert.equal(redraws,0);assert.equal(links.style.transform,'translate(499px,499px)');
+run('view.x=600;queueGesture();finishGesture({pointerId:1});');
+assert.equal(raf.size,0);assert.equal(writes,1);assert.equal(redraws,1);assert.equal(links.style.transform,'');assert.equal(ctx.gesture,null);assert.match(list.style.transform,/600px/);
+ctx.card={style:{}};ctx.item={canvas_position:{x:30,y:40}};
+run("gesture={kind:'card',pointer:2,card,item};");
+for(let n=0;n<200;n++)run('queueGesture();');
+assert.equal(raf.size,1);run('finishGesture({pointerId:2});');assert.equal(ctx.card.style.left,'30px');assert.equal(saves,1);assert.equal(raf.size,0);
+run('finishGesture({pointerId:2});');assert.equal(saves,1);
+assert(code.includes("'pointercancel','lostpointercapture'"));
+console.log('PASS canvas drag: 500 moves coalesced, zero storage/link rebuild during pan, final position flushed, card once/frame, capture-loss cleanup, one save');

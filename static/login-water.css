@@ -1,0 +1,26 @@
+/* User supplied water intro + native adaptation of beUI motion/input. */
+#auth .auth-form .auth-card{position:relative;overflow:hidden;transform:perspective(1000px) rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg))!important;transform-style:preserve-3d}
+#auth .login-tilt-glare{position:absolute;inset:0;pointer-events:none;border-radius:inherit;opacity:0;transition:opacity .25s}
+#auth.auth-shell{position:relative;isolation:isolate;display:grid!important;place-items:center;grid-template-columns:1fr!important;min-height:100svh;padding:32px 20px!important;box-sizing:border-box;overflow:hidden;background:#090d0e!important}
+#auth.auth-shell[hidden]{display:none!important}
+#auth #login-flow{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-2}
+#auth::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse at 50% 48%,#0a11122b 0%,transparent 60%),linear-gradient(180deg,#080b0c80,transparent 60%,#080b0c50)}
+#auth .auth-form{display:block!important;width:min(360px,100%);padding:0!important;margin:0!important;background:transparent!important;border:0!important;min-height:0!important;animation:login-water-rise 2.8s cubic-bezier(.2,.7,.2,1) .65s both}
+#auth .auth-card{width:100%;max-width:none;padding:30px 24px!important;border-radius:28px!important;background:rgba(12,18,19,.6)!important;backdrop-filter:blur(18px);border:1px solid #b8e7ed1c!important;box-shadow:0 24px 90px #0005!important;box-sizing:border-box;transform:none!important}
+#auth #login-form{display:grid;gap:16px;margin:0}
+#auth .auth-field{display:block;margin:0!important}
+#auth .auth-field input{display:block;width:100%;height:48px;box-sizing:border-box;margin:0!important;padding:0 19px!important;border:1px solid #bee4e32e!important;border-radius:999px!important;background:#10171999!important;color:#f0f6f7!important;font:400 15px/1.5 system-ui,"Microsoft YaHei",sans-serif;outline:none;box-shadow:none;transition:border-color .2s,box-shadow .2s}
+#auth .auth-field input::placeholder{color:#b1c1c4}
+#auth .auth-field input:focus{border-color:#60bdca!important;box-shadow:0 0 0 3px #23a9bd26!important}
+#auth .auth-field input[aria-invalid=true]{border-color:#e78e8e!important}
+#auth #auth-submit{width:100%;height:46px;margin:0!important;border-radius:999px!important;border:1px solid #6bc2ce55!important;background:#23a9bd!important;color:#071315!important;font-size:14px;font-weight:600;box-shadow:0 4px 24px #23a9bd15;transition:filter .2s,transform .2s}
+#auth #auth-submit:hover{filter:brightness(1.12);transform:translateY(-1px)}
+#auth #auth-submit:focus-visible{outline:2px solid #d1f8ff;outline-offset:4px}
+#auth #auth-submit:disabled{opacity:.55;transform:none}
+#auth #auth-error{font-size:12px;line-height:1.5;color:#ffc2c2;margin:0;padding:0;overflow-wrap:anywhere}
+#auth #auth-error:empty{display:none}
+#auth .login-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important}
+@keyframes login-water-rise{0%{opacity:0;transform:translateY(28px) scale(.97);filter:blur(14px)}45%{opacity:.4;filter:blur(5px)}100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}}
+#auth .auth-form:focus-within{animation:none}
+@media(prefers-reduced-motion:reduce){#auth .auth-form{animation:none}#auth *{transition:none!important}}
+@media(max-height:440px){#auth.auth-shell{padding:20px!important}#auth .auth-card{padding:20px!important}}

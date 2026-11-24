@@ -1,0 +1,1 @@
+body{background:#202125;color:white;font:14px sans-serif;display:flex;gap:24px}#panel{width:260px}canvas{width:360px;height:360px}.track-scroll{width:600px}.track-lane{height:46px;position:relative;background:#333;margin:5px}.track-row{position:relative}.track-label{display:block}#timeline-ruler{position:relative;height:30px}#timeline-ruler span{position:absolute}

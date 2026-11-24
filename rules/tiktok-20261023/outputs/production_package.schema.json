@@ -1,0 +1,258 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Library Production Package 1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "created_at",
+    "selection_evidence",
+    "creative_id",
+    "product_id",
+    "pain_id",
+    "scenario_id",
+    "character_a_id",
+    "hook_id",
+    "demo_id",
+    "pattern_id",
+    "primary_selling_point",
+    "primary_claim_id",
+    "character_b_id",
+    "relationship_id",
+    "secondary_selling_point",
+    "package_version",
+    "operating_mode",
+    "production_version",
+    "product_ground_truth",
+    "approved_claims",
+    "product_limitations",
+    "recommended_video_mode",
+    "target_duration_sec",
+    "cta_mode",
+    "price_mode",
+    "ai_difficulty",
+    "segments",
+    "source_packet",
+    "source_hashes",
+    "review_gate"
+  ],
+  "properties": {
+    "created_at": {
+      "type": "string",
+      "minLength": 1
+    },
+    "selection_evidence": {
+      "type": "string",
+      "minLength": 1
+    },
+    "creative_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "product_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pain_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "scenario_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "character_a_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hook_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "demo_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "pattern_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "primary_selling_point": {
+      "type": "string",
+      "minLength": 1
+    },
+    "primary_claim_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "character_b_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "relationship_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "secondary_selling_point": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "package_version": {
+      "const": "1.0"
+    },
+    "operating_mode": {
+      "const": "PRODUCTION_MODE"
+    },
+    "production_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "product_ground_truth": {
+      "type": "object"
+    },
+    "approved_claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "status",
+          "claim_text"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "status": {
+            "const": "approved"
+          },
+          "claim_text": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "product_limitations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "recommended_video_mode": {
+      "enum": [
+        "DEMO_FIRST",
+        "PROBLEM_SOLUTION_FAST",
+        "CREATOR_RECOMMENDATION",
+        "BEFORE_AFTER",
+        "REACTION_PROOF",
+        "MICRO_STORY_COMMERCE",
+        "PRICE_DEAL"
+      ]
+    },
+    "target_duration_sec": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 86400
+    },
+    "segment_duration_sec": {
+      "type": "integer",
+      "const": 17
+    },
+    "cta_mode": {
+      "enum": [
+        "product_link",
+        "profile",
+        "save",
+        "none"
+      ]
+    },
+    "price_mode": {
+      "enum": [
+        "disabled",
+        "enabled"
+      ]
+    },
+    "ai_difficulty": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "level",
+        "rationale"
+      ],
+      "properties": {
+        "level": {
+          "enum": [
+            "unknown",
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "rationale": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "segments": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "segment_id",
+          "time_start",
+          "time_end"
+        ],
+        "properties": {
+          "segment_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "time_start": {
+            "type": "number",
+            "minimum": 0
+          },
+          "time_end": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
+        }
+      }
+    },
+    "source_packet": {
+      "type": "object"
+    },
+    "source_hashes": {
+      "type": "object"
+    },
+    "review_gate": {
+      "type": "object"
+    }
+  }
+}

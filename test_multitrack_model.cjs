@@ -1,0 +1,5 @@
+const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');const ctx={window:{}};vm.runInNewContext(fs.readFileSync('static/timeline-model.js','utf8'),ctx);const T=ctx.window.HubTimeline;
+const body={clips:[{start:0,end:7.06},{start:0,end:5.06}],captions:[],audio:null};T.migrate(body);assert.equal(body.clips[1].at,169/24);const end=body.clips[1].at+T.length(body.clips[1]);assert.equal(T.clamp(999,end),T.lastFrame(end));assert.equal(T.clamp(-5,end),0);assert.equal(T.clamp(1,0),0);assert.equal(T.lastFrame(1),23/24);
+body.clips[1].at=20;body.clips[1].track='upper';T.migrate(body);assert.equal(body.clips[1].at,20);assert.ok(body.tracks.find(t=>t.id==='upper'));
+const sounds={clips:[],captions:[{start:0,end:3}],audio:{asset_id:'a',duration:4,volume:.7}};T.migrate(sounds);assert.equal(sounds.audio,null);assert.equal(sounds.audio_clips[0].source,'asset');T.migrate(sounds);assert.equal(sounds.audio_clips.length,1);
+console.log('Multitrack model passed: legacy migration, exact frame boundaries, last-frame clamp, arbitrary positions, movable background audio.');

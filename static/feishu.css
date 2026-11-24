@@ -1,0 +1,28 @@
+#feishu-settings{width:min(560px,calc(100vw - 32px));max-height:85vh;overflow:auto;padding:24px;background:var(--bg-surface,#191919);color:var(--fg,#eee);border:1px solid var(--line,#444);border-radius:12px}
+#feishu-settings::backdrop{background:#0009}
+#feishu-settings header{display:flex;justify-content:space-between;align-items:center;gap:16px}
+#feishu-settings h2{font-size:18px;margin:0}
+#feishu-settings form{display:grid;gap:12px;margin:18px 0}
+#feishu-settings label{display:grid;gap:6px;font-size:13px}
+#feishu-settings input:not([type=checkbox]){box-sizing:border-box;width:100%;min-width:0;padding:9px;background:var(--bg-page,#111);color:inherit;border:1px solid var(--line,#444);border-radius:6px}
+#feishu-settings .feishu-check{display:flex;align-items:center}
+#feishu-settings button{padding:7px 12px;border:1px solid var(--line,#444);border-radius:6px;background:var(--bg-subtle,#252525);color:inherit;cursor:pointer}
+#feishu-settings button:disabled{opacity:.5;cursor:wait}
+#feishu-settings [hidden]{display:none!important}
+#feishu-note{overflow-wrap:anywhere;color:var(--accent,#23a9bd)}
+.feishu-upload-row{padding:12px 0;border-top:1px solid var(--line,#444);font-size:12px}
+.feishu-upload-row a{color:var(--accent,#23a9bd);display:inline-block;margin:8px 0}
+#feishu-login{margin-top:10px;width:100%}
+
+#feishu-settings{width:min(680px,calc(100vw - 32px));padding:24px 28px}
+#feishu-settings header{position:sticky;top:-24px;background:#191919;padding:12px 0;z-index:1}
+#feishu-settings .feishu-check{display:flex!important;justify-content:flex-start;gap:10px;line-height:1.5;padding:12px 0}
+#feishu-settings .feishu-check input{width:18px!important;height:18px;flex:0 0 18px;margin:0;accent-color:#23a9bd}
+#feishu-settings h3{margin:24px 0 12px}#feishu-settings .fine{margin:0;color:#bcbcbc}
+#feishu-settings .feishu-upload-row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:16px 0;line-height:1.6}
+#feishu-settings .feishu-upload-row>span{flex:1;min-width:220px}
+#feishu-settings .feishu-upload-row>p{flex-basis:100%;margin:0;color:#e6b4a9}
+#feishu-settings .feishu-upload-row a{margin:0}
+.export-name-dialog{width:min(420px,calc(100vw - 32px));padding:24px;background:#191919;color:#eee;border:1px solid #444;border-radius:12px}
+.export-name-dialog::backdrop{background:#0009}.export-name-dialog h2{margin:0 0 20px;font-size:18px}.export-name-dialog label{display:grid;gap:8px}.export-name-dialog input{width:100%;box-sizing:border-box}.export-name-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:24px}
+.export-day>summary{cursor:pointer;padding:14px 0;font-weight:600;border-bottom:1px solid #383838}.export-day{margin-bottom:12px}

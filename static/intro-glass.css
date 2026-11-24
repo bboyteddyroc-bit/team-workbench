@@ -1,0 +1,33 @@
+/* 启动动画：登录后的一层液态玻璃过渡。只在进入工作台时出现，可随时跳过。 */
+#hub-intro {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  background: #04100e;
+  opacity: 0;
+  transition: opacity .26s ease;
+  contain: strict;
+  touch-action: none;
+}
+#hub-intro[data-state="in"] { opacity: 1; }
+#hub-intro[data-state="out"] { opacity: 0; pointer-events: none; transition-duration: .38s; }
+#hub-intro[hidden] { display: none; }
+#hub-intro canvas { position: absolute; inset: 0; display: block; width: 100%; height: 100%; }
+#hub-intro .hub-intro-hint {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(20px, 5vh, 48px);
+  transform: translateX(-50%);
+  font-size: 11px;
+  letter-spacing: .28em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, .34);
+  white-space: nowrap;
+  transition: opacity .4s ease 1.2s;
+  opacity: 1;
+}
+#hub-intro[data-state="out"] .hub-intro-hint { opacity: 0; transition-delay: 0s; }
+@media (prefers-reduced-motion: reduce) {
+  #hub-intro { transition-duration: .12s; }
+  #hub-intro[data-state="out"] { transition-duration: .16s; }
+}

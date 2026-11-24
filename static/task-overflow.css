@@ -1,0 +1,12 @@
+/* Native beUI overflow-actions: primary group + expandable actions + toggle. */
+.task-actions .task-overflow-track{display:flex;flex-wrap:wrap;align-items:center;gap:5px;width:fit-content;max-width:100%;padding:5px;box-sizing:border-box;border:1px solid #ffffff20;border-radius:22px;background:#181818}
+.task-overflow-primary,.task-overflow-extra{display:flex;flex-wrap:wrap;align-items:center;gap:5px;min-width:0}
+.task-overflow-extra[hidden]{display:none!important}
+.task-actions .task-overflow-track button,.task-actions .task-overflow-track a{display:inline-flex;align-items:center;justify-content:center;box-sizing:border-box;min-height:32px;margin:0;padding:6px 12px;border:0!important;border-radius:999px!important;background:#292929!important;color:#e9eeee!important;font-size:12px;line-height:20px;text-decoration:none;box-shadow:none!important;transition:background .18s,transform .18s}
+.task-actions .task-overflow-track button:hover,.task-actions .task-overflow-track a:hover{background:#3a3a3a!important;transform:translateY(-1px)}
+.task-actions .task-overflow-track .task-overflow-toggle{flex:0 0 32px;width:32px;height:32px;padding:0;background:#23a9bd!important;color:#091313!important;font-size:21px}
+.task-overflow-extra:not([hidden]){animation:task-overflow-reveal .2s ease-out}
+.task-actions .task-overflow-track :focus-visible{outline:2px solid #23a9bd;outline-offset:2px}
+.task-actions:has(.task-overflow-track)>.task-meta{flex-basis:100%;font-size:11px;opacity:.65}
+@keyframes task-overflow-reveal{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+@media(prefers-reduced-motion:reduce){.task-overflow-extra:not([hidden]){animation:none}.task-actions .task-overflow-track button,.task-actions .task-overflow-track a{transition:none;transform:none}}

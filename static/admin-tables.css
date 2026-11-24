@@ -1,0 +1,24 @@
+#members .settings-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:16px;align-items:start}
+#members .settings-grid>.admin-table-panel,#audit .admin-table-panel{background:#151515;border:1px solid #303030;border-radius:10px;min-width:0;overflow:hidden;padding:0!important;max-width:none!important}
+#members .settings-grid>.member-create-panel{width:100%!important;max-width:none!important;background:#151515;border:1px solid #303030;border-radius:10px;padding:20px 22px}
+#members .member-create-panel h2{font-size:16px;margin:0 0 18px}#members .member-create-panel .primary{width:auto;min-width:150px}
+:is(#members,#audit) .account-table-toolbar{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 22px 16px}
+:is(#members,#audit) .account-table-toolbar h2{font-size:16px;margin:0 0 5px;color:#f2f2f2}
+:is(#members,#audit) .account-table-toolbar p{margin:0;color:#a0a0a0;font-size:13px}
+:is(#members,#audit) .account-search-wrap{display:flex;align-items:center;gap:10px;color:#aaa;white-space:nowrap;font-size:12px}
+:is(#members,#audit) .account-search-wrap input{width:230px;margin:0;min-height:36px}
+:is(#members,#audit) .account-search-wrap select{width:auto;min-width:105px;min-height:36px;margin:0}
+:is(#members,#audit) .account-table-shell>div:last-child{border:0;border-radius:0;background:transparent}
+:is(#members,#audit) .account-table-shell table{width:100%;border-collapse:collapse;min-width:780px;font-size:13px}
+:is(#members,#audit) .account-table-shell th{font-size:12px;color:#929292;font-weight:500;text-align:left;background:#181818}
+:is(#members,#audit) .account-table-shell td,:is(#members,#audit) .account-table-shell th{padding:10px 22px;border-bottom:1px solid #2c2c2c;vertical-align:middle}
+:is(#members,#audit) .account-table-shell tr:last-child td{border-bottom:0}:is(#members,#audit) .account-table-shell tr:hover td{background:#1c1c1c}
+:is(#members,#audit) .account-identity strong{font-weight:600;color:#eee}:is(#members,#audit) .account-state{display:inline-flex;align-items:center;gap:7px;color:#d8d8d8;white-space:nowrap}
+:is(#members,#audit) .account-state i{width:7px;height:7px;border-radius:50%;background:#65c6a0}:is(#members,#audit) .account-state.paused i{background:#888}
+:is(#members,#audit) .account-scope{color:#aaa}:is(#members,#audit) .account-table-actions{display:flex;gap:6px;white-space:nowrap}
+:is(#members,#audit) .account-table-actions button{font-size:12px;padding:6px 9px;min-height:30px;white-space:nowrap}
+#audit .audit-target{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#audit #audit-list::before{display:none}
+#audit #audit-list .account-search-wrap input[type=search]{display:block!important}
+@media(max-width:900px){#audit .audit-table-toolbar{align-items:stretch;flex-direction:column}.audit-controls{flex-wrap:wrap}}
+@media(max-width:700px){:is(#members,#audit) .account-table-toolbar{align-items:stretch;flex-direction:column;gap:14px}:is(#members,#audit) .account-search-wrap{width:100%}:is(#members,#audit) .account-search-wrap input{width:auto;flex:1;min-width:150px}}

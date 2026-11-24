@@ -1,0 +1,29 @@
+#accounts .settings-grid{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:16px;align-items:start}
+#accounts .settings-grid>.account-list-panel{padding:0!important;max-width:none!important}
+#accounts .settings-grid>.account-connect-panel{width:100%!important;max-width:none!important}
+#accounts .account-list-panel,#accounts .account-connect-panel{background:#151515;border:1px solid #303030;border-radius:10px;min-width:0}
+#accounts .account-list-panel{padding:0;overflow:hidden}
+#accounts .account-table-toolbar{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:20px 22px 16px}
+#accounts .account-table-toolbar h2{font-size:16px;margin:0 0 5px;color:#f2f2f2}
+#accounts .account-table-toolbar p{margin:0;color:#a0a0a0;font-size:13px}
+#accounts .account-search-wrap{display:flex;align-items:center;gap:12px;color:#aaa;white-space:nowrap;font-size:12px}
+#accounts .account-search-wrap input{width:230px;margin:0;min-height:36px}
+#accounts .account-table-shell>div:last-child{border:0;border-radius:0;background:transparent}
+#accounts .account-table-shell table{width:100%;border-collapse:collapse;min-width:780px;font-size:13px}
+#accounts .account-table-shell th{font-size:12px;color:#929292;font-weight:500;text-align:left;background:#181818}
+#accounts .account-table-shell td,#accounts .account-table-shell th{padding:10px 22px;border-bottom:1px solid #2c2c2c;vertical-align:middle}
+#accounts .account-table-shell tr:last-child td{border-bottom:0}
+#accounts .account-table-shell tr:hover td{background:#1c1c1c}
+#accounts .account-identity{display:flex;flex-direction:column;gap:5px;min-width:0}
+#accounts .account-identity strong{font-weight:600;color:#eee;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#accounts .account-error{color:#ee9e97;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#accounts .account-state{display:inline-flex;align-items:center;gap:7px;color:#d8d8d8;white-space:nowrap}
+#accounts .account-state i{width:7px;height:7px;border-radius:50%;background:#65c6a0}
+#accounts .account-state.paused i{background:#888}#accounts .account-state.attention i{background:#e2a164}
+#accounts .account-scope{color:#c7c7c7;line-height:1.5}#accounts .account-scope small{color:#8f8f8f}
+#accounts .account-table-actions{display:flex;align-items:center;gap:6px;white-space:nowrap}
+#accounts .account-table-actions button{font-size:12px;padding:6px 9px;min-height:30px;white-space:nowrap}
+#accounts .account-connect-panel{padding:20px 22px}#accounts .account-connect-panel h2{font-size:16px;margin:0 0 18px}
+#accounts .account-connect-panel form{max-width:none}#accounts .account-connect-panel details{margin:16px 0;color:#a5a5a5}#accounts .account-connect-panel details p{line-height:1.7}
+#accounts .account-connect-panel textarea{min-height:100px}#accounts .account-connect-panel .primary{width:auto;min-width:150px}
+@media(max-width:700px){#accounts .account-table-toolbar{align-items:stretch;flex-direction:column;gap:14px}#accounts .account-search-wrap input{width:100%;flex:1}#accounts .account-search-wrap{width:100%}#accounts .account-connect-panel{padding:18px}}

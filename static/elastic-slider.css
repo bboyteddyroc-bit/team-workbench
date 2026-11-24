@@ -1,0 +1,120 @@
+/* Elastic Slider —— 中台统一滑块组件（原生 range 的渐进增强外观层）
+   结构：.elastic-slider > .elastic-slider__hit > (.elastic-slider__track > .elastic-slider__range) + .elastic-slider__thumb + 原生 input
+   原生 input 保留在 DOM 里且仍在最上层，取值、步进、键盘、label 关联全部照旧，只把画面交给这层样式。 */
+.elastic-slider {
+  --elastic-slider-thickness: 6px;
+  --elastic-slider-active-thickness: 12px;
+  --elastic-slider-hit: 30px;
+  --elastic-slider-thumb-size: 14px;
+  --elastic-slider-radius: 999px;
+  --elastic-slider-track: color-mix(in srgb, var(--accent, #23a9bd) 24%, transparent);
+  --elastic-slider-range: var(--accent, #23a9bd);
+  --elastic-slider-thumb: #ffffff;
+  position: relative;
+  display: block;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  color: inherit;
+  line-height: 0;
+  touch-action: pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.elastic-slider__hit {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--elastic-slider-hit);
+  padding: 0 calc(var(--elastic-slider-thumb-size) / 2);
+  box-sizing: border-box;
+}
+.elastic-slider__track {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: var(--elastic-slider-thickness);
+  border-radius: var(--elastic-slider-radius);
+  background: var(--elastic-slider-track);
+  overflow: hidden;
+  will-change: transform;
+}
+.elastic-slider__range {
+  position: absolute;
+  inset: 0;
+  background: var(--elastic-slider-range);
+  clip-path: inset(0 100% 0 0 round var(--elastic-slider-radius));
+}
+.elastic-slider__thumb {
+  position: absolute;
+  top: 50%;
+  left: calc(var(--elastic-slider-thumb-size) / 2);
+  width: var(--elastic-slider-thumb-size);
+  height: var(--elastic-slider-thumb-size);
+  margin-top: calc(var(--elastic-slider-thumb-size) / -2);
+  margin-left: calc(var(--elastic-slider-thumb-size) / -2);
+  border-radius: 999px;
+  background: var(--elastic-slider-thumb);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.38), 0 0 0 0.5px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  will-change: transform;
+}
+/* 原生 input 透明覆盖在上层：负责点击、拖动、步进、键盘，自身不画任何东西（也就没有外描边）。 */
+.elastic-slider__input {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 2;
+  flex: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  outline: none !important;
+  opacity: 0 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  cursor: pointer;
+}
+.elastic-slider__input:focus,
+.elastic-slider__input:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.elastic-slider[data-disabled] {
+  opacity: 0.45;
+  pointer-events: none;
+}
+/* 兜底：任何漏网的原生滑块也不再画聚焦描边。 */
+input[type="range"]:focus,
+input[type="range"]:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .elastic-slider__track,
+  .elastic-slider__thumb {
+    transition: none !important;
+  }
+}
+
+/* 预览区播放轴：原生 input 被样式表绝对定位到预览框底部，包装层必须跟着一起定位，
+   否则它会作为普通块落回文档流（跑到预览框顶部）。 */
+#editor .edit-preview > .elastic-slider {
+  position: absolute;
+  left: 18px;
+  right: 18px;
+  bottom: 8px;
+  z-index: 3;
+}
+
+/* 按钮行压在播放轴上面，避免轨道热区吃掉按钮下沿的点击。 */
+#editor .edit-preview > .edit-transport {
+  z-index: 4;
+}

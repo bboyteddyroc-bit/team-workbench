@@ -1,0 +1,51 @@
+/* Login-only mist / graphite / cyan theme. The aperture stays fixed while the card moves. */
+#auth.auth-shell.pass-login{--pass-width:min(560px,62vw);position:relative;isolation:isolate;display:grid!important;place-items:center;grid-template-columns:1fr!important;box-sizing:border-box;overflow:auto!important;min-height:100dvh;padding:24px!important;background:radial-gradient(ellipse at 50% 38%,#f3f5f4 0%,#e5e9e8 60%,#d8dede 100%)!important;color:#293235}
+#auth.pass-login[hidden]{display:none!important}
+#auth.pass-login::before,#auth.pass-login::after,#auth.pass-login canvas{display:none!important}
+#auth.pass-login .pass-scene{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;width:100%;min-height:calc(100svh - 48px);padding:40px 0;box-sizing:border-box}
+#auth.pass-login .pass-card-window{position:relative;width:100%;height:calc(var(--pass-width) / 1.72 + 48px);flex:none;overflow:hidden;z-index:2;pointer-events:none}
+#auth.pass-login .creator-pass{position:absolute;display:block;left:50%;top:42px;margin:0;margin-left:calc(var(--pass-width) / -2);width:var(--pass-width);aspect-ratio:1.72;padding:0!important;border:1px solid #fff!important;border-radius:18px!important;background:linear-gradient(130deg,#fafbf9,#e3e7e5)!important;color:#161d20!important;overflow:hidden;box-shadow:inset 0 2px 2px #fff,0 16px 25px -18px #35454866!important;transform:translate(var(--drag-x,0px),var(--drag-y,0px));transition:transform .45s cubic-bezier(.2,.7,.2,1);touch-action:none;cursor:grab;pointer-events:auto}
+#auth.pass-login .creator-pass:focus-visible{outline:2px solid #147f8d;outline-offset:-5px}
+#auth.pass-login .creator-pass svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+#auth.pass-login .pass-name{position:absolute;z-index:1;top:25px;left:32px;font:600 clamp(16px,2vw,25px)/1.4 system-ui;letter-spacing:.12em}
+#auth.pass-login .pass-bottom{position:absolute;bottom:26px;left:30px;right:26px;display:flex;align-items:center;gap:18px;z-index:1;color:#111;font:500 20px/1 system-ui}
+#auth.pass-login .pass-barcode{margin-left:auto;width:100px;height:24px;background:repeating-linear-gradient(90deg,#182022 0 2px,transparent 2px 4px,#182022 4px 5px,transparent 5px 8px)}
+#auth.pass-login .creator-pass.pass-dragging{transition:none;cursor:grabbing}
+#auth.pass-login .creator-pass.pass-inserting{transition:none;pointer-events:none}
+#auth.pass-login .pass-reader{position:relative;isolation:isolate;flex:none;width:min(800px,90vw);height:142px;margin-top:-1px;border:1px solid #707a7b;border-radius:8px 8px 28px 28px;background:linear-gradient(90deg,#485254,#687173 5%,#4a5456 45%,#515c5e 94%,#323c3e);box-shadow:inset 0 5px 3px #e2e8e75c,inset 0 -9px 7px #222b2d66,0 22px 20px -14px #202c3080;z-index:1}
+#auth.pass-login .pass-reader::before{content:'';position:absolute;left:0;right:0;top:-70px;height:92px;border-radius:30px 30px 12px 12px;background:linear-gradient(145deg,#768183,#9ba4a5 36%,#727e80 70%,#adb5b5);border:1px solid #d9dfde;box-shadow:inset 0 -4px 3px #e2e7e8aa;clip-path:polygon(7% 0,93% 0,100% 100%,0 100%);z-index:0}
+#auth.pass-login .pass-slot{position:absolute;left:13%;right:13%;top:-4px;height:12px;border-radius:5px;background:#11191a;box-shadow:0 0 0 2px #879292,inset 0 4px 3px #000,0 3px 2px #d2dada;z-index:2}
+#auth.pass-login .pass-display{position:absolute;top:54px;left:50%;transform:translateX(-50%);margin:0;min-width:190px;height:50px;box-sizing:border-box;padding:10px 24px;border:1px solid #8c9797;border-radius:12px;background:linear-gradient(145deg,#101617,#263033);color:#23bdd1;font:600 25px/28px system-ui!important;letter-spacing:.1em;text-align:center;box-shadow:inset 0 4px 6px #0008,0 1px 1px #dde4e47a}
+#auth.pass-login .pass-reader i{position:absolute;right:25%;top:73px;width:13px;height:13px;border:1px solid #8cdeeb;border-radius:50%;background:#23b9ce;box-shadow:0 0 6px #23a9bd55;transform:translateX(52px)}
+#auth.pass-login .pass-hint{font:400 clamp(17px,2vw,26px)/1.5 system-ui;letter-spacing:.06em;margin:40px 0 20px;min-height:30px;color:#4b5557}
+#auth.pass-login .pass-feishu,#auth.pass-login .pass-skip{background:transparent!important;border:0!important;box-shadow:none!important;color:#147f8d!important;padding:10px!important;font:500 20px/1.4 system-ui}
+#auth.pass-login .pass-skip{position:fixed;right:28px;bottom:20px;font-size:14px;color:#596467!important}
+#auth.pass-login .pass-reader.pass-near .pass-slot{box-shadow:0 0 0 2px #23a9bd,inset 0 4px 3px #000}
+#auth.pass-login .pass-reader.pass-reading .pass-display{color:#e7c46b}
+#auth.pass-login .pass-reader.pass-reading i{background:#e7c46b}
+#auth.pass-login .auth-form{position:absolute;top:43%;left:50%;transform:translate(-50%,-50%);width:min(350px,82vw);padding:0!important;margin:0!important;min-height:0!important;background:transparent!important;border:0!important;animation:none!important;opacity:0;visibility:hidden;pointer-events:none;z-index:4;transition:opacity .35s,visibility .35s}
+#auth.pass-login.pass-open .auth-form{opacity:1;visibility:visible;pointer-events:auto}
+#auth.pass-login .auth-card{padding:24px!important;background:#edf1eff5!important;border:1px solid #fff!important;border-radius:18px;box-shadow:0 18px 50px #3f51501a!important;backdrop-filter:none!important;transform:none!important}
+#auth.pass-login .login-sr-only{position:absolute!important;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip-path:inset(50%)!important;white-space:nowrap!important;border:0!important}
+#auth.pass-login #login-form{display:grid;gap:16px;margin:0}
+#auth.pass-login .auth-field{display:block;margin:0}
+#auth.pass-login .auth-field input{display:block;width:100%;box-sizing:border-box;padding:0 15px!important;margin:0;height:46px;background:#fafcfb!important;color:#293235!important;border:1px solid #b8c4c5!important;border-radius:9px!important}
+#auth.pass-login input::placeholder{color:#697779!important}
+#auth.pass-login #auth-submit,#auth.pass-login #feishu-login{width:100%;min-height:44px;margin:0;border-radius:9px!important}
+#auth.pass-login #auth-submit{background:#147f8d!important;color:white!important;border:0!important}
+#auth.pass-login #feishu-login{color:#147f8d!important;background:transparent!important;border:1px solid #147f8d60!important}
+#auth.pass-login #auth-error{font-size:13px;line-height:1.5;margin:0;color:#a13d2d!important}
+#auth.pass-login #auth-error:empty{display:none}
+#auth.pass-open .pass-feishu,#auth.pass-open .pass-skip{visibility:hidden}
+#auth.pass-login.pass-success .pass-display{color:#a7e19d}
+#auth.pass-login.pass-success .auth-form{opacity:0;pointer-events:none}
+#auth.pass-login.pass-success{animation:pass-exit .65s ease both}
+@keyframes pass-exit{0%,45%{opacity:1}100%{opacity:0;transform:scale(1.025)}}
+@media(max-width:600px){#auth.auth-shell.pass-login{--pass-width:62vw;padding:12px!important}#auth.pass-login .pass-scene{min-height:calc(100svh - 24px)}#auth.pass-login .pass-reader{height:100px}#auth.pass-login .pass-reader::before{top:-40px;height:60px}#auth.pass-login .pass-display{top:36px;min-width:125px;height:40px;padding:6px 16px;font-size:18px!important}#auth.pass-login .pass-reader i{top:49px;right:18%;transform:none;width:10px;height:10px}#auth.pass-login .pass-name{top:16px;left:20px}#auth.pass-login .pass-bottom{bottom:16px;right:18px;font-size:15px}#auth.pass-login .pass-barcode{width:65px;height:18px}#auth.pass-login .pass-hint{margin-top:28px}}
+@media(prefers-reduced-motion:reduce){#auth.pass-login *{transition:none!important;animation:none!important}}
+
+/* Only an aligned card may enter the stationary aperture. */
+#auth.pass-login .pass-card-window{overflow:visible}
+#auth.pass-login .pass-card-window.pass-docked{overflow:visible;clip-path:inset(-200vh 0 0 0)}
+#auth.pass-login .pass-reader{margin-top:4px}
+#auth.pass-login .creator-pass{z-index:1;transform-origin:50% 10%}

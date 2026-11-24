@@ -1,0 +1,20 @@
+#accounts .libtv-account-management{background:#151515;border:1px solid #303030;border-radius:10px;padding:20px 22px;min-width:0}
+#accounts .libtv-account-management[hidden]{display:none}
+#accounts .libtv-management-header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:14px}
+#accounts .libtv-management-header h2{font-size:16px;margin:0 0 5px;color:#f2f2f2}
+#accounts .libtv-management-header p{margin:0;color:#a0a0a0;font-size:13px}
+#accounts .libtv-profile-list{border-top:1px solid #303030;border-bottom:1px solid #303030}
+#accounts .libtv-profile-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(100px,180px) 74px 74px;align-items:center;gap:10px;padding:14px 0;border:0}
+#accounts .libtv-profile-row+.libtv-profile-row{border-top:1px solid #292929}
+#accounts .libtv-profile-row strong{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#accounts .libtv-profile-state{font-size:13px;color:#c7c7c7;display:flex;align-items:center;gap:7px}
+#accounts .libtv-profile-state:before{content:'';width:7px;height:7px;border-radius:50%;background:#dda66a}
+#accounts .libtv-profile-state.connected:before{background:#65c6a0}
+#accounts .libtv-profile-row button,#accounts .libtv-shared-connect,#accounts .libtv-profile-add button,#accounts #libtv-profile-setup button{font-size:12px;min-height:32px;padding:6px 10px;white-space:nowrap}
+#accounts .libtv-profile-add{display:flex;gap:10px;align-items:center;margin-top:16px}
+#accounts .libtv-profile-add input{width:min(300px,100%);margin:0;min-height:36px}
+#accounts .libtv-profile-empty{color:#999;font-size:13px;margin:18px 0}
+#accounts #libtv-profile-setup p{color:#aaa;font-size:13px;margin:16px 0 8px}
+#accounts #libtv-profile-setup textarea{display:block;width:100%;min-height:100px;margin:8px 0;overflow-wrap:anywhere}
+#accounts .libtv-management-status{font-size:12px;color:#a5a5a5;margin:10px 0 0}#accounts .libtv-management-status:empty{display:none}
+@media(max-width:700px){#accounts .libtv-management-header{align-items:flex-start;flex-direction:column}#accounts .libtv-profile-row{grid-template-columns:minmax(0,1fr) 78px}#accounts .libtv-profile-row button:nth-of-type(1){grid-column:1;justify-self:start}#accounts .libtv-profile-row button:nth-of-type(2){grid-column:2;justify-self:end}#accounts .libtv-profile-add input{flex:1;min-width:0}}

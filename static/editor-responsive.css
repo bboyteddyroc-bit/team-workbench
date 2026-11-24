@@ -1,0 +1,37 @@
+/* Scoped panel adaptation; leave column-resize JS and timeline geometry untouched. */
+#editor .edit-library{container:editor-library / inline-size}
+#editor .edit-properties{container:editor-properties / inline-size}
+#editor :is(.edit-library,.edit-properties) :is(input:not([type=checkbox]):not([type=radio]),select,textarea){box-sizing:border-box;max-width:100%;min-width:0}
+#editor .edit-properties :is(label,.edit-two,.text-row,.text-slider){min-width:0}
+#editor .edit-properties>.editor-panel-tabs{overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:thin}
+#editor .edit-properties>.editor-panel-tabs>button{flex:0 0 auto;min-width:40px}
+#editor .sticker-card span{white-space:normal;overflow-wrap:anywhere;text-align:center;line-height:1.4}
+#editor .sticker-category-heading{gap:6px;flex-wrap:wrap}
+#editor .sticker-actions{flex-wrap:wrap}
+#editor .sticker-actions button{min-width:72px}
+/* Intrinsic grids remain usable in browsers without container-query support. */
+#editor #edit-library-list .edit-day-body{grid-template-columns:repeat(auto-fit,minmax(min(100%,116px),1fr))}
+@container editor-library (max-width:300px){
+ #editor .sticker-library-layout{grid-template-columns:64px minmax(0,1fr)}
+ #editor .sticker-category-content{padding:10px 6px}
+ #editor #editor-tool-stickers .sticker-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+ #editor #editor-tool-stickers .sticker-inspector{margin-left:8px;margin-right:8px}
+ #editor .sticker-category-nav{padding-inline:3px}
+ #editor .sticker-category-nav .sticker-category{padding-inline:5px}
+ #editor #editor-tool-stickers .sticker-field{grid-template-columns:34px minmax(0,1fr) 32px}
+}
+@container editor-library (min-width:390px){
+ #editor #editor-tool-stickers .sticker-grid{grid-template-columns:repeat(auto-fit,minmax(76px,1fr))}
+ #editor #edit-library-list .edit-day-body{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+}
+@container editor-properties (max-width:300px){
+ #editor .edit-properties .text-panel .text-row,
+ #editor .edit-properties .edit-two,
+ #editor .edit-properties #editor-tool-voice .voice-filters{grid-template-columns:minmax(0,1fr)}
+ #editor .edit-properties .text-panel{padding:8px;gap:8px}
+ #editor .edit-properties .text-align{gap:4px}
+ #editor .edit-properties .text-align>select{min-width:0;flex-basis:100%}
+ #editor .edit-properties .speed-presets{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #editor .edit-properties .edit-caption-row{grid-template-columns:minmax(0,1fr) 48px 48px;gap:4px}
+ #editor .edit-properties .edit-caption-row>button:last-child{grid-column:1/-1}
+}

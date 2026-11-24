@@ -1,0 +1,54 @@
+/* Operate surface: familiar editor geography, existing Seedance identity. */
+#editor .edit-workspace{display:grid;grid-template-columns:minmax(190px,1fr) minmax(300px,1.8fr) minmax(240px,1fr);gap:12px;align-items:stretch}
+#editor .edit-library,#editor .edit-properties,#editor .edit-preview{min-width:0;padding:16px}
+#editor .edit-library,#editor .edit-properties{max-height:640px;overflow:auto}
+#editor .edit-stage{height:clamp(320px,48vh,560px);max-height:none}
+#editor .edit-stage.portrait{width:100%;aspect-ratio:auto}
+#editor #edit-library-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:12px;max-height:480px;overflow:auto}
+#editor .edit-source{position:relative;min-width:0;padding:8px}
+#editor .edit-source video{width:100%;height:180px;object-fit:contain;background:#101a19}
+#editor .edit-source strong{display:block;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding-right:36px}
+#editor .edit-source .source-add{position:absolute;right:12px;top:12px;min-width:36px;width:36px;min-height:36px;height:36px;padding:0;font-size:24px;background: var(--bg-surface);border:1px solid var(--accent);color:var(--accent)}
+#editor .edit-source:hover .source-add,#editor .edit-source:focus-within .source-add{background:var(--accent);color:var(--white)}
+#editor .edit-transport{gap:8px;flex-wrap:wrap}
+#editor .edit-transport button{padding:8px 12px;min-height:36px}
+#editor .edit-properties .edit-actions{display:flex;gap:8px;flex-wrap:wrap}
+#editor .edit-properties select{max-width:100%}
+#editor .edit-timeline{height:400px;padding:16px;min-height:340px}
+#editor .track-scroll{max-height:calc(100% - 110px)}
+#editor .clip-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:12px 0;border-bottom:1px solid var(--line)}
+#editor .clip-toolbar button{width:auto;padding:8px 12px;min-height:36px;font-size:12px}
+#editor .clip-toolbar .fine{margin:0 0 0 auto;font-size:11px}
+#editor .edit-clip{overflow:hidden;position:relative}
+#editor .edit-clip.selected{outline:2px solid var(--accent);outline-offset:-2px;background: var(--accent-soft)}
+#editor .edit-clip:focus-visible{outline:3px solid var(--focus);outline-offset:-3px}
+#editor .timeline-preview{height:48px;width:100%;object-fit:cover}
+.clip-context-menu{position:fixed;z-index:1000;background: var(--bg-surface);color: var(--fg);border-radius:8px;box-shadow:0 8px 28px #142d2b33;padding:8px;min-width:240px;max-width:calc(100vw - 16px);max-height:calc(100vh - 16px);overflow:auto}
+.clip-context-menu[hidden]{display:none}
+.clip-context-menu button{display:flex;justify-content:space-between;align-items:center;gap:24px;width:100%;padding:8px 12px;min-height:36px;border:0;background:transparent;color: var(--fg);text-align:left}
+.clip-context-menu button:hover,.clip-context-menu button:focus-visible{background: var(--accent-soft)}
+.clip-context-menu button:disabled{opacity:.45;cursor:not-allowed}
+.clip-context-menu kbd{font:inherit;font-size:11px;color:var(--muted)}
+.clip-context-menu hr{border:0;border-top:1px solid var(--line);margin:6px 4px}
+@media(max-width:1150px){#editor .edit-workspace{grid-template-columns:minmax(170px,1fr) minmax(280px,2fr)}#editor .edit-properties{grid-column:1/-1;max-height:none}#editor .clip-toolbar .fine{width:100%;margin:0}}
+@media(max-width:700px){#editor .edit-workspace{display:flex;flex-direction:column}#editor .edit-library{max-height:320px}#editor #edit-library-list{grid-template-columns:repeat(2,minmax(0,1fr));max-height:180px}#editor .edit-source video{height:120px}#editor .edit-stage{height:380px}#editor .edit-timeline{height:440px}#editor .track-scroll{max-height:240px}}
+#editor .track-scroll{position:relative}
+#editor .timeline-ruler{cursor:ew-resize;touch-action:none;user-select:none}
+#editor .timeline-playhead{position:absolute;top:0;bottom:0;width:2px;background:var(--accent);pointer-events:none;z-index:3}
+#editor .timeline-playhead:before{content:'';position:absolute;left:-4px;top:0;width:10px;height:10px;background:var(--accent);border-radius:2px}
+#editor .trim-handle{position:absolute;top:0;bottom:0;width:10px;background:var(--accent);cursor:ew-resize;touch-action:none;z-index:2;opacity:0}
+#editor .trim-start{left:0}#editor .trim-end{right:0}
+#editor .edit-clip:hover .trim-handle,#editor .edit-clip:focus-within .trim-handle,#editor .edit-clip.selected .trim-handle{opacity:1}
+#editor .trim-handle:after{content:'';position:absolute;top:40%;bottom:40%;left:4px;width:2px;background: var(--bg-surface)}
+#editor .edit-clip.trimming{opacity:.75}
+#editor .trim-feedback{font-size:12px;color:var(--accent);font-variant-numeric:tabular-nums}
+#editor .edit-timeline .edit-section-heading{flex-wrap:wrap;gap:12px}
+#editor .audio-segment{position:absolute;height:56px;min-width:4px;border:1px solid var(--accent);border-radius:4px;background: var(--accent-soft);cursor:grab;touch-action:none;overflow:hidden;user-select:none}
+#editor .audio-segment>span:first-child{display:block;font-size:11px;white-space:nowrap;padding:2px 10px;overflow:hidden;text-overflow:ellipsis}
+#editor .audio-segment svg{display:block;width:100%;height:28px;pointer-events:none}
+#editor .audio-segment svg path{stroke:var(--accent);stroke-width:1;fill:none}
+#editor .audio-segment[data-locked=true]{cursor:default}
+#editor .audio-segment[data-muted=true]{opacity:.5}
+#editor .audio-grip{position:absolute;top:0;bottom:0;width:8px;background:var(--accent);cursor:ew-resize;touch-action:none}
+#editor .audio-start{left:0}#editor .audio-end{right:0}
+#editor .audio-segment[data-locked=true] .audio-grip{display:none}

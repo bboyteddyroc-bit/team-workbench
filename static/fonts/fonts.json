@@ -1,0 +1,964 @@
+[
+  {
+    "id": "default",
+    "label": "默认 · 微软雅黑",
+    "css": "Microsoft YaHei, sans-serif",
+    "group": "中文"
+  },
+  {
+    "id": "liu-jian-mao-cao",
+    "label": "刘建毛草（毛笔）",
+    "family": "Liu Jian Mao Cao",
+    "file": "LiuJianMaoCao-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "group": "中文"
+  },
+  {
+    "id": "zhi-mang-xing",
+    "label": "志莽行书",
+    "family": "Zhi Mang Xing",
+    "file": "ZhiMangXing-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "group": "中文"
+  },
+  {
+    "id": "source-han-sans",
+    "label": "思源黑体",
+    "family": "Source Han Sans SC",
+    "file": "SourceHanSansSC-Regular.otf",
+    "license": "SIL OFL 1.1",
+    "group": "中文"
+  },
+  {
+    "id": "zcool-xiaowei",
+    "label": "站酷小薇体",
+    "family": "ZCOOL XiaoWei",
+    "file": "ZCOOLXiaoWei-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "group": "中文"
+  },
+  {
+    "id": "zcool-kuaile",
+    "label": "站酷快乐体",
+    "family": "ZCOOL KuaiLe",
+    "file": "ZCOOLKuaiLe-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "group": "中文"
+  },
+  {
+    "id": "ma-shan-zheng",
+    "label": "马善政楷书",
+    "family": "Ma Shan Zheng",
+    "file": "MaShanZheng-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "group": "中文"
+  },
+  {
+    "id": "long-cang",
+    "label": "龙藏体（手写）",
+    "family": "Long Cang",
+    "file": "LongCang-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "group": "中文"
+  },
+  {
+    "id": "archivo",
+    "label": "Archivo · 英文硬朗通用",
+    "family": "Archivo",
+    "file": "Archivo-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "barlow",
+    "label": "Barlow · 英文工业通用",
+    "family": "Barlow",
+    "file": "Barlow-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "cabin",
+    "label": "Cabin · 英文人文通用",
+    "family": "Cabin",
+    "file": "Cabin-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "comfortaa",
+    "label": "Comfortaa · 英文圆角可爱",
+    "family": "Comfortaa",
+    "file": "Comfortaa-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "dm-sans",
+    "label": "DM Sans · 英文极简现代",
+    "family": "DM Sans",
+    "file": "DMSans-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "exo-2",
+    "label": "Exo 2 · 英文未来科技",
+    "family": "Exo 2",
+    "file": "Exo2-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "figtree",
+    "label": "Figtree · 英文清爽现代",
+    "family": "Figtree",
+    "file": "Figtree-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "fira-sans",
+    "label": "Fira Sans · 英文技术通用",
+    "family": "Fira Sans",
+    "file": "FiraSans-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "hind",
+    "label": "Hind · 英文高可读",
+    "family": "Hind",
+    "file": "Hind-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "ibm-plex-sans",
+    "label": "IBM Plex Sans · 英文工程感",
+    "family": "IBM Plex Sans",
+    "file": "IBMPlexSans-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "inter",
+    "label": "Inter · 英文正文",
+    "family": "Inter",
+    "file": "Inter-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "josefin-sans",
+    "label": "Josefin Sans · 英文复古几何",
+    "family": "Josefin Sans",
+    "file": "JosefinSans-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "jost",
+    "label": "Jost · 英文几何极简",
+    "family": "Jost",
+    "file": "Jost-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "kanit",
+    "label": "Kanit · 英文硬朗窄体",
+    "family": "Kanit",
+    "file": "Kanit-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "karla",
+    "label": "Karla · 英文个性正文",
+    "family": "Karla",
+    "file": "Karla-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "lato",
+    "label": "Lato · 英文温和通用",
+    "family": "Lato",
+    "file": "Lato-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "lexend",
+    "label": "Lexend · 英文阅读优化",
+    "family": "Lexend",
+    "file": "Lexend-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "manrope",
+    "label": "Manrope · 英文现代几何",
+    "family": "Manrope",
+    "file": "Manrope-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "montserrat",
+    "label": "Montserrat · 英文几何",
+    "family": "Montserrat",
+    "file": "Montserrat-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "mulish",
+    "label": "Mulish · 英文柔和通用",
+    "family": "Mulish",
+    "file": "Mulish-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "noto-sans",
+    "label": "Noto Sans · 英文多语通用",
+    "family": "Noto Sans",
+    "file": "NotoSans-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "nunito",
+    "label": "Nunito · 英文圆润友好",
+    "family": "Nunito",
+    "file": "Nunito-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "open-sans",
+    "label": "Open Sans · 英文亲和力强",
+    "family": "Open Sans",
+    "file": "OpenSans-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "outfit",
+    "label": "Outfit · 英文几何简洁",
+    "family": "Outfit",
+    "file": "Outfit-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "plus-jakarta-sans",
+    "label": "Plus Jakarta Sans · 英文时髦现代",
+    "family": "Plus Jakarta Sans",
+    "file": "PlusJakartaSans-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "poppins",
+    "label": "Poppins · 英文几何圆润",
+    "family": "Poppins",
+    "file": "Poppins-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "prompt",
+    "label": "Prompt · 英文锐利现代",
+    "family": "Prompt",
+    "file": "Prompt-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "pt-sans",
+    "label": "PT Sans · 英文人文无衬线",
+    "family": "PT Sans",
+    "file": "PTSans-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "public-sans",
+    "label": "Public Sans · 英文政务简洁",
+    "family": "Public Sans",
+    "file": "PublicSans-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "quicksand",
+    "label": "Quicksand · 英文圆润轻盈",
+    "family": "Quicksand",
+    "file": "Quicksand-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "rajdhani",
+    "label": "Rajdhani · 英文科技窄体",
+    "family": "Rajdhani",
+    "file": "Rajdhani-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "raleway",
+    "label": "Raleway · 英文优雅细体",
+    "family": "Raleway",
+    "file": "Raleway-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "red-hat-display",
+    "label": "Red Hat Display · 英文品牌现代",
+    "family": "Red Hat Display",
+    "file": "RedHatDisplay-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "roboto",
+    "label": "Roboto · 英文通用正文",
+    "family": "Roboto",
+    "file": "Roboto-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "rubik",
+    "label": "Rubik · 英文圆角现代",
+    "family": "Rubik",
+    "file": "Rubik-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "saira",
+    "label": "Saira · 英文运动感",
+    "family": "Saira",
+    "file": "Saira-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "sora",
+    "label": "Sora · 英文科技几何",
+    "family": "Sora",
+    "file": "Sora-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "source-sans-3",
+    "label": "Source Sans 3 · 英文干净通用",
+    "family": "Source Sans 3",
+    "file": "SourceSans3-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "space-grotesk",
+    "label": "Space Grotesk · 英文科技无衬线",
+    "family": "Space Grotesk",
+    "file": "SpaceGrotesk-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "teko",
+    "label": "Teko · 英文方形窄体",
+    "family": "Teko",
+    "file": "Teko-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "urbanist",
+    "label": "Urbanist · 英文低对比现代",
+    "family": "Urbanist",
+    "file": "Urbanist-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "work-sans",
+    "label": "Work Sans · 英文中性通用",
+    "family": "Work Sans",
+    "file": "WorkSans-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 无衬线"
+  },
+  {
+    "id": "anton",
+    "label": "Anton · 英文超粗",
+    "family": "Anton",
+    "file": "Anton-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 窄体标题"
+  },
+  {
+    "id": "archivo-black",
+    "label": "Archivo Black · 英文超粗正文",
+    "family": "Archivo Black",
+    "file": "ArchivoBlack-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 窄体标题"
+  },
+  {
+    "id": "archivo-narrow",
+    "label": "Archivo Narrow · 英文窄体紧凑",
+    "family": "Archivo Narrow",
+    "file": "ArchivoNarrow-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 窄体标题"
+  },
+  {
+    "id": "barlow-condensed",
+    "label": "Barlow Condensed · 英文窄体标语",
+    "family": "Barlow Condensed",
+    "file": "BarlowCondensed-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 窄体标题"
+  },
+  {
+    "id": "bebas-neue",
+    "label": "Bebas Neue · 英文大写标题",
+    "family": "Bebas Neue",
+    "file": "BebasNeue-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 窄体标题"
+  },
+  {
+    "id": "fjalla-one",
+    "label": "Fjalla One · 英文窄标题",
+    "family": "Fjalla One",
+    "file": "FjallaOne-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 窄体标题"
+  },
+  {
+    "id": "oswald",
+    "label": "Oswald · 英文窄体",
+    "family": "Oswald",
+    "file": "Oswald-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 窄体标题"
+  },
+  {
+    "id": "abril-fatface",
+    "label": "Abril Fatface · 英文粗衬线标题",
+    "family": "Abril Fatface",
+    "file": "AbrilFatface-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "bitter",
+    "label": "Bitter · 英文现代衬线",
+    "family": "Bitter",
+    "file": "Bitter-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "bodoni-moda",
+    "label": "Bodoni Moda · 英文时尚衬线",
+    "family": "Bodoni Moda",
+    "file": "BodoniModa-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "cinzel",
+    "label": "Cinzel · 英文罗马刻体",
+    "family": "Cinzel",
+    "file": "Cinzel-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "cormorant-garamond",
+    "label": "Cormorant Garamond · 英文高雅衬线",
+    "family": "Cormorant Garamond",
+    "file": "CormorantGaramond-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "crimson-text",
+    "label": "Crimson Text · 英文文雅衬线",
+    "family": "Crimson Text",
+    "file": "CrimsonText-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "dm-serif-display",
+    "label": "DM Serif Display · 英文高对比标题",
+    "family": "DM Serif Display",
+    "file": "DMSerifDisplay-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "eb-garamond",
+    "label": "EB Garamond · 英文古典衬线",
+    "family": "EB Garamond",
+    "file": "EBGaramond-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "libre-baskerville",
+    "label": "Libre Baskerville · 英文经典衬线",
+    "family": "Libre Baskerville",
+    "file": "LibreBaskerville-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "lora",
+    "label": "Lora · 英文书卷衬线",
+    "family": "Lora",
+    "file": "Lora-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "marcellus",
+    "label": "Marcellus · 英文古典大写",
+    "family": "Marcellus",
+    "file": "Marcellus-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "merriweather",
+    "label": "Merriweather · 英文屏读衬线",
+    "family": "Merriweather",
+    "file": "Merriweather-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "noto-serif",
+    "label": "Noto Serif · 英文多语衬线",
+    "family": "Noto Serif",
+    "file": "NotoSerif-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "playfair-display",
+    "label": "Playfair Display · 英文衬线",
+    "family": "Playfair Display",
+    "file": "PlayfairDisplay-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "prata",
+    "label": "Prata · 英文优雅衬线",
+    "family": "Prata",
+    "file": "Prata-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "source-serif-4",
+    "label": "Source Serif 4 · 英文出版衬线",
+    "family": "Source Serif 4",
+    "file": "SourceSerif4-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "zilla-slab",
+    "label": "Zilla Slab · 英文板式衬线",
+    "family": "Zilla Slab",
+    "file": "ZillaSlab-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 衬线"
+  },
+  {
+    "id": "amatic-sc",
+    "label": "Amatic SC · 英文细长手写",
+    "family": "Amatic SC",
+    "file": "AmaticSC-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "architects-daughter",
+    "label": "Architects Daughter · 英文便签手写",
+    "family": "Architects Daughter",
+    "file": "ArchitectsDaughter-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "bangers",
+    "label": "Bangers · 英文漫画爆发",
+    "family": "Bangers",
+    "file": "Bangers-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "caveat",
+    "label": "Caveat · 英文手写",
+    "family": "Caveat",
+    "file": "Caveat-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "dancing-script",
+    "label": "Dancing Script · 英文连笔手写",
+    "family": "Dancing Script",
+    "file": "DancingScript-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "gochi-hand",
+    "label": "Gochi Hand · 英文随性手记",
+    "family": "Gochi Hand",
+    "file": "GochiHand-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "great-vibes",
+    "label": "Great Vibes · 英文优雅花体",
+    "family": "Great Vibes",
+    "file": "GreatVibes-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "indie-flower",
+    "label": "Indie Flower · 英文童趣手写",
+    "family": "Indie Flower",
+    "file": "IndieFlower-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "kaushan-script",
+    "label": "Kaushan Script · 英文毛笔手写",
+    "family": "Kaushan Script",
+    "file": "KaushanScript-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "lobster",
+    "label": "Lobster · 英文复古手写",
+    "family": "Lobster",
+    "file": "Lobster-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "pacifico",
+    "label": "Pacifico · 英文美式手写",
+    "family": "Pacifico",
+    "file": "Pacifico-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "patrick-hand",
+    "label": "Patrick Hand · 英文手帐体",
+    "family": "Patrick Hand",
+    "file": "PatrickHand-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "sacramento",
+    "label": "Sacramento · 英文细线连笔",
+    "family": "Sacramento",
+    "file": "Sacramento-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "shadows-into-light",
+    "label": "Shadows Into Light · 英文铅笔手写",
+    "family": "Shadows Into Light",
+    "file": "ShadowsIntoLight-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 手写"
+  },
+  {
+    "id": "audiowide",
+    "label": "Audiowide · 英文未来宽体",
+    "family": "Audiowide",
+    "file": "Audiowide-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "black-ops-one",
+    "label": "Black Ops One · 英文军事模板",
+    "family": "Black Ops One",
+    "file": "BlackOpsOne-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "bowlby-one",
+    "label": "Bowlby One · 英文粗描边感",
+    "family": "Bowlby One",
+    "file": "BowlbyOne-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "bungee",
+    "label": "Bungee · 英文街头立体",
+    "family": "Bungee",
+    "file": "Bungee-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "creepster",
+    "label": "Creepster · 英文恐怖惊悚",
+    "family": "Creepster",
+    "file": "Creepster-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "monoton",
+    "label": "Monoton · 英文霓虹线条",
+    "family": "Monoton",
+    "file": "Monoton-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "orbitron",
+    "label": "Orbitron · 英文科幻科技",
+    "family": "Orbitron",
+    "file": "Orbitron-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "passion-one",
+    "label": "Passion One · 英文运动标语",
+    "family": "Passion One",
+    "file": "PassionOne-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "press-start-2p",
+    "label": "Press Start 2P · 英文像素游戏",
+    "family": "Press Start 2P",
+    "file": "PressStart2P-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "righteous",
+    "label": "Righteous · 英文复古海报",
+    "family": "Righteous",
+    "file": "Righteous-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "russo-one",
+    "label": "Russo One · 英文硬核标题",
+    "family": "Russo One",
+    "file": "RussoOne-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "rye",
+    "label": "Rye · 英文西部木质",
+    "family": "Rye",
+    "file": "Rye-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "sigmar-one",
+    "label": "Sigmar One · 英文重体海报",
+    "family": "Sigmar One",
+    "file": "SigmarOne-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "titan-one",
+    "label": "Titan One · 英文圆胖标题",
+    "family": "Titan One",
+    "file": "TitanOne-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 展示"
+  },
+  {
+    "id": "fira-code",
+    "label": "Fira Code · 英文连字等宽",
+    "family": "Fira Code",
+    "file": "FiraCode-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 等宽"
+  },
+  {
+    "id": "ibm-plex-mono",
+    "label": "IBM Plex Mono · 英文终端等宽",
+    "family": "IBM Plex Mono",
+    "file": "IBMPlexMono-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 等宽"
+  },
+  {
+    "id": "inconsolata",
+    "label": "Inconsolata · 英文窄等宽",
+    "family": "Inconsolata",
+    "file": "Inconsolata-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 等宽"
+  },
+  {
+    "id": "jetbrains-mono",
+    "label": "JetBrains Mono · 英文代码感",
+    "family": "JetBrains Mono",
+    "file": "JetBrainsMono-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 等宽"
+  },
+  {
+    "id": "roboto-mono",
+    "label": "Roboto Mono · 英文数据等宽",
+    "family": "Roboto Mono",
+    "file": "RobotoMono-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 等宽"
+  },
+  {
+    "id": "space-mono",
+    "label": "Space Mono · 英文复古等宽",
+    "family": "Space Mono",
+    "file": "SpaceMono-Regular.ttf",
+    "license": "SIL OFL 1.1",
+    "latin": true,
+    "group": "英文 · 等宽"
+  }
+]

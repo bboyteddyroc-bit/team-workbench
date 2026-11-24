@@ -1,0 +1,45 @@
+/* The workbench styles body children as relative; portals must remain viewport-fixed. */
+body > [data-popover-portal]{position:fixed!important;left:0;top:0;z-index:9999;pointer-events:none}
+/* beUI popovers retain the studio's existing dark surfaces. */
+.studio-be-popover{background:#20282a;color:#e6f2ee;border:1px solid #465652;border-radius:14px;box-shadow:0 22px 60px #000a;padding:14px;max-height:min(70vh,650px);overflow:auto}
+.studio-be-popover.channel{width:min(380px,calc(100vw - 36px));max-width:none}.studio-be-popover.prompt{width:min(620px,calc(100vw - 36px));max-width:none}
+.studio-be-popover .settings-pop{position:static!important;width:auto!important;max-height:none!important;padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;display:flex;flex-direction:column;gap:12px}
+.studio-be-popover .settings-pop-head{display:flex;justify-content:space-between;align-items:center}.studio-be-popover h3{font-size:14px;margin:0}.studio-be-popover label{display:block}.studio-be-popover select{width:100%}
+.studio-be-popover.channel .settings-pop{gap:18px}
+.studio-be-popover.channel .settings-pop>label,.studio-be-popover.channel .libtv-profile-panel{display:block;margin:0!important;padding:0!important;width:100%;max-width:none!important;border:0;background:transparent}
+.studio-be-popover.channel .libtv-profile-panel[hidden]{display:none!important}
+.studio-be-popover.channel .settings-pop label{font-size:13px;font-weight:600;color:#e6f2ee}
+.studio-be-popover.channel .settings-pop select{display:block;box-sizing:border-box;width:100%;height:42px;margin:8px 0 0!important;padding:0 12px!important;border:1px solid #465652;border-radius:8px;background:#161c1c;color:#e6f2ee}
+.studio-be-popover.channel .settings-pop small{display:none!important}
+.prompt-popover-host{position:absolute;right:5px;bottom:5px;z-index:3;width:22px;height:22px}.prompt-popover-host .prompt-expand{position:static!important}.studio-prompt-panel strong{display:block;margin-bottom:10px}.studio-prompt-panel textarea{width:100%;height:min(45vh,350px);resize:vertical}.studio-prompt-panel .prompt-editor-field{position:relative}
+#studio.simple-studio .simple-preview .window-results.depth-carousel{position:relative;display:block;overflow:visible;perspective:1000px;min-height:260px;height:100%;transform-style:preserve-3d}
+#studio.simple-studio .simple-preview .depth-carousel .window-result{position:absolute;top:50%;left:50%;width:min(60%,210px);height:90%;min-width:0;margin:0;transition:transform .45s ease,opacity .45s ease,filter .45s ease;backface-visibility:hidden;overflow:hidden}
+#studio.simple-studio .simple-preview .depth-carousel .window-result video{width:100%;height:100%;object-fit:contain}.depth-controls{position:static;transform:none;display:flex;align-items:center;justify-content:center;gap:9px;flex:none;margin:4px auto 2px}.depth-controls button{cursor:pointer;min-width:24px;padding:2px 6px}.depth-dots{display:flex;align-items:center;gap:5px}.depth-dots button{border:0;border-radius:50%;padding:0;min-width:6px;width:6px;height:6px;background:#86938e}.depth-dots button[aria-current=true]{background:#23a9bd}@media(prefers-reduced-motion:reduce){#studio.simple-studio .simple-preview .depth-carousel .window-result{transition:none}}
+/* Isolate each draggable window so a different window's action cannot float above it. */
+#studio.simple-studio #composition-list .composition{isolation:isolate}
+#studio.simple-studio .simple-preview:has(.depth-carousel){height:auto;min-height:0;overflow:visible}
+#studio.simple-studio .simple-preview:has(.depth-carousel) .window-results.depth-carousel{height:360px!important;min-height:0;overflow:visible!important;flex:none}
+#studio.simple-studio .simple-preview:has(.depth-carousel) .depth-carousel .window-result{position:absolute;top:50%;left:50%;width:min(60%,210px);height:90%;padding:0;overflow:hidden}
+#studio.simple-studio .simple-preview:has(.depth-carousel) .depth-carousel .window-result video{width:100%;height:100%;aspect-ratio:auto;object-fit:contain}
+#studio.simple-studio .simple-preview .depth-carousel .window-result-actions{right:8px}
+#studio.simple-studio .relay-start.adopt{cursor:pointer}
+#studio.simple-studio .simple-toolbar.simple-toolbar>button:first-child,#studio.simple-studio .simple-toolbar.simple-toolbar .channel-trigger.channel-trigger{background:#23a9bd!important;border-color:#23a9bd!important;color:#101010!important;font-weight:700}
+/* Arrows flank the image; dots alone sit beneath it. Override global button defaults. */
+#studio.simple-studio .simple-preview:has(.depth-carousel){position:relative}
+#studio.simple-studio .simple-preview .depth-controls{position:static;width:100%;height:24px;margin:0;display:flex;justify-content:center;align-items:center}
+#studio.simple-studio .simple-preview .depth-controls > button{position:absolute;top:180px;transform:translateY(-50%);z-index:150;width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important;padding:0!important;border:1px solid #555!important;border-radius:50%!important;background:#161616eF!important;color:#eee!important;font-size:25px!important;line-height:1!important;display:grid;place-items:center;box-shadow:none!important}
+#studio.simple-studio .simple-preview .depth-controls > button{font-size:0!important}
+#studio.simple-studio .simple-preview .depth-controls > button::before{content:"";position:absolute;left:50%;top:50%;display:block;width:8px;height:8px;border:solid currentColor;border-width:0 2px 2px 0;box-sizing:border-box}
+#studio.simple-studio .simple-preview .depth-controls > button:first-child::before{transform:translate(-40%,-50%) rotate(135deg)}
+#studio.simple-studio .simple-preview .depth-controls > button:last-child::before{transform:translate(-60%,-50%) rotate(-45deg)}
+#studio.simple-studio .simple-preview .depth-controls > button:first-child{left:8px}
+#studio.simple-studio .simple-preview .depth-controls > button:last-child{right:8px}
+#studio.simple-studio .simple-preview .depth-dots{display:flex;gap:8px;align-items:center;justify-content:center}
+#studio.simple-studio .simple-preview .depth-dots button{display:block!important;flex:none!important;width:8px!important;height:8px!important;min-width:8px!important;min-height:8px!important;margin:0!important;padding:0!important;border:0!important;border-radius:999px!important;background:#68686d!important;box-shadow:none!important;transition:width .2s,background .2s}
+#studio.simple-studio .simple-preview .depth-dots button[aria-current=true]{width:20px!important;background:#f4f4f4!important}
+#studio.simple-studio .simple-preview .depth-controls button:focus-visible{outline:2px solid #23a9bd;outline-offset:3px}
+#studio.simple-studio #composition-list .composition.file-drop-active{outline:2px solid #23a9bd;outline-offset:-2px;box-shadow:0 0 0 4px #23a9bd33!important}
+/* Fullscreen must override the preview card's fixed 220px/90% sizing. */
+#studio.simple-studio .simple-preview video:fullscreen{width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;border-radius:0!important;background:#000!important}
+#studio.simple-studio .simple-preview video:-webkit-full-screen{width:100vw!important;height:100vh!important;max-width:none!important;max-height:none!important;aspect-ratio:auto!important;object-fit:contain!important;border-radius:0!important;background:#000!important}
+

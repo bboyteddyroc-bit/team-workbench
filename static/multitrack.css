@@ -1,0 +1,35 @@
+.legacy-track{display:none!important}
+#multi-tracks .multi-lane{height:76px;min-height:76px}
+#multi-tracks .track-label{display:flex;justify-content:center;align-items:center;font-size:15px}
+#multi-tracks .track-mute{padding:6px 10px;background:transparent;border:0}
+#multi-tracks .new-track{height:42px;min-height:42px;opacity:.6}
+#multi-tracks .edit-clip,#multi-tracks .audio-segment,#multi-tracks .timeline-block{box-sizing:border-box;min-width:1px;overflow:hidden;margin:0;border-radius:3px}
+#multi-tracks .edit-clip{padding:3px 4px;cursor:grab;z-index:1}
+#multi-tracks .edit-clip.selected,#multi-tracks .track-selected{z-index:3}
+#multi-tracks .edit-clip .timeline-preview{height:32px;max-height:32px}
+#multi-tracks .edit-clip strong{display:none}
+#multi-tracks .embedded-audio{position:absolute;bottom:3px;right:4px}
+#editor #multitrack-canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;z-index:1}
+#editor #multitrack-canvas[hidden]{display:none}
+#editor #edit-caption{z-index:3}
+/* 左侧素材卡预览时投到预览台的画面，盖住时间轴画面与字幕，退出即恢复 */
+#editor #edit-source-preview{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#0b1413;z-index:4}
+#editor #edit-source-preview[hidden]{display:none}
+#editor .source-preview-tip{position:absolute;top:10px;right:10px;z-index:5;padding:4px 10px;border-radius:999px;font-size:11px;letter-spacing:.02em;color:#d8f6f1;background:rgba(6,26,24,.72);border:1px solid rgba(45,212,191,.28);pointer-events:none;backdrop-filter:blur(6px)}
+#editor .source-preview-tip[hidden]{display:none}
+#editor .timeline-playhead{z-index:15;width:12px;margin-left:-6px;background:transparent;cursor:ew-resize;touch-action:none}
+#editor .timeline-playhead:after{content:'';position:absolute;left:5px;top:0;bottom:0;width:2px;background:#23a9bd}
+#multi-tracks{user-select:none;touch-action:none}
+
+/* Timeline tools: snap / magnet / link toggles, export range, snap guide */
+#editor .timeline-tools{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:6px 0}
+#editor .timeline-tools .tl-tool{padding:3px 10px;font-size:12px;min-height:28px}
+#editor .timeline-tools .tl-tool[aria-pressed="true"]{background:#1fa8c4!important;color:#04222a!important;border-color:#1fa8c4!important;font-weight:600}
+#editor .timeline-tools .range-label{font-size:12px;opacity:.85;margin-left:4px}
+#editor .snap-guide{position:absolute;top:0;width:0;border-left:1px dashed #f59e0b;z-index:14;pointer-events:none}
+#editor .range-shade{position:absolute;top:0;background:rgba(37,99,235,.12);border-left:1px solid #2563eb;border-right:1px solid #2563eb;z-index:3;pointer-events:none}
+#editor .range-handle{position:absolute;top:0;width:12px;margin-left:-6px;z-index:16;cursor:ew-resize;touch-action:none}
+#editor .range-handle::before{content:"";position:absolute;left:5px;top:0;bottom:0;width:2px;background:#2563eb}
+#editor .range-handle::after{content:"";position:absolute;left:0;top:0;width:12px;height:14px;background:#2563eb;border-radius:2px}
+#editor .range-handle:hover::after{background:#1d4ed8}
+#editor .snap-guide[hidden],#editor .range-shade[hidden],#editor .range-handle[hidden]{display:none}

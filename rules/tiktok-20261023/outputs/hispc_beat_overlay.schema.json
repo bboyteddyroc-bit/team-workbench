@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.library/schemas/hispc_beat_overlay.v1.json",
+  "title": "H-I-S-P-C production beat overlay",
+  "description": "Production-only audit layer over an immutable Commerce Beat Sheet. It does not alter beat timing or canonical assets.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "framework_version",
+    "creative_id",
+    "production_version",
+    "beat_sheet_id",
+    "beat_sheet_revision",
+    "beat_sheet_sha256",
+    "target_viewer",
+    "primary_purchase_question",
+    "hook_promise",
+    "first_three_seconds",
+    "modules",
+    "promise_proof_map",
+    "primary_selling_point",
+    "cta",
+    "review_status"
+  ],
+  "properties": {
+    "framework_version": { "const": "1.0" },
+    "creative_id": { "type": "string", "minLength": 1 },
+    "production_version": { "type": "string", "pattern": "^V[0-9]{3,}$" },
+    "beat_sheet_id": { "type": "string", "minLength": 1 },
+    "beat_sheet_revision": { "type": "integer", "minimum": 1 },
+    "beat_sheet_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+    "target_viewer": { "type": "string", "minLength": 1 },
+    "primary_purchase_question": { "type": "string", "minLength": 1 },
+    "hook_promise": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "statement", "hook_beat_ids", "hook_claim_ids"],
+      "properties": {
+        "type": { "enum": ["problem", "result", "contrast", "curiosity", "scenario", "reaction", "action"] },
+        "statement": { "type": "string", "minLength": 1 },
+        "hook_beat_ids": { "$ref": "#/$defs/beat_ids" },
+        "hook_claim_ids": { "$ref": "#/$defs/id_list" }
+      }
+    },
+    "first_three_seconds": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["single_message", "visual", "voice", "visual_voice_alignment", "subtitle_mode"],
+      "properties": {
+        "single_message": { "type": "string", "minLength": 1 },
+        "visual": { "type": "string", "minLength": 1 },
+        "voice": { "type": "string", "minLength": 1 },
+        "visual_voice_alignment": { "enum": ["pass", "needs_revision", "not_reviewed"] },
+        "subtitle_mode": { "enum": ["none", "supports_same_message", "needs_revision", "unknown"] }
+      }
+    },
+    "modules": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["H", "I", "S", "P", "C"],
+      "properties": {
+        "H": { "$ref": "#/$defs/module" },
+        "I": { "$ref": "#/$defs/module" },
+        "S": { "$ref": "#/$defs/module" },
+        "P": { "$ref": "#/$defs/module" },
+        "C": { "$ref": "#/$defs/module" }
+      }
+    },
+    "promise_proof_map": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["promise", "first_proof_beat_ids", "first_proof_by_sec", "full_payoff_beat_ids", "claim_ids", "source_refs"],
+        "properties": {
+          "promise": { "type": "string", "minLength": 1 },
+          "first_proof_beat_ids": { "$ref": "#/$defs/beat_ids" },
+          "first_proof_by_sec": { "type": "number", "minimum": 0 },
+          "full_payoff_beat_ids": { "$ref": "#/$defs/beat_ids" },
+          "claim_ids": { "$ref": "#/$defs/id_list" },
+          "source_refs": { "$ref": "#/$defs/id_list" }
+        }
+      }
+    },
+    "primary_selling_point": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["statement", "claim_ids", "demo_beat_ids", "result_beat_ids"],
+      "properties": {
+        "statement": { "type": "string", "minLength": 1 },
+        "claim_ids": { "$ref": "#/$defs/id_list" },
+        "demo_beat_ids": { "$ref": "#/$defs/beat_ids" },
+        "result_beat_ids": { "$ref": "#/$defs/beat_ids" }
+      }
+    },
+    "cta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "action", "beat_ids", "destination_verified"],
+      "properties": {
+        "mode": { "enum": ["product_link", "profile", "save", "none"] },
+        "action": { "type": "string" },
+        "beat_ids": { "$ref": "#/$defs/beat_ids" },
+        "destination_verified": { "type": "boolean" }
+      }
+    },
+    "test_plan": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["variable", "held_constant", "metrics", "validation_status"],
+      "properties": {
+        "variable": { "type": "string", "minLength": 1 },
+        "held_constant": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+        "metrics": { "type": "array", "items": { "type": "string" }, "minItems": 1, "uniqueItems": true },
+        "validation_status": { "enum": ["not_tested", "testing", "validated", "inconclusive"] }
+      }
+    },
+    "review_status": { "enum": ["draft", "needs_revision", "approved"] },
+    "notes": { "type": "array", "items": { "type": "string" } }
+  },
+  "$defs": {
+    "beat_ids": { "type": "array", "items": { "type": "string", "pattern": "^B[0-9]+$" }, "minItems": 1, "uniqueItems": true },
+    "id_list": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["beat_ids", "job"],
+      "properties": {
+        "beat_ids": { "$ref": "#/$defs/beat_ids" },
+        "job": { "type": "string", "minLength": 1 }
+      }
+    }
+  }
+}

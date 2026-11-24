@@ -1,0 +1,357 @@
+/* ============================================================
+   Seedance 设计令牌（唯一定义处）
+   所有颜色、间距、字号、圆角、控件高度只从这里取。
+   本文件只定义变量与元素基线，不改动任何既有布局类。
+   ============================================================ */
+
+:root {
+  color-scheme: dark;
+  --ink: #eaf6f1;
+  --muted: #b4b4b4;
+  --paper: #071813;
+  --white: #191919;
+  --accent-hover: #ffffff;
+  /* ---- 间距：4px 栅格，6 级 ---- */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* ---- 字号：6 级 ---- */
+  --fs-xs: 12px;
+  --fs-sm: 12px;
+  --fs-base: 14px;
+  --fs-md: 16px;
+  --fs-lg: 20px;
+  --fs-xl: 26px;
+  --lh-tight: 1.35;
+  --lh-base: 1.5;
+
+  /* ---- 圆角：3 级 ---- */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+
+  /* ---- 控件高度：2 级 ---- */
+  --ctl-sm: 32px;
+  --ctl-md: 36px;
+
+  /* ---- 语义色：深色光晕体系 ---- */
+  --bg-page: #04100e;
+  --bg-surface: #191919;
+  --bg-subtle: rgba(255, 255, 255, .05);
+  --bg-hover: rgba(255,255,255,.12);
+  --bg-active: rgba(255,255,255,.20);
+
+  --line: rgba(255,255,255,.20);
+  --line-soft: rgba(255,255,255,.11);
+
+  --fg: #eaf6f1;
+  --fg-dim: #bfbfbf;
+  --fg-mute: #b4b4b4;
+  --fg-invert: #1d1d1d;
+
+  --accent: #eeeeee;
+  --accent-hi: #ffffff;
+  --accent-soft: rgba(255,255,255,.10);
+  --accent-line: rgba(255,255,255,.34);
+
+  --warn: #f0b450;
+  --warn-bg: rgba(240, 180, 80, .13);
+  --danger: #f0786e;
+  --danger-bg: rgba(240, 120, 110, .13);
+  --ok: #d4d4d4;
+  --ok-bg: rgba(255,255,255,.08);
+
+  --shadow-1: 0 1px 2px rgba(0, 0, 0, .28);
+  --shadow-2: 0 8px 28px rgba(0, 0, 0, .38);
+
+  --focus: 0 0 0 2px rgba(255,255,255,.55);
+
+  --t-fast: .12s ease;
+  --t-base: .18s ease;
+}
+
+/* ============================================================
+   剪辑台基线：统一控件与字号，只作用于 #editor 内
+   ============================================================ */
+#editor * {
+  box-sizing: border-box;
+}
+
+#editor button,
+#editor input,
+#editor select,
+#editor textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* 按钮：只有两档高度、一种圆角 */
+#editor button {
+  min-height: var(--ctl-sm);
+  padding: 0 var(--sp-3);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--bg-surface);
+  color: var(--fg-dim);
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+}
+
+#editor button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--fg);
+}
+
+#editor button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+#editor button.secondary {
+  border-color: var(--accent-line);
+  color: var(--accent-hi);
+}
+
+#editor button.secondary:hover:not(:disabled) {
+  background: var(--accent-soft);
+}
+
+#editor button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--fg-invert);
+}
+
+#editor button.primary:hover:not(:disabled) {
+  background: var(--accent-hi);
+  color: var(--fg-invert);
+}
+
+#editor input,
+#editor select,
+#editor textarea {
+  height: var(--ctl-sm);
+  padding: 0 var(--sp-2);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--line);
+  background: var(--bg-surface);
+}
+
+#editor textarea {
+  height: auto;
+  padding: var(--sp-2);
+  line-height: var(--lh-base);
+}
+
+#editor input:focus-visible,
+#editor select:focus-visible,
+#editor textarea:focus-visible,
+#editor button:focus-visible,
+#editor [tabindex]:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+/* 字号归位 */
+#editor .fine {
+  font-size: var(--fs-xs);
+  color: var(--fg-mute);
+  line-height: var(--lh-base);
+}
+
+#editor h1 {
+  font-size: var(--fs-xl);
+  line-height: var(--lh-tight);
+  margin: 0;
+}
+
+#editor h2 {
+  font-size: var(--fs-md);
+  line-height: var(--lh-tight);
+  margin: 0;
+}
+
+#editor h3 {
+  font-size: var(--fs-base);
+  line-height: var(--lh-tight);
+  margin: 0;
+}
+
+/* 状态色 */
+#editor .error {
+  color: var(--danger);
+  background: var(--danger-bg);
+  border-radius: var(--r-sm);
+  padding: var(--sp-2) var(--sp-3);
+  font-size: var(--fs-sm);
+}
+
+#editor .error:empty {
+  display: none;
+}
+
+#editor .segmented {
+  display: inline-flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--r-sm);
+  background: var(--bg-subtle);
+  border: 1px solid var(--line-soft);
+}
+
+#editor .segmented button {
+  min-height: 26px;
+  padding: 0 var(--sp-3);
+  border: none;
+  background: transparent;
+  font-size: var(--fs-sm);
+  border-radius: 4px;
+}
+
+#editor .segmented button.active {
+  background: var(--bg-surface);
+  color: var(--accent-hi);
+  box-shadow: var(--shadow-1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #editor *,
+  #editor *::before,
+  #editor *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+
+/* ============================================================
+   全局背景：深色底 + 品牌青绿大面积光晕
+   品牌青绿，沿用示例的光晕强度与分布
+   ============================================================ */
+html { background: var(--bg-page); }
+
+body {
+  background: transparent !important;
+  color: var(--fg);
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  /* 大面积柔和光晕：右上最强 → 上中/中心次之 → 四角最暗 */
+  background:
+    radial-gradient(ellipse 85% 75% at 78% 8%,  rgba(247,247,247, .92) 0%, rgba(153, 153, 153, .68) 14%, rgba(108, 108, 108, .40) 30%, rgba(62,62,62, .16) 48%, transparent 64%),
+    radial-gradient(ellipse 105% 85% at 50% 42%, rgba(118, 118, 118, .42) 0%, rgba(71,71,71, .22) 38%, transparent 62%),
+    radial-gradient(ellipse 60% 55% at 12% 96%, rgba(93, 93, 93, .34) 0%, rgba(46,46,46, .14) 42%, transparent 62%),
+    radial-gradient(ellipse 70% 40% at 50% 100%, rgba(85, 85, 85, .26) 0%, transparent 58%);
+  background-color: #04100e;
+}
+
+main, .shell, .view, .auth-shell, #editor {
+  background: transparent !important;
+  position: relative;
+  z-index: 1;
+}
+body > main, body > .shell { position: relative; z-index: 1; }
+
+body { font-family: system-ui, -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif; }
+
+.page-heading h1, .view > h1 {
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -.02em !important;
+  margin: 0 !important;
+  color: var(--fg) !important;
+}
+.view h2, .card h2 {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  line-height: 1.35 !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: 0 0 12px !important;
+}
+.page-heading p, .fine {
+  font-size: 12.5px !important;
+  color: var(--fg-mute) !important;
+  line-height: 1.6 !important;
+}
+
+.topbar {
+  background: rgba(4, 22, 18, .66) !important;
+  border-bottom: 1px solid var(--line) !important;
+  color: var(--fg-dim) !important;
+  backdrop-filter: blur(16px);
+}
+
+/* ---- 剪辑台深色覆盖 ---- */
+#editor .editor-commandbar {
+  background: rgba(4, 22, 18, .72) !important;
+  border-bottom: 1px solid var(--line) !important;
+  backdrop-filter: blur(18px);
+}
+#editor .editor-commandbar h1 { color: var(--fg) !important; }
+#editor .editor-panel-tabs {
+  background: rgba(5, 26, 22, .55) !important;
+  border-bottom: 1px solid var(--line) !important;
+}
+#editor .editor-panel-tabs button { color: var(--fg-mute) !important; }
+#editor .editor-panel-tabs button.active { color: var(--fg) !important; }
+#editor .edit-library, #editor .edit-properties {
+  background: rgba(6, 30, 25, .62) !important;
+  border-color: var(--line) !important;
+}
+#editor .edit-timeline {
+  background: rgba(4, 22, 18, .58) !important;
+  border-top: 1px solid var(--line) !important;
+}
+#editor .edit-timeline .track-scroll { background: transparent !important; }
+#editor .edit-preview { background: rgba(0, 10, 8, .48) !important; }
+#editor #edit-stage { background: #05100e !important; border: 1px solid var(--line) !important; }
+#editor .edit-transport {
+  background: rgba(4, 22, 18, .72) !important;
+  border-top: 1px solid var(--line) !important;
+}
+#editor .edit-source {
+  background: rgba(255, 255, 255, .045) !important;
+  border: 1px solid var(--line) !important;
+  color: var(--fg) !important;
+}
+#editor .track-lane {
+  background: rgba(255, 255, 255, .03) !important;
+  border-color: rgba(255, 255, 255, .06) !important;
+}
+#editor .edit-clip {
+  background: rgba(98,98,98, .45) !important;
+  border-color: var(--accent-line) !important;
+  color: var(--fg) !important;
+}
+#editor .edit-clip.selected {
+  background: var(--accent-soft) !important;
+  border-color: var(--accent) !important;
+}
+#editor .track-unavailable { background: transparent !important; color: var(--fg-mute) !important; }
+#editor input, #editor select, #editor textarea {
+  background: rgba(0, 0, 0, .38) !important;
+  border-color: var(--line) !important;
+  color: var(--fg) !important;
+}
+#editor button:not(.primary) {
+  background: rgba(255, 255, 255, .05) !important;
+  border-color: var(--line) !important;
+  color: var(--fg-dim) !important;
+}
+#editor button:not(.primary):hover:not(:disabled) {
+  background: var(--bg-hover) !important;
+  color: var(--fg) !important;
+}

@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "stable_script_input.schema.json",
+  "title": "Stable TikTok Script Input",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "creative_id",
+    "production_version",
+    "target_duration_sec",
+    "primary_promise",
+    "target_viewer",
+    "role_contract",
+    "traditional_solution",
+    "traditional_problem",
+    "switch_reason",
+    "visible_benefit",
+    "proof_unit_list",
+    "product_reveal",
+    "result_confirmation",
+    "hook",
+    "cta",
+    "approved_claim_ids"
+  ],
+  "properties": {
+    "creative_id": {"type": "string", "minLength": 1},
+    "production_version": {"type": "string", "pattern": "^Production_V[0-9]{3}$"},
+    "target_duration_sec": {"type": "integer", "minimum": 7, "maximum": 60},
+    "primary_promise": {"type": "string", "minLength": 1},
+    "target_viewer": {"type": "string", "minLength": 1},
+    "role_contract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["identity", "age_range", "life_stage", "relationship_to_camera", "shopping_motivation", "dialogue_assumptions", "locked_traits", "variable_visual_traits", "forbidden_substitutions"],
+      "properties": {
+        "identity": {"type": "string", "minLength": 1},
+        "age_range": {"type": "string", "minLength": 1},
+        "life_stage": {"type": "string", "minLength": 1},
+        "relationship_to_camera": {"type": "string", "minLength": 1},
+        "shopping_motivation": {"type": "string", "minLength": 1},
+        "dialogue_assumptions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "locked_traits": {"type": "array", "minItems": 1, "items": {"type": "string"}, "uniqueItems": true},
+        "variable_visual_traits": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+        "forbidden_substitutions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+      }
+    },
+    "traditional_solution": {"type": ["string", "null"]},
+    "traditional_problem": {"type": ["string", "null"]},
+    "switch_reason": {"type": "string", "minLength": 1},
+    "visible_benefit": {"type": "string", "minLength": 1},
+    "demo_object_list": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "proof_unit_list": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["unit", "visible_action", "changed_state", "claim_id"],
+        "properties": {
+          "unit": {"type": "string", "minLength": 1},
+          "visible_action": {"type": "string", "minLength": 1},
+          "changed_state": {"type": "string", "minLength": 1},
+          "claim_id": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "product_reveal": {"type": "string", "minLength": 1},
+    "result_confirmation": {"type": "string", "minLength": 1},
+    "hook": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["family", "evidence_tier", "first_frame", "spoken_promise", "master_attention_question", "validation_status"],
+      "properties": {
+        "family": {"type": "string", "minLength": 1},
+        "evidence_tier": {"enum": ["A", "B", "C"]},
+        "first_frame": {"type": "string", "minLength": 1},
+        "spoken_promise": {"type": "string", "minLength": 1},
+        "master_attention_question": {"type": "string", "minLength": 1},
+        "validation_status": {"enum": ["APPROVED", "CONDITIONAL", "BLOCKED"]}
+      }
+    },
+    "cta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "destination", "single_action"],
+      "properties": {
+        "mode": {"enum": ["product_link", "profile", "save", "comment", "follow", "none"]},
+        "destination": {"type": ["string", "null"]},
+        "single_action": {"type": ["string", "null"]}
+      }
+    },
+    "approved_claim_ids": {"type": "array", "minItems": 1, "items": {"type": "string"}, "uniqueItems": true},
+    "price_mode": {"enum": ["disabled", "enabled"]},
+    "forbidden_expressions": {"type": "array", "items": {"type": "string"}, "uniqueItems": true}
+  }
+}
+

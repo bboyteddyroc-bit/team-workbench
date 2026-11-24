@@ -1,0 +1,23 @@
+/* Canonical brand palette. Loaded last to supersede earlier monochrome skins. */
+:root{--brand-primary:#101010;--brand-secondary:#23a9bd;--bg-page:var(--brand-primary);--paper:var(--brand-primary);--bg-surface:#191919;--white:#191919;--bg-subtle:#202020;--bg-hover:#292929;--bg-active:#23a9bd26;--fg:#f1f1f1;--ink:#f1f1f1;--fg-dim:#c4c4c4;--fg-mute:#a5a5a5;--muted:#a5a5a5;--fg-invert:#101010;--line:#383838;--line-soft:#2b2b2b;--accent:var(--brand-secondary);--accent-hi:#59c8d7;--accent-hover:#43bed0;--accent-soft:#23a9bd20;--accent-line:#23a9bd77;--focus:0 0 0 2px #23a9bd88}
+body{background:var(--bg-page)!important;color:var(--fg)}
+.sidebar,.topbar,.auth-intro{background:#111111!important;border-color:var(--line)!important}
+.panel,.queue,.material-card,.task,.account-row,.member-row,.audit-row,dialog,.auth-form,.unified-references{background:var(--bg-surface)!important;border-color:var(--line)!important;color:var(--fg)}
+input,select,textarea,select option{background:#121212!important;border-color:var(--line)!important;color:var(--fg)!important}
+.primary,#editor button.primary,.brand-mark,#home-enter{background:var(--accent)!important;color:var(--fg-invert)!important}.primary:hover:not(:disabled),#home-enter:hover{background:var(--accent-hover)!important}
+.secondary,.upload-button,.account-controls button,.task-actions button,.task-actions a,.library-picker-button{background:#242424!important;border-color:var(--line)!important;color:var(--fg)!important}
+.secondary:hover:not(:disabled),.task-actions button:hover{background:var(--bg-hover)!important}
+.queue-heading,.pool-summary,.connection-note,.workspace-bar,.mode-switch,.mode-card,.reference-card,.asset-card,.voice-card,.reference-library-dialog>footer{background:#1c1c1c!important;border-color:var(--line)!important;color:var(--fg-dim)!important}
+.mode-card.selected,.mode-switch .selected{background:var(--accent-soft)!important;border-color:var(--accent)!important;color:var(--fg)!important}
+#editor:not([hidden]),#editor .edit-workspace{background:var(--bg-page)!important}#editor .edit-library,#editor .edit-properties,#editor .edit-timeline,#editor .editor-commandbar,#editor .editor-panel-tabs{background:var(--bg-surface)!important;border-color:var(--line)!important}
+.home-heading em,.text-button{color:var(--accent-hi)}.home-card button,.reference-selected-card,.reference-masonry-card,.hub-voice-note{background:#1c1c1c!important;border-color:var(--line)!important}.reference-masonry-card.is-selected{border-color:var(--accent)!important;box-shadow:0 0 0 1px var(--accent)}.reference-masonry-card.is-selected>button{background:var(--accent)!important;color:var(--fg-invert)!important}
+.nav.active{background:var(--accent-soft)!important;color:var(--accent-hi)!important}.hvn-bars i{background:linear-gradient(var(--accent-hi),var(--accent))}.hvn-play span{background:var(--accent)}
+.beui-tabs,#editor .beui-tabs{position:relative!important;isolation:isolate;display:flex;align-items:center;flex-wrap:nowrap!important;gap:4px!important;padding:4px!important;border:1px solid var(--line)!important;border-radius:999px!important;background:#121212!important;overflow-x:auto;scrollbar-width:none;min-height:42px;margin-bottom:10px}
+.beui-tabs::-webkit-scrollbar{display:none}.beui-tabs>.hub-selection-indicator{display:none!important}
+.beui-tabs[hidden],#editor .beui-tabs[hidden]{display:none!important}
+.beui-tabs>button,#editor .beui-tabs>button{position:relative!important;z-index:1;flex-shrink:0;min-height:34px!important;padding:7px 15px!important;border:0!important;border-radius:999px!important;white-space:nowrap;font-size:13px!important;font-weight:550;background:transparent!important;color:var(--fg-mute)!important;box-shadow:none!important;transition:color .18s}
+.beui-tabs>button.active,.beui-tabs>button[aria-selected=true],.beui-tabs>button[aria-pressed=true],#editor .beui-tabs>button.active,#editor .beui-tabs>button[aria-selected=true]{color:var(--fg-invert)!important}
+.beui-tabs>button:hover:not(.active):not([aria-selected=true]):not([aria-pressed=true]){color:var(--fg)!important}.beui-tabs>button:after,.beui-tabs>button:before{display:none!important}
+.beui-tab-indicator{position:absolute;left:0;top:0;z-index:0;pointer-events:none;border-radius:999px;background:var(--accent);box-shadow:0 2px 8px #0003}
+.beui-tabs>button:focus-visible{outline:2px solid var(--accent-hi)!important;outline-offset:-2px}
+@media(prefers-reduced-motion:reduce){.beui-tabs>button{transition:none}}

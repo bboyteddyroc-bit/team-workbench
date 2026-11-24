@@ -1,0 +1,46 @@
+/* GlassSurface 无显式图片 backdrop 时的透明玻璃层，适配中台普通 DOM 背景。 */
+.hub-assistant .assistant-launch.glass-surface {
+  position: fixed;
+  right: 24px;
+  bottom: 22px;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  box-sizing: border-box;
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 1px solid rgba(255,255,255,.28);
+  border-radius: 50%;
+  background: rgba(255,255,255,.07);
+  color: #fff;
+  -webkit-backdrop-filter: blur(12px) saturate(1.4) brightness(1.04);
+  backdrop-filter: blur(12px) saturate(1.4) brightness(1.04);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.38), inset 0 -1px 0 rgba(255,255,255,.10), inset 0 0 12px 3px rgba(255,255,255,.10), 0 6px 24px rgba(0,0,0,.25);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.hub-assistant .assistant-launch.glass-surface:hover { background: rgba(255,255,255,.12); }
+.hub-assistant .assistant-launch.glass-surface.is-dragging { cursor: grabbing; }
+/* 打开面板时不遮挡对话输入区；关闭后仍回到拖放位置。 */
+.hub-assistant:has(.assistant-panel:not([hidden])) .assistant-launch.glass-surface { visibility: hidden; }
+.assistant-launch .glass-surface__sheen, .assistant-launch .glass-surface__rim {
+  position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+}
+.assistant-launch .glass-surface__sheen {
+  background: linear-gradient(135deg,rgba(255,255,255,.22),transparent 42%,transparent 64%,rgba(255,255,255,.08));
+}
+.assistant-launch .glass-surface__rim {
+  padding: 2px;
+  background: linear-gradient(150deg,rgba(255,255,255,.38),rgba(255,255,255,.03) 50%,rgba(255,255,255,.20));
+  -webkit-mask: linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+.assistant-orb-mark { position: relative; z-index: 1; font-size: 25px; line-height: 1; text-shadow: 0 1px 5px rgba(0,0,0,.55); pointer-events: none; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hub-assistant .assistant-launch.glass-surface { background: rgba(40,40,40,.72); }
+}

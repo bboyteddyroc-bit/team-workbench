@@ -1,0 +1,38 @@
+/* Secondary voice navigation; keep the existing audio and generation controls. */
+#editor #voice-panel .voice-subtabs{display:flex;flex-wrap:wrap;gap:4px;min-height:36px;margin:-2px 0 16px;padding:0;background:transparent}
+#editor #voice-panel .voice-subtabs button{flex:0 1 auto;min-height:34px;padding:0 10px;font-size:11.5px;white-space:nowrap}
+#editor #voice-panel .voice-selection-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 20px}
+#editor #voice-panel .voice-selection-row p{margin:0;overflow-wrap:anywhere;color:var(--fg)}
+#editor #voice-panel .voice-selection-row button{flex-shrink:0;min-height:32px;padding:4px 10px;font-size:12px}
+#editor #voice-panel #voice-text{min-height:160px}
+#editor #voice-panel #voice-library>h3{display:none}
+#editor #voice-panel .voice-library-note{font-size:12px;color:var(--muted);margin:0 0 14px}
+#editor #voice-panel #voice-list{max-height:none;overflow:visible}
+#editor #voice-panel #voice-config-notice{margin-top:18px;border-top:1px solid var(--line);padding-top:10px}
+#editor #voice-panel #voice-compose,#editor #voice-panel #voice-library{min-width:0}
+#editor #voice-panel #voice-generate{width:100%;margin-top:12px}
+#editor #voice-panel #voice-job-history{width:100%;margin:12px 0}
+
+#editor #editor-tool-audio>.editor-panel-tabs{display:flex;gap:4px;background:transparent;margin-bottom:16px;min-height:36px;padding:0}
+#editor #editor-tool-audio>.editor-panel-tabs button{min-height:34px;padding:0 10px}
+#editor .audio-upload-button{display:inline-flex;align-items:center;position:relative;padding:8px 14px;border:1px solid var(--line);border-radius:8px;cursor:pointer;margin-bottom:12px}
+#editor .audio-upload-button input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer}
+#editor .audio-upload-button[hidden]{display:none}
+#editor .audio-asset-list{display:grid;gap:12px;padding:12px 0}
+#editor .audio-asset-row{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:10px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+#editor .audio-asset-row strong{grid-column:1/-1;font-size:12px;overflow-wrap:anywhere}
+#editor .audio-asset-row audio{width:100%;min-width:0;height:36px}
+#editor .audio-asset-row button{font-size:12px;white-space:nowrap}
+#editor .audio-track-settings{margin-top:20px;border-top:1px solid var(--line);padding-top:14px}
+#editor .audio-track-settings>summary{cursor:pointer;color:var(--muted);font-size:12px;margin-bottom:12px}
+
+/* Audio assets share the video library's dated two-column card layout. */
+#editor #editor-audio-assets .edit-day-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 10px 10px}
+#editor #editor-audio-assets .audio-asset-row{display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:0;padding:7px;border:1px solid var(--line-soft);background:var(--bg-subtle)}
+#editor .audio-asset-preview{display:flex;flex-direction:column;justify-content:center;min-height:150px;background:var(--bg-page);border-radius:6px;padding:10px;overflow:hidden}
+#editor .audio-asset-preview>svg{width:100%;height:72px;color:var(--accent);opacity:.65}
+#editor .audio-asset-preview .hub-voice-note{min-width:0;width:100%;box-sizing:border-box;margin:0}
+#editor .audio-asset-preview .hvn-speed{display:none}
+#editor #editor-audio-assets .audio-asset-row>strong{font-size:12px;line-height:1.6;min-height:38px}
+#editor #editor-audio-assets .audio-asset-row>button{width:100%;min-height:30px}
+#editor #editor-audio-assets .edit-day-summary{padding:12px 10px;cursor:pointer}

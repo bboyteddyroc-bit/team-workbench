@@ -1,0 +1,33 @@
+/* beUI Project Folder interaction, adapted for the hub's existing asset DOM. */
+.asset-folders{display:grid;grid-template-columns:repeat(auto-fit,minmax(195px,1fr));gap:24px 18px;margin:10px 0 36px}
+.asset-folder{display:flex;flex-direction:column;align-items:flex-start;min-width:0;padding:16px;background:transparent!important;border:1px solid transparent!important;color:#eee!important;text-align:left;border-radius:14px;transition:background .2s,border-color .2s}
+.asset-folder:hover,.asset-folder:focus-visible{background:#ffffff06!important;border-color:#ffffff20!important}.asset-folder strong{font-size:15px;font-weight:550;margin-top:14px}.folder-count{font-size:12px;color:#999;margin-top:5px}
+.folder-art{display:block;width:100%;height:146px;position:relative;perspective:800px;isolation:isolate}.folder-back{position:absolute;inset:26px 5px 0;background:#333;border:1px solid #555;border-radius:9px}.folder-back:before{content:'';position:absolute;width:44%;height:15px;top:-14px;left:-1px;background:#333;border:1px solid #555;border-bottom:0;border-radius:7px 12px 0 0}
+.folder-fan{position:absolute;inset:0;z-index:1}.folder-sheet{position:absolute;left:50%;top:28px;width:72px;height:91px;border:1px solid #777;border-radius:6px;background:#ddd;color:#333;overflow:hidden;display:grid;place-items:center;transform:translateX(calc(-50% + var(--offset)*7px)) translateY(calc(var(--order)*-2px)) rotate(calc(var(--offset)*2deg));transition:transform .4s cubic-bezier(.2,.8,.2,1)}.folder-sheet img{width:100%;height:100%;object-fit:cover}.folder-filetype{font-size:10px;font-weight:650;letter-spacing:.08em}
+.folder-front{position:absolute;inset:57px 0 0;border:1px solid #666;border-radius:9px;background:linear-gradient(#474747,#343434);z-index:2;transform-origin:bottom;transition:transform .4s cubic-bezier(.2,.8,.2,1);display:grid;place-items:center}.folder-empty{font-size:12px;color:#bbb}
+.asset-folder:hover .folder-sheet,.asset-folder:focus-visible .folder-sheet{transform:translateX(calc(-50% + var(--offset)*27px)) translateY(-23px) rotate(calc(var(--offset)*8deg))}.asset-folder:hover .folder-front,.asset-folder:focus-visible .folder-front{transform:rotateX(-24deg)}
+.folder-browser{border-top:1px solid #333;padding-top:24px}.folder-overlay{width:min(1180px,calc(100vw - 48px));max-width:none;max-height:calc(100dvh - 64px);padding:24px;border:1px solid #454545;border-radius:16px;overflow:auto;background:#191919}.folder-overlay::backdrop{background:#000b}.folder-overlay-header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px}.folder-overlay-header h2{margin:0}.folder-overlay .materials-grid{margin:22px 0}.folder-overlay[open]{animation:folder-expand .24s ease-out}.folder-overlay .material-card{min-width:0}
+@keyframes folder-expand{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:none}}
+@media(max-width:600px){.asset-folders{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.asset-folder{padding:8px}.folder-sheet{width:54px}.folder-overlay{width:calc(100vw - 20px);padding:14px;max-height:calc(100dvh - 24px)}}
+@media(prefers-reduced-motion:reduce){.folder-sheet,.folder-front,.asset-folder{transition:none}.folder-overlay[open]{animation:none}}
+
+/* Centered folder collection: the asset browser lives inside the overlay only. */
+#materials:not([hidden]){display:flex;flex-direction:column;min-height:calc(100dvh - 52px);padding:32px clamp(20px,3vw,48px)!important}
+#materials>.page-heading{text-align:center;justify-content:center;margin:0 0 24px}
+#materials>.page-heading p{margin:10px auto 0;max-width:52ch}
+#materials-content{flex:1;display:flex;flex-direction:column;justify-content:center;min-width:0}
+.folder-browser[hidden]{display:none!important}
+.asset-folders{width:min(100%,1120px);margin:24px auto 60px;display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:24px;row-gap:40px;align-items:start;padding:20px 12px}
+.asset-folder{grid-column:span 3;align-items:center;text-align:center;width:100%;max-width:240px;justify-self:center;padding:16px 12px;background:transparent!important;border-color:transparent!important}
+.asset-folder:nth-child(1){grid-column:2 / span 3;transform:translateY(12px) rotate(-3deg)}
+.asset-folder:nth-child(2){grid-column:5 / span 3;transform:translateY(-16px) rotate(2deg)}
+.asset-folder:nth-child(3){grid-column:8 / span 3;transform:translateY(22px) rotate(-2deg)}
+.asset-folder:nth-child(4){grid-column:1 / span 3;transform:translateY(6px) rotate(2deg)}
+.asset-folder:nth-child(5){grid-column:4 / span 3;transform:translateY(30px) rotate(-2deg)}
+.asset-folder:nth-child(6){grid-column:7 / span 3;transform:translateY(0) rotate(3deg)}
+.asset-folder:nth-child(7){grid-column:10 / span 3;transform:translateY(18px) rotate(-3deg)}
+.asset-folder:hover,.asset-folder:focus-visible{background:transparent!important;border-color:transparent!important}
+.asset-folder strong,.asset-folder .folder-count{position:relative;z-index:3}
+.asset-folder strong{margin-top:20px;font-size:15px}.folder-art{height:150px}
+@media(max-width:1000px){.asset-folders{grid-template-columns:repeat(3,minmax(0,1fr));gap:30px 20px;max-width:760px}.asset-folder:nth-child(n){grid-column:auto;transform:none}.asset-folder:nth-child(3n+2){transform:translateY(18px)}.asset-folder:last-child{grid-column:2}}
+@media(max-width:600px){#materials:not([hidden]){padding:24px 16px!important}.asset-folders{grid-template-columns:repeat(2,minmax(0,1fr));gap:20px 12px;margin:10px auto 32px;padding:12px 0}.asset-folder:nth-child(n){grid-column:auto;transform:none}.asset-folder:nth-child(even){transform:translateY(16px)}.folder-art{height:130px}.asset-folder{padding:12px 8px}.asset-folder strong{font-size:14px}}

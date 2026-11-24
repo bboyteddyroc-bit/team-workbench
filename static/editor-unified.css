@@ -1,0 +1,258 @@
+/* Unified editor workspace for the user's 2355×1310 desktop. */
+body:has(#editor:not([hidden])){overflow:hidden}
+.shell:has(#editor:not([hidden])){height:100dvh;overflow:hidden}
+main:has(#editor:not([hidden])){display:flex;flex-direction:column;min-width:0;height:100dvh;min-height:0;overflow:hidden}
+main:has(#editor:not([hidden]))>.topbar,main:has(#editor:not([hidden]))>.workspace-bar{flex:none}
+.shell main #editor:not([hidden]){display:grid;grid-template-rows:58px minmax(240px,1fr) clamp(200px,var(--timeline-h,24vh),calc(100% - 298px));flex:1;gap:0;width:100%;max-width:none;height:auto;min-height:0;margin:0;padding:0;overflow:hidden;background:#edf1ef}
+/* The preview column must own the leftover height, so the 9:16 frame can grow as tall as the workspace allows. */
+#editor:not([hidden])>.edit-workspace,#editor:not([hidden])>.edit-timeline{height:auto!important;min-height:0!important}
+#editor:not([hidden])>.edit-timeline{resize:none!important;overflow:hidden!important;min-height:0!important;max-height:none!important}
+#editor:not([hidden])>.edit-error[hidden]{display:none!important}
+
+#editor .editor-commandbar{display:flex;align-items:center;gap:20px;min-width:0;padding:8px 16px;background: var(--bg-surface);border-bottom:1px solid var(--line)}
+#editor .editor-commandbar .page-heading{display:flex;align-items:center;flex:none;margin:0;padding:0}
+#editor .editor-commandbar .page-heading>div:first-child{display:block}
+#editor .editor-commandbar .page-heading h1{font-size:16px;letter-spacing:-.01em}
+#editor .editor-commandbar .page-heading p{display:none}
+#editor .editor-commandbar .edit-actions{order:3;margin-left:auto;gap:8px;flex-wrap:nowrap}
+#editor .editor-commandbar .edit-actions button{min-height:32px;white-space:nowrap}
+#editor .editor-commandbar .edit-project-bar{display:flex;align-items:center;flex:1;gap:12px;min-width:0;margin:0;padding:0;border:0;background:transparent}
+#editor .editor-commandbar .edit-project-bar label{display:flex;align-items:center;gap:6px;min-width:0;max-width:320px;margin:0;font-size:11px}
+#editor .editor-commandbar .edit-project-bar input,#editor .editor-commandbar .edit-project-bar select{height:30px;min-width:120px}
+#editor .editor-commandbar #edit-title{width:min(20vw,240px)}
+#editor .editor-commandbar #edit-projects{width:min(18vw,210px)}
+#editor .editor-commandbar #edit-save-state{margin:0;white-space:nowrap;padding:0}
+#editor>#edit-error{position:absolute;z-index:20;top:64px;left:50%;transform:translateX(-50%);max-width:720px;box-shadow:var(--shadow-2)}
+
+#editor .edit-workspace{display:grid!important;grid-template-columns:clamp(300px,25vw,400px) minmax(0,1fr) clamp(290px,21vw,360px);grid-template-rows:minmax(0,1fr)!important;gap:0;height:auto;min-height:0;border:0;border-radius:0;overflow:hidden;background:#151b19}
+/* Side panels scroll internally, otherwise the thumbnail grid inflates the row and squeezes the preview. */
+#editor .edit-library,#editor .edit-properties{display:flex;flex-direction:column;gap:0;min-width:0;min-height:0;max-height:100%;padding:0;overflow:hidden;border:0;border-radius:0;background: var(--bg-surface)}
+#editor .edit-library>.editor-tool-panel,#editor .edit-properties>.editor-tool-panel,#editor .edit-properties>.editor-side-panel,#editor #edit-library-body{flex:1 1 auto;min-height:0;overflow:auto}
+#editor .edit-library,#editor .edit-properties{position:relative}
+#editor .editor-column-resizer{position:absolute;top:0;bottom:0;width:10px;z-index:15;cursor:col-resize;touch-action:none;outline:none}
+#editor .editor-column-resizer--left{right:0}
+#editor .editor-column-resizer--right{left:0}
+#editor .editor-column-resizer:hover,#editor .editor-column-resizer:focus-visible,#editor .editor-column-resizer.dragging{background:rgba(35,169,189,.4)}
+#editor .edit-library{border-right:1px solid var(--line)}
+#editor .edit-properties{border-left:1px solid var(--line)}
+#editor .edit-preview{position:relative;display:flex;flex-direction:column;align-self:stretch;min-width:0;min-height:0;height:100%;padding:12px 12px 10px;box-sizing:border-box;border:0;border-radius:0;background:#151b19;overflow:hidden}
+#editor .edit-workspace .edit-preview{background:#191919!important}
+#editor .editor-preview-viewport{position:relative;inset:auto;display:grid;place-items:center;flex:1 1 auto;width:100%;height:100%;min-width:0;min-height:0;overflow:hidden;background:transparent}
+#editor .edit-preview-dock{position:relative;inset:auto;flex:0 0 auto;z-index:4;display:flex;flex-direction:column;gap:6px;margin-top:10px}
+#editor .edit-preview-dock .edit-path{display:none}
+
+#editor .editor-panel-tabs{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;flex:none;min-height:42px;padding:0 8px;border-bottom:1px solid var(--line);background:#fbfcfb}
+#editor .editor-panel-tabs button{position:relative;min-width:0;min-height:42px;padding:0 8px;border:0;border-radius:0;background:transparent;color:var(--fg-mute);font-size:12px;font-weight:600}
+#editor .editor-panel-tabs button:hover:not(:disabled){background:transparent;color:var(--fg)}
+#editor .editor-panel-tabs button.active{color:var(--accent-hi)}
+#editor .editor-panel-tabs button.active::after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:2px;background:var(--accent);border-radius:2px 2px 0 0}
+#editor .editor-tool-panel,#editor .editor-side-panel,#editor #editor-base-panel,#editor #editor-repair-panel,#editor #editor-versions-panel{flex:1;min-height:0;overflow:auto;padding:14px;scrollbar-gutter:stable}
+#editor .editor-tool-panel[hidden],#editor .editor-side-panel[hidden],#editor #editor-base-panel[hidden],#editor #editor-repair-panel[hidden],#editor #editor-versions-panel[hidden]{display:none!important}
+
+#editor #editor-tool-materials>.edit-section-heading{padding-bottom:10px}
+#editor #editor-tool-materials>.fine{margin:8px 0;color:var(--fg-mute)}
+#editor #editor-material-tabs{margin:8px 0;grid-template-columns:repeat(4,1fr)}
+#editor #edit-library-list{display:block;max-height:none;margin:0;padding:0;overflow:visible}
+#editor #edit-library-list .edit-day{margin:0 0 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg-surface)}
+#editor #edit-library-list .edit-day-summary{display:flex;align-items:baseline;gap:6px;padding:9px 12px;cursor:pointer;list-style:none;font-size:12px;font-variant-numeric:tabular-nums}
+#editor #edit-library-list .edit-day-summary::-webkit-details-marker{display:none}
+#editor #edit-library-list .edit-day-body{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding:0 10px 10px}
+#editor .edit-source{min-height:0;padding:7px;border:1px solid var(--line-soft);background:var(--bg-subtle)}
+#editor .edit-source video{display:block;width:100%;height:148px;object-fit:cover;border-radius:5px;background:#121715}
+#editor .edit-source .source-add{top:10px;right:10px;width:30px;height:30px;min-width:30px;min-height:30px;font-size:18px}
+
+#editor .edit-preview #edit-stage{container-type:inline-size!important;flex:none;align-self:center;justify-self:center;min-height:0;min-width:0;max-width:100%;max-height:100%;margin:0;border:0;background:#0c100f}
+#editor .edit-preview #edit-stage.portrait{aspect-ratio:9/16}
+#editor .edit-preview #edit-stage.landscape,#editor .edit-preview #edit-stage.square{aspect-ratio:9/16}
+/* Never crop the frame: the 9:16 window already matches vertical material. */
+#editor #multitrack-canvas,#editor .edit-preview #edit-stage video{object-fit:contain!important}
+/* Controls are normal-flow children of the dock, so they can never cover the frame. */
+#editor .edit-preview .edit-transport{position:static;display:flex;align-items:center;gap:8px;height:38px;min-height:38px;margin:0;padding:0;border:0;flex-wrap:nowrap;color:#d8e3de;background:transparent}
+#editor .edit-preview .edit-transport button{min-height:28px;padding:4px 5px;white-space:nowrap;border-color: var(--line);background: var(--bg-subtle);color:#e6efeb}
+#editor .edit-preview .edit-transport{gap:4px}
+#editor .edit-preview #edit-clock{white-space:nowrap;font-size:10px}
+#editor .edit-preview-dock > .elastic-slider{order:-1;flex:none;width:100%}
+#editor .edit-preview-dock > #edit-seek{position:static!important;inset:auto!important;order:-1;width:100%;height:18px!important;margin:0}
+#editor .edit-preview-dock .edit-ratio-label{display:flex;align-items:center;gap:8px;justify-content:flex-end;font-size:11.5px;color:#9fb0aa}
+#editor .edit-preview-dock .edit-ratio-label select{height:28px;min-width:88px}
+#editor .edit-preview-dock .edit-empty-note{display:none;margin:0;padding:10px 12px;border:1px dashed #2c3a35;border-radius:8px;color:#7f8f89;font-size:12px;line-height:1.6;text-align:center}
+#editor .edit-preview>.fine{display:none}
+
+#editor .edit-properties h2,#editor .edit-properties h3{font-size:13px;color:var(--fg)}
+#editor .edit-properties #edit-clip-fields{display:flex;flex-direction:column;gap:10px}
+#editor .edit-properties #edit-clip-fields label{margin:0}
+#editor .edit-properties .edit-two{gap:8px}
+#editor .edit-properties .edit-order{margin:0}
+#editor #editor-exports-panel{padding:0}
+#editor #editor-exports-panel .edit-exports{display:block!important;margin:0;padding:14px;border:0;border-radius:0;background:transparent}
+#editor #editor-exports-panel .edit-section-heading{display:none}
+
+#editor .edit-timeline{position:relative;display:flex;flex-direction:column;gap:6px;min-height:0;height:auto;margin:0;padding:12px 0 0;border:0;border-top:1px solid var(--line);border-radius:0;background: var(--bg-surface);overflow:hidden}
+#editor .timeline-resizer{position:absolute;top:0;left:0;right:0;z-index:20;height:12px;display:flex;align-items:center;justify-content:center;cursor:row-resize;touch-action:none;border-radius:0 0 6px 6px}
+#editor .timeline-resizer::before{content:"";width:64px;height:4px;border-radius:999px;background:var(--line-strong,#c6d2cd);box-shadow:0 0 0 3px var(--bg-surface);transition:width .16s ease,background .16s ease}
+#editor .timeline-resizer:hover::before,#editor .timeline-resizer:focus-visible::before,#editor .timeline-resizer.dragging::before{width:104px;background:var(--accent,#16805f)}
+#editor .timeline-resizer:focus-visible{outline:2px solid var(--accent,#16805f);outline-offset:-3px;border-radius:7px}
+#editor .edit-timeline #edit-clips.drop-target{outline:2px dashed var(--accent,#16805f);outline-offset:-3px;background:rgba(22,128,95,.08);border-radius:6px}
+#editor #editor-tool-materials.audio-drop-active{outline:2px dashed var(--accent,#16805f);outline-offset:-6px;background:rgba(22,128,95,.06);border-radius:10px}
+#editor .audio-asset-row strong[draggable="true"]{cursor:grab}#editor .audio-asset-row strong[draggable="true"]:active{cursor:grabbing}
+#editor .edit-timeline>.edit-section-heading{min-height:30px;padding:0 14px;border:0;flex-wrap:nowrap}
+#editor .edit-timeline>.edit-section-heading .fine{display:none}
+#editor .edit-timeline .timeline-zoom{margin-left:auto}
+#editor .edit-timeline .timeline-zoom input{width:110px}
+#editor .edit-timeline .clip-toolbar{flex:none;min-height:34px;padding:4px 14px;border-top:1px solid var(--line-soft);border-bottom:1px solid var(--line-soft)}
+#editor .edit-timeline .clip-toolbar button{min-height:28px;padding:0 9px}
+#editor .edit-timeline .track-scroll{flex:1;min-height:0;max-height:none;border:0;border-radius:0;background: transparent}
+#editor .edit-timeline .track-row{min-height:46px}
+#editor .edit-timeline .track-row{grid-template-columns:104px minmax(0,1fr)}
+#editor .edit-timeline .track-label{position:sticky;left:0;z-index:4;width:104px;background: var(--bg-surface);border-right:1px solid var(--line);font-weight:600}
+#editor .edit-timeline #edit-clips{min-height:70px;padding:5px 3px}
+#editor .edit-timeline .edit-clip{padding:5px;min-height:60px}
+#editor .edit-timeline .timeline-preview{display:block;width:100%;height:40px;object-fit:cover;border-radius:3px;background:#17201d}
+
+#editor .edit-bottom{display:none!important}
+#editor>.edit-exports{display:none!important}
+#editor #editor-tool-captions>.edit-section-heading{padding-bottom:10px}
+#editor #editor-tool-captions>.fine{margin:8px 0}
+#editor #editor-tool-text>.edit-section-heading{padding-bottom:12px}
+#editor #editor-tool-text>.edit-section-heading .fine{max-width:220px;text-align:right}
+#editor #editor-tool-text>.fine{margin:10px 0 0}
+#editor #editor-tool-text .text-panel{margin:0;padding:0;border:0;border-radius:0;background:transparent}
+#editor .edit-caption-row{grid-template-columns:minmax(110px,1fr) 54px 54px 46px;gap:6px;padding:7px 0}
+#editor .edit-caption-row>.text-button{white-space:nowrap;align-self:center;font-size:12px;padding:6px 0}
+#editor .edit-caption-row textarea{min-height:54px}
+#editor #editor-tool-audio>h2{font-size:14px;margin-bottom:12px}
+#editor #editor-tool-audio label{display:flex;flex-direction:column;gap:6px;margin:12px 0;font-size:12px}
+#editor .editor-detached-audio{margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}
+#editor .editor-detached-audio h2{font-size:14px;margin-bottom:6px}
+
+#editor #editor-tool-voice{padding:0}
+#editor #editor-tool-voice .voice-panel{padding:14px;border:0;border-radius:0;background:transparent}
+#editor #editor-tool-voice .voice-panel>h2{font-size:14px}
+#editor #editor-tool-voice .voice-panel>h3{margin-top:14px!important}
+#editor #editor-tool-voice #voice-list{max-height:none;overflow:visible}
+#editor #editor-tool-voice .voice-card{background:var(--bg-subtle);border-color:var(--line-soft)}
+#editor #editor-tool-voice .voice-filters{display:grid;grid-template-columns:1fr 1fr}
+#editor #editor-tool-voice .voice-filters input[type=search]{grid-column:1/-1}
+
+@media(max-width:1500px){
+  #editor .edit-workspace{grid-template-columns:280px minmax(360px,1fr) 280px}
+  #editor .editor-commandbar .edit-project-bar label{font-size:0;gap:0}
+  #editor .editor-commandbar .edit-project-bar label input,#editor .editor-commandbar .edit-project-bar label select{font-size:12px}
+}
+@media(max-width:1180px){
+  body:has(#editor:not([hidden])){overflow:auto}
+  main:has(#editor:not([hidden])){display:block;height:auto;overflow:auto}
+  #editor:not([hidden]){display:flex;height:auto;min-height:0;overflow:visible}
+  #editor .editor-commandbar{flex-wrap:wrap;height:auto}
+  #editor .editor-commandbar .edit-project-bar{order:3;width:100%}
+  #editor .edit-workspace{grid-template-columns:260px minmax(360px,1fr);min-height:620px}
+  #editor .edit-properties{grid-column:1/-1;min-height:320px;border-left:0;border-top:1px solid var(--line)}
+  #editor .edit-timeline{height:430px;min-height:430px}
+}
+@media(max-width:820px){
+  #editor .edit-workspace{display:flex;flex-direction:column}
+  #editor .edit-library,#editor .edit-properties{min-height:420px}
+  #editor .edit-preview{min-height:560px}
+  #editor .edit-timeline{height:460px}
+}
+
+#editor .timeline-playhead{width:12px;margin-left:-5px;background:transparent;pointer-events:auto;cursor:ew-resize;touch-action:none;z-index:5;border-left:0}
+#editor .timeline-playhead:after{content:'';position:absolute;left:5px;top:0;bottom:0;width:2px;background:var(--accent)}
+#editor .timeline-playhead:before{left:1px}
+#editor .track-selected{outline:2px solid var(--accent);outline-offset:-2px}
+#editor .timeline-block{cursor:pointer}
+
+/* 变速面板：倍率预设与数值同宽排列，结果行右对齐数字。 */
+#editor #speed-fields{display:flex;flex-direction:column;gap:10px;margin:10px 0 0;padding:0;border:0}
+#editor #speed-fields:disabled{opacity:.55}
+#editor .speed-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+#editor .speed-presets button{min-height:30px;padding:0 4px;font-size:12px;font-variant-numeric:tabular-nums}
+#editor .speed-presets button.active{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent-hi)}
+#editor #speed-result{margin:0;font-size:12px;color:var(--fg);font-variant-numeric:tabular-nums}
+#editor #speed-reset{align-self:flex-start;padding:0;font-size:12px}
+
+/* 文本栏：字幕的文字与样式集中在这里编辑 */
+#editor .edit-caption-row>.caption-preview{display:grid;gap:2px;text-align:left;background:transparent;border:1px solid var(--line);border-radius:8px;padding:6px 9px;min-width:0;cursor:pointer;color:inherit;font:inherit}
+#editor .edit-caption-row>.caption-preview:hover{border-color:var(--accent)}
+#editor .edit-caption-row.selected{background:rgba(255,255,255,.035)}
+#editor .edit-caption-row.selected>.caption-preview{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+#editor .caption-preview .caption-index{font-size:11px;opacity:.55;letter-spacing:.04em}
+#editor .caption-preview .caption-text{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#editor .caption-preview .caption-style-note{font-size:11px;opacity:.55;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#editor .text-panel{display:grid;gap:10px;margin:10px 0 14px;padding:12px;border:1px solid var(--line);border-radius:12px}
+#editor .text-panel>label,#editor .text-panel .text-row>label{display:grid;gap:var(--editor-field-gap,5px);font-size:var(--editor-label-size,12px);margin:0}
+#editor .text-panel>label>textarea{min-height:66px;resize:vertical}
+#editor .text-panel .text-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
+#editor .text-panel .text-slider{display:flex;gap:8px;align-items:center}
+#editor .text-panel .text-slider input[type=range]{flex:1;min-width:0}
+#editor .text-panel .text-slider input[type=number]{width:78px}
+#editor .text-panel .text-align{display:flex;gap:6px;flex-wrap:wrap}
+#editor .text-panel .text-align>button{min-width:40px;padding:6px 10px}
+#editor .text-panel .text-align>button[aria-pressed=true]{border-color:var(--accent);background:rgba(255,255,255,.10);color:var(--accent)}
+#editor .text-panel .text-align>select{flex:1;min-width:104px}
+#editor .text-panel .text-panel-empty{margin:0}
+#editor #edit-caption .edit-caption-line{white-space:pre-wrap;overflow-wrap:anywhere}
+
+/* Preview caption drag: free-positioned layer and grab affordance */
+#editor #edit-caption-free{position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;font-size:4.5cqw;line-height:1.4;color:#fff}
+#editor #edit-caption .edit-caption-line,#editor #edit-caption-free .edit-caption-line{pointer-events:auto;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none;border-radius:4px}
+#editor #edit-caption-free .edit-caption-line{position:absolute;width:max-content;white-space:pre-wrap;overflow-wrap:anywhere}
+#editor .edit-caption-line.selected{outline:1px dashed rgba(255,255,255,.75);outline-offset:3px}
+#editor .edit-caption-line:active{cursor:grabbing}
+#editor .text-scope-note{margin:-2px 0 6px}
+#editor .text-place{align-items:center;justify-content:space-between;gap:8px}
+#editor .text-place .fine{margin:0}
+
+/* Animation categories are independent of the main editor tab strip. */
+#editor .edit-properties>.editor-panel-tabs{display:flex;overflow-x:auto;scrollbar-width:thin;padding:0 4px}
+#editor .edit-properties>.editor-panel-tabs>button{flex:1 1 auto;min-width:0;padding:0 6px;font-size:11.5px;white-space:nowrap}
+#editor #editor-tool-animation .editor-panel-tabs{display:flex;flex-wrap:wrap;gap:4px;min-height:36px;margin:-2px 0 16px;padding:0;background:transparent}
+#editor #editor-tool-animation .editor-panel-tabs button{flex:0 1 auto;min-height:34px;padding:0 10px;font-size:11.5px;white-space:nowrap}
+#editor #editor-tool-animation .animation-category[hidden]{display:none!important}
+#editor #editor-tool-animation .animation-category .fine{margin:8px 0 12px;line-height:1.7}
+#editor #editor-tool-animation .animation-status{padding:10px 12px;border:1px solid var(--line);border-radius:8px;color:var(--fg-mute);font-size:12px;line-height:1.6}
+
+/* 字幕效果（字幕模板）：分类芯片 + 缩略图卡片。缩略图用真实字体/颜色/描边绘制。 */
+#editor .subtitle-effects{display:flex;flex-direction:column;gap:10px}
+#editor .effect-groups{display:flex;flex-wrap:wrap;gap:4px}
+#editor .effect-chip{min-height:26px;padding:0 9px;border:1px solid transparent;border-radius:999px;background:var(--bg-subtle);color:var(--fg-dim);font-size:11.5px;cursor:pointer}
+#editor .effect-chip:hover{border-color:var(--accent-line);color:var(--fg)}
+#editor .effect-chip[aria-pressed="true"]{background:var(--accent)!important;border-color:var(--accent)!important;color:var(--fg-invert)!important;font-weight:600}
+#editor .effect-hint{margin:0;color:var(--fg-mute);font-size:11.5px;line-height:1.6}
+#editor .effect-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#editor .effect-card{position:relative;border:1px solid var(--line);border-radius:10px;background:var(--bg-subtle);overflow:hidden}
+#editor .effect-card:hover{border-color:var(--accent-line)}
+#editor .effect-card.active{border-color:var(--accent)!important}
+#editor .effect-card .effect-apply{display:flex;flex-direction:column;align-items:stretch;gap:0;width:100%;padding:0;border:0;border-radius:0;background:transparent!important;cursor:pointer;text-align:left}
+#editor .effect-apply:disabled{cursor:not-allowed;opacity:.55}
+#editor .effect-frame{position:relative;display:block;width:100%;aspect-ratio:16/9;height:auto;background:radial-gradient(120% 120% at 20% 10%,#2a2a2a,#151515 70%);overflow:hidden}
+#editor .effect-line{position:absolute;white-space:nowrap;line-height:1.2;pointer-events:none}
+#editor .effect-name{display:block;padding:5px 8px;border-top:1px solid var(--line);color:var(--fg-dim);font-size:11px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#editor .effect-card.active .effect-name{color:var(--accent-hi)!important}
+#editor .effect-card .effect-fav{position:absolute;top:2px;right:2px;width:22px;height:22px;min-height:0;padding:0;border:0;border-radius:6px;background:#00000066!important;color:var(--fg-dim)!important;font-size:12px;line-height:1;cursor:pointer}
+#editor .effect-card .effect-fav:hover{color:var(--accent-hi)!important;background:#000000aa!important}
+#editor .effect-card .effect-fav[aria-pressed="true"]{color:var(--accent)!important}
+#editor .effect-foot{margin:0;color:var(--fg-mute);font-size:11px;line-height:1.6}
+
+/* 字幕动画：入场 / 出场 / 循环。按钮直接对应 ASS 标签，预览逐帧计算。 */
+#editor .subtitle-animations{display:flex;flex-direction:column;gap:10px;margin-top:4px;padding-top:14px;border-top:1px solid var(--line)}
+#editor .anim-heading{margin:0;color:var(--fg);font-size:12.5px;font-weight:600}
+#editor .anim-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#editor .anim-option{min-height:32px;padding:0 8px;border:1px solid var(--line);border-radius:8px;background:var(--bg-subtle)!important;color:var(--fg-dim);font-size:12px;cursor:pointer}
+#editor .anim-option:hover:not(:disabled){border-color:var(--accent-line)!important;background:var(--bg-hover)!important;color:var(--fg)!important}
+#editor .anim-option[aria-pressed="true"]{border-color:var(--accent)!important;background:var(--accent)!important;color:var(--fg-invert)!important;font-weight:600}
+#editor .anim-option:disabled{cursor:not-allowed;opacity:.5}
+#editor .subtitle-animations label{align-items:center;display:flex;gap:8px;justify-content:space-between;font-size:11.5px;color:var(--fg-mute)}
+#editor .anim-duration{min-width:34px;color:var(--fg-dim);font-variant-numeric:tabular-nums;font-size:11.5px;text-align:right}
+#editor .caption-kara{white-space:pre}
+
+/* 字幕「应用范围」切换：统一（全部字幕）/ 逐条（仅所选）。默认统一，符合统一时间轴字幕
+   功能统一自动生效的项目规则；逐条模式保留给个别字幕单独微调。 */
+#editor .caption-scope{display:flex;align-items:center;flex-wrap:wrap;gap:6px;padding:6px 8px;border:1px solid var(--line);border-radius:9px;background:var(--bg-subtle)}
+#editor .caption-scope .caption-scope-label{color:var(--fg-mute);font-size:11.5px}
+#editor .caption-scope .scope-chip{min-height:24px;padding:0 10px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--fg-dim);font-size:11.5px;cursor:pointer}
+#editor .caption-scope .scope-chip:hover:not(:disabled){border-color:var(--accent-line);color:var(--fg)}
+#editor .caption-scope .scope-chip[aria-pressed="true"]{border-color:var(--accent)!important;background:var(--accent)!important;color:var(--fg-invert)!important;font-weight:600}
+#editor .caption-scope .scope-chip:disabled{cursor:not-allowed;opacity:.45}
+#editor .caption-scope .caption-scope-note{margin-left:auto;color:var(--fg-mute);font-size:11px;font-variant-numeric:tabular-nums}
+#editor .caption-scope .caption-scope-note.on{color:var(--accent-hi)}

@@ -1,0 +1,12 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const source=fs.readFileSync('static/editor.js','utf8');
+let guide;const c={snapEnabled:true,altHeld:false,window:{hubTimelineScale:32},showGuide:t=>guide=t};vm.createContext(c);
+vm.runInContext(source.slice(source.indexOf('  function nearestSnap('),source.indexOf("  for(const type of ['pointerup'")),c);
+assert.equal(c.snapSpan(4.9,6.9,[5]),5);assert.equal(guide,5);
+assert.ok(Math.abs(c.snapSpan(3.1,5.1,[5])-3)<1e-9);assert.equal(guide,5);
+assert.ok(Math.abs(c.snapSpan(1.1,9.1,[5],[0,4,8])-1)<1e-9);assert.equal(guide,5);
+c.altHeld=true;assert.equal(c.snapSpan(4.9,6.9,[5]),4.9);assert.equal(guide,null);
+c.altHeld=false;c.snapEnabled=false;assert.equal(c.snapSpan(4.9,6.9,[5]),4.9);
+c.snapEnabled=true;c.window.hubTimelineScale=80;assert.equal(c.snapSpan(4.8,6.8,[5]),4.8);
+assert.equal(c.snapSpan(5,7,[5]),5);assert.equal(guide,5);
+console.log('PASS snap: head/tail, internal selection edge, Alt, disabled, pixel threshold, exact alignment');

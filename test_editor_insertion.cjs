@@ -1,0 +1,16 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const s=fs.readFileSync('static/editor.js','utf8');
+let rows=['a','b','c','d'].map(task_id=>({task_id,start:0,end:2,track:'legacy-main'})),marks=0,undo=[];
+const nodes=()=>rows.map((_,i)=>({getBoundingClientRect:()=>({left:i*80,width:80}),classList:{remove(){},add(){}}}));
+const ctx={marqueeSelectionActive:false,timelineSelection:new Set(),expandKeys:k=>k,busy:false,project:{body:{clips:rows}},clips:()=>ctx.project.body.clips,videoSelection:new Set([rows[1],rows[2]]),dragIndex:1,selected:0,window:{hubTimelineScale:32},$:()=>({classList:{remove(){}},getBoundingClientRect:()=>({left:0}),querySelectorAll:()=>nodes()}),source:id=>id==='new'?{id,duration:4}:null,pause(){},mark(){marks++;undo.push('commit')},render(){rows=ctx.project.body.clips},seek(){},offset:i=>i*2,fail:msg=>{throw Error(msg)},editTimeline:m=>m(),HubLayout:{MAIN:'video-main',mainTrack:()=> 'legacy-main',q:x=>x},length:()=>2,magnetOn:true};
+vm.createContext(ctx);vm.runInContext(s.slice(s.indexOf('  function insertionAt('),s.indexOf('  function trackMuted(')),ctx);
+const drop=(x,id='')=>ctx.dropInsertion({clientX:x,preventDefault(){},stopPropagation(){},dataTransfer:{getData:type=>type==='application/x-seedance-task'?id:''}});
+drop(400);assert.deepEqual(Array.from(rows,c=>c.task_id),['a','d','b','c']);assert.equal(marks,1);
+ctx.dragIndex=2;drop(400);assert.equal(marks,1,'drop at existing position creates no history');
+ctx.dragIndex=null;drop(0,'new');assert.deepEqual(Array.from(rows,c=>c.task_id),['new','a','d','b','c']);assert.equal(marks,2);
+ctx.project.body.audio_clips=[{at:3}];ctx.project.body.captions=[{start:4,end:5}];ctx.position=0;ctx.total=()=>10;ctx.player={removeAttribute(){}};ctx.paint=()=>{};
+const remove=s.slice(s.indexOf("  $('edit-remove').onclick="),s.indexOf("\n  $('edit-split')"));const button={};ctx.$=()=>button;
+vm.runInContext(s.slice(s.indexOf('  function canDeleteSelection(){'),s.indexOf('  function deleteTrack(){')),ctx);
+ctx.trackSelection=null;ctx.selectedKeys=()=>rows.flatMap((item,i)=>ctx.videoSelection.has(item)?['video:'+i]:[]);ctx.selectedRows=()=>ctx.selectedKeys().map(key=>({key,item:rows[Number(key.split(':')[1])]}));vm.runInContext(remove,ctx);
+ctx.videoSelection=new Set([rows[1],rows[3]]);button.onclick();assert.deepEqual(Array.from(rows,c=>c.task_id),['new','d','c']);assert.equal(ctx.project.body.audio_clips[0].at,3);assert.equal(ctx.project.body.captions[0].start,4);assert.equal(marks,3);
+console.log('Timeline checks passed: group order, no-op, insert at start, single commit, independent audio/subtitles.');

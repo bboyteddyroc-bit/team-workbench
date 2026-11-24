@@ -1,0 +1,29 @@
+#intelligence .ex-page{min-width:0;padding:18px 20px;background:var(--bg-surface);border:1px solid var(--line);border-radius:var(--radius);color:var(--fg)}
+#intelligence .ex-filter{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+#intelligence .ex-filter :is(input,select){min-width:0;max-width:100%;min-height:34px;margin:0;padding:5px 9px;border:1px solid var(--line);border-radius:6px;background:var(--bg-subtle);color:var(--fg)}
+#intelligence .ex-filter input{width:256px}
+#intelligence .ex-filter select{width:auto}
+#intelligence .ex-count{margin-inline-start:auto;color:var(--muted);font-size:12px}
+#intelligence .ex-refresh{padding:5px 10px;min-height:30px;border:1px solid var(--line);border-radius:6px;background:var(--bg-subtle);color:var(--fg)}
+#intelligence .ex-refresh:hover:not(:disabled){background:var(--bg-hover);border-color:var(--accent-line)}
+#intelligence :is(.ex-scope,.ex-foot,.ex-meta,.ex-id){font-size:12px;line-height:1.6;color:var(--muted);overflow-wrap:anywhere}
+#intelligence .ex-scope{margin:8px 0 12px}
+#intelligence .ex-list{border-top:1px solid var(--line)}
+#intelligence .ex-row{padding:12px 0;border-bottom:1px solid var(--line)}
+#intelligence .ex-row-head{display:flex;align-items:center;gap:5px 8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+#intelligence .ex-kind{font-weight:600;font-size:13px;color:var(--fg)}
+#intelligence .ex-state{border:1px solid var(--line);border-radius:5px;padding:1px 6px;background:var(--bg-subtle);color:var(--fg-dim)}
+#intelligence .ex-state[data-state="failed"]{background:var(--danger-bg);color:var(--danger)}
+#intelligence .ex-state[data-state="unknown"]{color:var(--warning)}
+#intelligence .ex-state[data-state="blocked"]{color:var(--accent-hi)}
+#intelligence .ex-row-head time{margin-inline-start:auto;font-variant-numeric:tabular-nums}
+#intelligence .ex-id{margin-top:5px}
+#intelligence .ex-error{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;font-size:13px;color:var(--fg);margin-top:5px}
+#intelligence .ex-meta{margin-top:3px}
+#intelligence .ex-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+#intelligence .ex-empty{padding:32px 12px;color:var(--muted);text-align:center}
+#intelligence .ex-empty[role="alert"]{color:var(--danger)}
+#intelligence .ex-foot{margin-top:12px}
+#intelligence .ex-pages:not([hidden]){display:flex;justify-content:flex-end;align-items:center;flex-wrap:wrap;gap:8px;margin-top:12px}
+#intelligence .ex-pages[hidden]{display:none}
+@media(max-width:640px){#intelligence .ex-page{padding:12px}#intelligence .ex-filter input{width:100%}#intelligence .ex-row-head time{margin-inline-start:0;width:100%}}

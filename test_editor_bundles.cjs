@@ -1,0 +1,18 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const source=fs.readFileSync('static/editor.js','utf8');let history=[],error='';
+const body={clips:[{task_id:'a',start:0,end:2,at:0},{task_id:'b',start:0,end:3,at:2},{task_id:'c',start:0,end:2,at:8}],captions:[{text:'hello',start:2,end:4}],audio_clips:[{at:2,start:0,end:3,locked:false}]};
+const ctx={renderProperties(){},renderSpeed(){},paintRange(){},scheduleSelectionSync(){},bundlesSupported:true,project:{body},selected:0,position:0,videoSelection:new Set(),marqueeSelectionActive:false,timelineSelection:new Set(),trackSelection:null,offset:i=>ctx.project.body.clips[i].at,clips:()=>ctx.project.body.clips,length:c=>(c.end-c.start)/(c.speed||1),total:()=>10,pause(){},mark(){history.push(JSON.stringify(ctx.project.body))},render(){},seek(){},fail:message=>{error=message},crypto:{randomUUID:()=> 'group-'+history.length},window:{dispatchEvent(){}},Event:function(){},scroll:{querySelectorAll:()=>[]},editTimeline:m=>m(),HubLayout:require('./static/timeline-layout.js'),magnetOn:false};
+vm.createContext(ctx);vm.runInContext(source.slice(source.indexOf('  const expandedCompounds='),source.indexOf('  function deleteTrack(){')),ctx);
+ctx.setTimelineSelection(['video:1','caption:0','detached:0']);ctx.bundle('group');assert.equal(body.clips[1].edit_group,body.captions[0].edit_group);assert.equal(ctx.expandKeys(['caption:0']).length,3);
+ctx.moveSelectionTo(4);assert.deepEqual(Array.from(body.clips,c=>c.task_id),['a','b','c']);assert.equal(body.captions[0].start,4);assert.equal(body.audio_clips[0].at,4);
+ctx.bundle('compound');assert.equal(ctx.bundleRows().length,1);assert.equal(ctx.bundleRows()[0].keys.length,3);assert.equal(ctx.bundleRows()[0].start,4);assert.equal(ctx.bundleRows()[0].end,7);
+const compoundId=ctx.bundleRows()[0].id;
+ctx.toggleCompound(compoundId);assert.equal(ctx.bundleRows()[0].expanded,true);assert.equal(ctx.expandKeys(['caption:0']).length,1);assert.equal(ctx.timelineSelection.size,0);
+ctx.toggleCompound(compoundId);assert.equal(ctx.bundleRows()[0].expanded,false);assert.equal(ctx.expandKeys(['caption:0']).length,3);
+ctx.bundle('compound',true);assert.equal(ctx.bundleRows().length,0);assert.ok(body.clips[1].edit_group);
+ctx.bundle('group',true);assert.equal(ctx.expandKeys(['caption:0']).length,1);
+body.audio_clips[0].locked=true;ctx.setTimelineSelection(['video:2','detached:0']);const before=JSON.stringify(body);ctx.bundle('group');assert.equal(JSON.stringify(body),before);assert.match(error,/解锁/);
+body.audio_clips[0].locked=false;ctx.setTimelineSelection(['video:0','video:2']);ctx.bundle('compound');assert.equal(ctx.bundleRows().length,1);ctx.bundle('compound',true);
+ctx.setTimelineSelection(['caption:0','detached:0']);ctx.bundle('compound');ctx.moveSelectionTo(1);assert.equal(body.captions[0].start,1);assert.equal(body.audio_clips[0].at,1);
+ctx.deleteTimelineSelection();assert.equal(body.captions.length,0);assert.equal(body.audio_clips.length,0);assert.equal(body.clips.length,3);
+console.log('Bundles passed: cross-track grouping, linked move, compound/dissolve, locked protection, contiguous validation, audio-only move and delete.');

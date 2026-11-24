@@ -1,0 +1,24 @@
+/* Original icon dock, based on the user's interaction recording. */
+document.addEventListener('DOMContentLoaded',()=>{
+ const sidebar=document.querySelector('.sidebar'),shell=document.querySelector('.shell');if(!sidebar||!shell)return;
+ shell.classList.add('icon-dock-shell');
+ const edge=document.createElement('button');edge.type='button';edge.className='dock-edge';edge.setAttribute('aria-label','打开导航');edge.setAttribute('aria-expanded','false');shell.append(edge);
+ const backdrop=document.createElement('div');backdrop.className='dock-backdrop';backdrop.setAttribute('aria-hidden','true');shell.append(backdrop);
+ let closeTimer;
+ function openDock(){clearTimeout(closeTimer);shell.classList.add('dock-open');sidebar.inert=false;edge.setAttribute('aria-expanded','true');}
+ function closeDock(){clearTimeout(closeTimer);hide();shell.classList.remove('dock-open');sidebar.inert=true;edge.setAttribute('aria-expanded','false');}
+ function later(){clearTimeout(closeTimer);closeTimer=setTimeout(()=>{if(!sidebar.matches(':hover')&&!sidebar.contains(document.activeElement))closeDock();},180);}
+ edge.addEventListener('pointerenter',openDock);edge.addEventListener('click',openDock);edge.addEventListener('focus',openDock);edge.addEventListener('pointerleave',later);
+ sidebar.addEventListener('pointerenter',openDock);sidebar.addEventListener('pointerleave',()=>{if(sidebar.contains(document.activeElement)&&!document.activeElement.matches(':focus-visible'))document.activeElement.blur();later();});sidebar.addEventListener('focusin',openDock);sidebar.addEventListener('focusout',later);
+ document.addEventListener('pointerdown',e=>{if(!sidebar.contains(e.target)&&e.target!==edge)closeDock();});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&shell.classList.contains('dock-open')){edge.focus();closeDock();}});
+ sidebar.addEventListener('click',e=>{if(e.target.closest('[data-view]')){e.target.closest('button').blur();closeDock();}});
+ sidebar.inert=true;
+ const homeView=document.getElementById('home');if(homeView)new MutationObserver(()=>{if(!homeView.hidden)closeDock();}).observe(homeView,{attributes:true,attributeFilter:['hidden']});
+ const shapes={'ai-edit':'M12 3l2.5 6.5L21 12l-6.5 2.5L12 21l-2.5-6.5L3 12l6.5-2.5Z',home:'M3 10 12 3l9 7v11h-6v-7H9v7H3Z',materials:'M3 6h18v15H3ZM7 6V3h13M5 18l5-5 3 3 3-4 4 6',studio:'M3 8h18v13H3ZM3 8V3h18v5M7 3l-3 5m10-5-3 5m10-5-3 5M10 12l5 3-5 3Z',editor:'M9 8 21 20M9 16 21 4M7 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6M7 14a3 3 0 1 0 0 6 3 3 0 0 0 0-6',intelligence:'M13 21H4V3h11l5 5v5M14 3v6h6M15 14a3 3 0 1 0 0 6 3 3 0 0 0 0-6m2 5 4 3',accounts:'M8 4a5 5 0 1 0 0 10 5 5 0 0 0 0-10M12 12l9 9m-5-5 3-3m0 6 3-3',members:'M9 3a4 4 0 1 0 0 8 4 4 0 0 0 0-8M2 21v-3a7 7 0 0 1 14 0v3M17 4a4 4 0 0 1 0 7m2 3q4 2 3 7',audit:'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20M12 6v6l4 2',storage:'M3 6c0-5 18-5 18 0s-18 5-18 0v12c0 5 18 5 18 0V6M3 12c0 5 18 5 18 0',password:'M5 10h14v11H5ZM8 10V6a4 4 0 0 1 8 0v4',logout:'M10 3H3v18h7M8 12h13m-5-5 5 5-5 5',cloud:'M6 18H5a4 4 0 0 1-1-8 7 7 0 0 1 13-2 5 5 0 0 1 2 10M12 21V11m-4 4 4-4 4 4'};
+ const tooltip=document.createElement('div');tooltip.className='dock-tooltip';tooltip.hidden=true;tooltip.setAttribute('role','tooltip');document.body.append(tooltip);
+ function hide(){tooltip.hidden=true;sidebar.querySelectorAll('.dock-button').forEach(b=>b.style.removeProperty('--dock-scale'));}
+ function show(b){if(b.hidden)return;const r=b.getBoundingClientRect();tooltip.textContent=b.getAttribute('aria-label');tooltip.style.left=(r.right+14)+'px';tooltip.style.top=(r.top+r.height/2)+'px';tooltip.hidden=false;b.style.setProperty('--dock-scale','1.15');}
+ function enhance(){sidebar.querySelectorAll('button').forEach(b=>{if(b.classList.contains('dock-button'))return;const label=b.textContent.trim();if(!label)return;const key=b.dataset.view||(b.id==='logout'?'logout':b.id==='password-open'?'password':'cloud');b.classList.add('dock-button');b.setAttribute('aria-label',label);b.dataset.dockLabel=label;b.replaceChildren();const svg=document.createElementNS('http://www.w3.org/2000/svg','svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');const path=document.createElementNS(svg.namespaceURI,'path');path.setAttribute('d',shapes[key]||shapes.cloud);svg.append(path);b.append(svg);b.addEventListener('pointerenter',()=>show(b));b.addEventListener('pointerleave',hide);b.addEventListener('focus',()=>show(b));b.addEventListener('blur',hide);b.addEventListener('click',hide);});}
+ enhance();new MutationObserver(enhance).observe(sidebar,{childList:true,subtree:true});sidebar.addEventListener('scroll',hide);document.addEventListener('keydown',e=>{if(e.key==='Escape')hide();});new MutationObserver(()=>{if(shell.hidden)hide();}).observe(shell,{attributes:true,attributeFilter:['hidden']});
+});

@@ -1,0 +1,12 @@
+const assert=require('node:assert/strict');
+const L=require('./static/timeline-layout.js');
+const clip=(at,duration,track='video-main')=>({at,start:0,end:duration,track,speed:1});
+const a=clip(0,2),b=clip(2,2),c=clip(4,2),overlay=clip(2.5,0.5,'overlay');
+const caption={start:2.5,end:3},audio={at:4.25,start:0,end:0.5,track:'audio'};
+const body={clips:[a,b,c,overlay],captions:[caption],audio_clips:[audio]};
+L.edit(body,()=>{a.speed=.25;b.speed=.25},{link:true,magnet:true,preserveOrder:true,exclude:new Set([a,b])});
+assert.deepEqual(body.clips.map(x=>x.at),[0,8,16,8.5]);assert.equal(caption.start,8.5);assert.equal(audio.at,16.25);
+assert.equal(a.speed,.25);assert.equal(b.speed,.25);assert.equal(c.speed,1);
+const x=clip(0,4,'other'),y=clip(4,2,'other');const other={clips:[x,y],captions:[],audio_clips:[]};
+L.edit(other,()=>{x.speed=.5;y.speed=.5},{magnet:false,preserveOrder:true});assert.equal(y.at,8);
+console.log('Batch speed layout: preserved ordering, shifted linked media, deoverlap OK');

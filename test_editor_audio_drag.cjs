@@ -1,0 +1,12 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const s=fs.readFileSync('static/editor.js','utf8');const code=s.slice(s.indexOf('  function audioDrag('),s.indexOf('  // One command surface'));
+const handlers={};let marks=0;const c={at:1,start:1,end:4,locked:false,fade_in:.5,fade_out:.5};const block={style:{}};
+const ctx={expandKeys:()=>[],selectedKeys:()=>[],edgeScroll:()=>({delta:()=>0,stop(){}}),busy:false,trimmingActive:false,project:{},position:0,pause(){},window:{hubTimelineScale:40,addEventListener:(n,f)=>handlers[n]=f,removeEventListener:n=>delete handlers[n]},source:()=>({duration:10}),boundaries:()=>[],snapTime:x=>x,snapSpan:x=>x,placeFree:(c,t)=>t,audioRoom:()=>({before:0,after:Infinity}),editTimeline:m=>m(),dragNote:{},mark:()=>marks++,render(){},audioTimeline(){}};
+vm.createContext(ctx);vm.runInContext(s.match(/  const soundMax=.*;/)[0]+s.slice(s.indexOf('  function linkedCaptions('),s.indexOf('  function insertVoice('))+code,ctx);
+const begin=k=>ctx.audioDrag({button:0,clientX:100,preventDefault(){},stopPropagation(){}},c,block,k);
+begin('at');handlers.pointermove({clientX:180});assert.equal(c.at,1);handlers.pointerup();assert.equal(c.at,3);assert.equal(marks,1);
+c.locked=true;begin('at');assert.equal(Object.keys(handlers).length,0);c.locked=false;
+begin('start');handlers.pointermove({clientX:140});handlers.pointerup();assert.equal(c.start,2);assert.equal(c.at,4);assert.equal(c.end,4);
+begin('end');handlers.pointermove({clientX:0});handlers.pointerup();assert.ok(Math.abs(c.end-c.start-.1)<1e-6);assert.ok(c.fade_in+c.fade_out<=c.end-c.start);
+const before=JSON.stringify(c);begin('at');handlers.pointermove({clientX:200});handlers.keydown({key:'Escape',preventDefault(){}});assert.equal(JSON.stringify(c),before);assert.equal(Object.keys(handlers).length,0);
+console.log('Audio drag checks passed: lock, move, source-time trim, fade clamp, cancel.');

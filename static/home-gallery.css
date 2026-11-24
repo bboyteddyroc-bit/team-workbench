@@ -1,0 +1,36 @@
+#home .home-heading{text-align:left;padding:0 clamp(24px,4vw,64px);margin:0 0 12px;max-width:none}#home .home-heading h1{font-family:Georgia,'Noto Serif SC',serif;font-size:clamp(36px,4.5vw,72px);font-weight:500;letter-spacing:-.04em;margin:16px 0}#home .home-heading em{color:#23a9bd;font-style:normal}#home .home-kicker{letter-spacing:.2em;font-size:12px}#home-stage{height:auto;min-height:0;overflow:hidden;mask-image:none;touch-action:pan-y;scrollbar-width:none;scrollbar-color:#555 transparent;padding:24px 0 16px}#home-stage::before{display:none}.gallery-rail{display:flex;align-items:flex-start;gap:28px;width:max-content;padding:0 clamp(24px,4vw,64px) 12px}.gallery-poster{width:var(--poster-width);max-width:76vw;margin-top:var(--poster-offset);padding:0!important;border:0!important;background:transparent!important;box-shadow:none!important;text-align:left;color:#f5f5f5;flex:none;cursor:pointer;transform:none}.gallery-art{display:block;position:relative;overflow:hidden;width:100%;border-radius:8px;background:#788a6f;isolation:isolate;transform-style:preserve-3d}.gallery-art img{position:absolute;max-width:none!important;pointer-events:none;object-fit:fill!important}.gallery-poster strong{display:block;font-family:Georgia,'Noto Serif SC',serif;font-size:28px;margin:14px 0 5px}.gallery-poster small{display:block;color:#70d9e6;font-size:10px;letter-spacing:.16em}.gallery-poster:focus-visible{outline:2px solid #70d9e6!important;outline-offset:8px}#home #home-description,#home #home-modules{display:none}#home .home-controls{margin-top:6px}#home #home-enter{background:#eee;color:#161616;border-color:#eee}#home .home-hint{color:#aaa}@media(max-width:700px){.gallery-rail{gap:20px}.gallery-poster{width:calc(var(--poster-width)*.78);margin-top:calc(var(--poster-offset)*.45)}#home .home-heading h1{font-size:36px}.gallery-poster strong{font-size:24px}}@media(prefers-reduced-motion:reduce){.gallery-art{transform:none!important}}
+
+#home-stage::-webkit-scrollbar{display:none}#home .home-controls,#home .home-hint{display:none!important}.gallery-rail{position:relative;will-change:transform;padding-left:0;padding-right:0}
+
+/* Monochrome at rest; a damped spotlight reveals full chroma. */
+.gallery-scene{position:absolute;inset:0;display:block;pointer-events:none;background-image:url('/static/home-art/serene-atlas-lossless.webp');background-size:400% 200%;background-position:var(--scene-position);background-repeat:no-repeat}
+.gallery-scene-base{filter:grayscale(1) brightness(.96)}
+.gallery-scene-color{opacity:0;transition:opacity .6s ease;mask-image:radial-gradient(circle 600px at var(--spot-x,50%) var(--spot-y,50%),#000 0%,#000 65%,transparent 100%);-webkit-mask-image:radial-gradient(circle 600px at var(--spot-x,50%) var(--spot-y,50%),#000 0%,#000 65%,transparent 100%)}
+.chroma-active .gallery-scene-color{opacity:1;transition-duration:.15s}
+.gallery-poster:focus-visible .gallery-scene-color{opacity:1;mask-image:none;-webkit-mask-image:none}
+.gallery-poster small{color:#a9b9aa}
+@media(hover:none){.gallery-poster:active .gallery-scene-color{opacity:1;mask-image:none;-webkit-mask-image:none}}
+@media(prefers-reduced-motion:reduce){.gallery-scene-color{transition:none}.gallery-art:hover .gallery-scene-color{opacity:1;mask-image:none;-webkit-mask-image:none}}
+
+/* Let the gallery occupy the homepage, without the former introductory copy. */
+#home .home-heading{display:none!important}
+#home-stage{padding-top:clamp(24px,5vh,64px);padding-bottom:32px}
+.gallery-poster{width:calc(var(--poster-width)*1.28)}
+.gallery-art{max-height:calc(100dvh - 240px)}
+@media(max-width:700px){.gallery-poster{width:calc(var(--poster-width)*.95)}.gallery-art{max-height:calc(100dvh - 190px)}}
+
+#home-stage.concave-home{position:relative;height:calc(100dvh - 110px);min-height:400px;padding:0;overflow:hidden;perspective:none;touch-action:pan-y}
+.concave-home .concave-card{position:absolute;left:50%;top:48%;width:var(--concave-width);max-width:none;margin:0;transform-origin:center center;backface-visibility:hidden;will-change:transform}
+.concave-home .concave-card[hidden]{display:none!important}
+.concave-home .gallery-art{aspect-ratio:3/4;max-height:none;border-radius:8px;transform:none!important}
+.concave-home .concave-card strong{font-size:20px;text-align:center;margin:16px 0 0}
+@media(max-width:700px){.concave-home .concave-card strong{font-size:16px}}
+
+/* Captions follow the center of the carousel, including during dragging. */
+.concave-home .concave-card strong{opacity:var(--caption-opacity,0);pointer-events:none}
+
+/* No enclosing focus ring on gallery artwork. Keyboard focus uses its caption. */
+#home-stage.concave-home .concave-card:focus,
+#home-stage.concave-home .concave-card:focus-visible,
+#home-stage.concave-home .concave-card:active{outline:none!important;border:0!important;box-shadow:none!important}
+#home-stage.concave-home .concave-card:focus-visible strong{text-decoration:underline;text-underline-offset:6px;text-decoration-color:#70d9e6}

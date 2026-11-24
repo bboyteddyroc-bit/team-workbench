@@ -1,0 +1,1 @@
+hubStickers.mount(document.querySelector('#panel'));hubEditor.repaint();

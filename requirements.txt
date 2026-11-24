@@ -1,0 +1,8 @@
+fastapi==0.133.1
+uvicorn==0.41.0
+cryptography==50.0.2
+httpx==0.28.1
+Pillow==13.0.0
+faster-whisper==1.2.1
+yt-dlp==2026.10.26
+tzdata==2025.2

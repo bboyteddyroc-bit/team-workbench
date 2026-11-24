@@ -1,0 +1,20 @@
+/* Keep project labels and their controls on the same vertical centerline. */
+#editor .editor-commandbar .edit-project-bar label{align-items:center;min-height:36px;white-space:nowrap}
+#editor .editor-commandbar .edit-project-bar label input,#editor .editor-commandbar .edit-project-bar label select{box-sizing:border-box;margin:0;align-self:center}
+#editor .editor-commandbar .edit-project-bar #edit-save-state{align-self:center}
+@media(max-width:1180px){#editor .editor-commandbar{flex-wrap:wrap;height:auto}#editor .editor-commandbar .edit-project-bar{flex:1 0 100%;width:100%;flex-wrap:wrap}#editor .editor-commandbar .edit-project-bar label{flex:1 1 180px}#editor .editor-commandbar .edit-project-bar label input,#editor .editor-commandbar .edit-project-bar label select{min-width:0;max-width:100%}}
+
+/* Desktop client: command bar wraps without overlapping the workspace. */
+@media(min-width:960px){
+ .shell main #editor:not([hidden]){grid-template-rows:auto minmax(240px,1fr) clamp(200px,var(--timeline-h,24vh),calc(100% - 360px))}
+ #editor .editor-commandbar{flex-wrap:wrap;gap:8px 12px;height:auto;min-height:58px}
+ #editor .editor-commandbar .edit-project-bar{flex:1 1 420px;flex-wrap:wrap;width:auto}
+ #editor .edit-workspace>.edit-properties{grid-column:auto;min-height:0}
+ #editor .edit-workspace>.edit-library,#editor .edit-workspace>.edit-preview,#editor .edit-workspace>.edit-properties{max-width:100%;min-width:0}
+ #editor .editor-commandbar .edit-project-bar label{flex:0 1 auto}
+}
+@media(min-width:960px) and (max-width:1180px){
+ main:has(#editor:not([hidden])){display:flex;height:100dvh;overflow:hidden}
+ #editor .edit-workspace{min-height:0}
+}
+#studio.simple-studio .canvas-viewport{height:calc(100dvh - 120px);min-height:280px}

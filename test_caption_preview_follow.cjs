@@ -1,0 +1,10 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict');
+const src=fs.readFileSync('static/editor.js','utf8');
+const handlers={},captions=[{track:'a',start:0,end:1},{track:'a',start:1,end:2,x:20,y:30},{track:'b',start:0,end:1,x:40,y:50}];
+let frame,commits=0;const stage={getBoundingClientRect:()=>({left:0,top:0,width:200,height:400})},line={getBoundingClientRect:()=>({left:80,top:300,width:40,height:20})};
+const ctx={busy:false,project:{body:{captions}},$:()=>stage,pause(){},commitEdits(){commits++},captionStyle:()=>({align:'center'}),selectedCaptionIndexes:()=>[0],primaryCaption:0,paintCaptions(){},syncCaptionRow(){},editedLive(){},renderTextPanel(){},requestAnimationFrame:f=>(frame=f,1),cancelAnimationFrame(){},window:{addEventListener:(n,f)=>handlers[n]=f,removeEventListener:n=>delete handlers[n]}};
+vm.createContext(ctx);vm.runInContext(src.slice(src.indexOf('  function beginCaptionDrag('),src.indexOf('  player.ontimeupdate=',src.indexOf('  function beginCaptionDrag('))),ctx);
+ctx.beginCaptionDrag({button:0,currentTarget:line,clientX:100,clientY:310,preventDefault(){},stopPropagation(){}},0);handlers.pointermove({clientX:120,clientY:270});frame();handlers.pointerup();
+assert.equal(captions[0].x,60);assert.equal(captions[0].y,67.5);assert.equal(captions[1].x,60);assert.equal(captions[1].y,67.5);assert.equal(captions[2].x,40);assert.equal(captions[2].y,50);assert.equal(commits,2);
+assert.match(src,/const look=\{\.\.\.inheritCaptionLook\(target\.body\.captions\[0\]\|\|null\),size:14,outline:0\}/);
+console.log('PASS: preview drag follows same lane only; ASR default 14 and no outline');

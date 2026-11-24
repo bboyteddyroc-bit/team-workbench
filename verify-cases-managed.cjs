@@ -1,0 +1,1 @@
+const {spawn}=require('child_process');const path=require('path');const c=spawn(path.join(__dirname,'.venv','Scripts','python.exe'),['-B',path.join(__dirname,'verify_cases_preview.py')],{cwd:__dirname,stdio:'inherit'});c.on('error',e=>{console.error(e);process.exitCode=1});c.on('exit',code=>process.exit(code??1));process.on('SIGTERM',()=>c.kill());

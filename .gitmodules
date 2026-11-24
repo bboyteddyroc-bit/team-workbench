@@ -1,0 +1,3 @@
+[submodule "vendor/kalodata-skill"]
+    path = vendor/kalodata-skill
+    url = https://github.com/sailtonight/kalodata-skill.git

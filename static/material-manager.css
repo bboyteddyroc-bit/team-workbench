@@ -1,0 +1,61 @@
+/* Existing dark brand retained; the material thumbnails carry the visual identity.
+   Fluid grid: n * minmax(208px,1fr) + (n-1) * 16px = available canvas width. */
+#materials>.page-heading{text-align:left;justify-content:flex-start;margin-bottom:24px}
+#materials-content.material-manager{display:block;flex:1;min-width:0}
+.material-manager .materials-toolbar{margin-bottom:22px;min-height:40px}
+.material-manager .material-manager-heading{display:flex;align-items:center;gap:16px;margin:24px 0 16px}
+.material-manager-heading h2{font-size:20px;margin:0;font-weight:550}
+.material-manager-heading>span{margin:0 0 0 auto;white-space:nowrap;font-variant-numeric:tabular-nums}
+.material-manager [hidden]{display:none!important}
+.material-manager .material-day{margin:0 0 18px;border:1px solid var(--line);border-radius:10px;background:var(--bg-surface)}
+.material-manager .material-day-summary{display:flex;align-items:baseline;gap:8px;padding:12px 16px;cursor:pointer;list-style:none;font-variant-numeric:tabular-nums}
+.material-manager .material-day-summary::-webkit-details-marker{display:none}
+.material-manager .material-day-summary strong{font-weight:600}
+.material-manager .material-day>.materials-grid{padding:0 16px 16px;margin:0}
+.material-manager .asset-folders{margin:24px 0;max-width:none;padding:0;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:28px 20px}
+.material-manager .asset-folder:nth-child(n){grid-column:auto;transform:none;max-width:none;justify-self:stretch;padding:12px;align-items:flex-start;text-align:left}
+.material-manager .folder-art{height:140px;max-width:205px;align-self:center}
+.material-manager .folder-count{font-variant-numeric:tabular-nums}
+.material-manager .materials-grid{grid-template-columns:repeat(auto-fill,minmax(208px,1fr));gap:16px;align-items:start}
+.material-manager .material-card{min-width:0;padding:12px;border-radius:8px;box-shadow:none!important;transform:none!important;display:flex;flex-direction:column;gap:10px;overflow:visible}
+.material-manager .material-card>img,.material-manager .material-card>video{height:200px;width:100%;object-fit:contain;background:#121212;border-radius:6px}
+.material-manager .material-card>audio{height:54px;width:100%;margin:72px 0}
+#materials .material-name{display:block;box-sizing:border-box;width:100%;min-width:0;min-height:42px;height:42px;margin:0;padding:0;border:1px solid transparent!important;border-radius:var(--r-sm);background:transparent!important;color:var(--fg)!important;font-size:14px;line-height:20px;font-weight:550;resize:none;overflow:auto;overflow-wrap:anywhere;box-shadow:none;cursor:text}
+#materials .material-name:hover{border-color:var(--line)!important}
+#materials .material-name:focus{outline:none;outline-offset:0;box-shadow:var(--focus);border-color:var(--accent-line)!important;background:var(--bg-subtle)!important}
+#materials .material-name[aria-busy=true]{opacity:.65}
+.material-manager .material-card p{margin:0}.material-manager .fine{font-size:12px;line-height:1.5}
+.material-manager .classification-state{min-height:18px;margin:0}.material-manager .classification-state small{display:block}
+.material-actions{display:flex;flex-direction:column;gap:12px;padding-top:6px}
+.material-download{display:inline-flex;align-items:center;justify-content:center;min-height:36px;color:var(--fg)!important;text-decoration:none;border:1px solid var(--line);border-radius:6px;background:var(--bg-subtle);font-size:13px}
+.material-actions summary{cursor:pointer;font-size:13px;line-height:1.5;color:var(--fg-dim)}
+.material-edit{display:grid;gap:10px;margin-top:12px}.material-edit label{font-size:12px;color:var(--fg-dim);display:grid;gap:6px}
+.material-edit input,.material-edit select{width:100%;min-width:0!important;box-sizing:border-box;margin:0}
+.material-edit button{min-height:36px}.material-edit .material-delete{color:#f2a9a9!important;background:transparent!important;border-color:#744444!important}
+.material-empty{grid-column:1/-1;padding:56px 20px;text-align:center;border:1px dashed var(--line);border-radius:8px}.material-empty h3{font-size:18px;font-weight:500}
+.material-filters button{background:transparent;color:var(--fg);border-color:var(--line)}
+.material-filters>div:last-child{flex-shrink:0}
+.material-calendar button{color:var(--fg);border:0;background:transparent;box-shadow:none;min-height:28px;padding:0}
+.material-calendar [aria-selected=true] button,.material-calendar button[aria-pressed=true]{color:var(--fg-invert);background:var(--accent)}
+.material-calendar section{background:var(--bg-surface);color:var(--fg)}
+[data-combobox-content] button{background:transparent!important;border:0!important;color:var(--fg)!important;text-align:left;border-radius:6px;padding:8px;font-size:13px}
+[data-combobox-content] button:hover{background:var(--bg-hover)!important}
+/* Use canonical brand tokens for the manager and its portalled beUI controls. */
+body>[data-combobox-content],body>[data-morph-popover-portal]:has(.material-calendar){position:fixed!important;z-index:9999!important}
+#materials .material-manager :is(.material-manager-heading>button,.material-filter-reset,.material-date-trigger,.material-edit button),#materials .material-download{box-sizing:border-box;min-height:var(--ctl-md);height:var(--ctl-md);padding:0 var(--sp-3);border:1px solid var(--line)!important;border-radius:var(--r-sm)!important;background:var(--bg-subtle)!important;color:var(--fg)!important;font-family:inherit;font-size:var(--fs-sm);font-weight:550;line-height:var(--lh-base);box-shadow:none}
+#materials .material-manager :is(.material-manager-heading>button,.material-filter-reset,.material-date-trigger,.material-edit button):hover:not(:disabled),#materials .material-download:hover{background:var(--bg-hover)!important;border-color:var(--accent-line)!important}
+#materials .material-manager .material-edit .material-delete{color:var(--danger)!important;border-color:var(--danger)!important;background:transparent!important}
+#materials .material-manager .material-edit .material-delete:hover{background:var(--danger-bg)!important}
+#materials .material-edit label{margin:0;font-size:var(--fs-xs);font-weight:500}
+#materials .material-edit select{height:var(--ctl-md);padding:0 var(--sp-2);border-radius:var(--r-sm);background:var(--bg-page)!important;border-color:var(--line)!important}
+#materials .material-filters [data-combobox-trigger]{box-sizing:border-box;height:var(--ctl-md);min-height:var(--ctl-md);padding:0 var(--sp-3);gap:var(--sp-2);border:1px solid var(--line);border-radius:var(--r-sm);background:var(--bg-page);box-shadow:none;transition:border-color var(--t-fast),box-shadow var(--t-fast)}
+#materials .material-filters [data-combobox-trigger]:focus-within{border-color:var(--accent-line);box-shadow:var(--focus)}
+#materials .material-filters input,#materials .material-filters input:focus,#materials .material-filters input:focus-visible{height:30px;min-height:0!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;outline:none!important;outline-offset:0!important;box-shadow:none!important;font-size:var(--fs-sm)}
+[data-combobox-content]{border-color:var(--line)!important;border-radius:var(--r-md)!important;box-shadow:var(--shadow-2)!important}
+[data-combobox-content] button[aria-selected=true]{background:var(--bg-active)!important}
+.material-calendar{border-color:var(--line)!important;border-radius:var(--r-md)!important}
+.material-calendar button{font-size:var(--fs-xs);border-radius:var(--r-sm)}
+.material-calendar button:hover:not(:disabled){background:var(--bg-hover)}
+.material-calendar [role=gridcell][aria-selected=true] button{background:var(--accent)!important;color:var(--fg-invert)!important}
+.material-calendar :is(button:focus-visible,[role=grid]:focus-visible){outline:none;box-shadow:var(--focus)}
+@media(max-width:600px){.material-manager .asset-folders{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}.material-manager .folder-art{height:110px}.material-manager .asset-folder{padding:8px!important}.material-manager .materials-grid{grid-template-columns:minmax(0,1fr)}.material-manager-heading{flex-wrap:wrap}.material-manager-heading>span{margin-left:0}#materials>.page-heading{margin-bottom:20px}}

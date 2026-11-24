@@ -1,0 +1,42 @@
+{
+  "version": "2026-10-23",
+  "source": "C:\\Users\\111\\Documents\\Codex\\2026-09-24\\tiktok-ugc-ai-amazon-tiktok-demo\\outputs\\exports\\TikTok项目底层母版规则_20261023",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "3d4f748ce2671e3eb39e0dbd00e79d1ade04afa592084380719082ad46268abd"
+    },
+    {
+      "path": "outputs/commerce_camera_rhythm_contract_v1.md",
+      "sha256": "7a6ab068d0ef83730bf7fb4657779835bcfd33385cc2cd1eeb706b9b34cafeef"
+    },
+    {
+      "path": "outputs/direct_video_prompt_contract_v1.md",
+      "sha256": "57a15e2d304bdbfc2ec99be36813d13a72b6dd370bfee6000022d6cf73b21364"
+    },
+    {
+      "path": "outputs/hispc_beat_overlay.schema.json",
+      "sha256": "b5ead976794fd175aac3c0e3016841c148740037f0bbb8347027815ebb44259f"
+    },
+    {
+      "path": "outputs/hispc_script_framework_v1.md",
+      "sha256": "64ae186b2ee63731c92511826efe5ae8034615c605e13fedd68cc174a5e87a74"
+    },
+    {
+      "path": "outputs/library_operating_model.md",
+      "sha256": "15fd4079bf1a475c3e5ab5148186393b4a2dee9e6b8b1ec062f43b99d3af6014"
+    },
+    {
+      "path": "outputs/production_package.schema.json",
+      "sha256": "d629e402fca13e97af698179a2d1406d0fd089a149de833006798568f45ec382"
+    },
+    {
+      "path": "outputs/stable_script_generation_contract_v1.md",
+      "sha256": "9a0f9de867c70182c72885bb8bfeabb449587d66b86b498343ca3a41d949b3a8"
+    },
+    {
+      "path": "outputs/stable_script_input.schema.json",
+      "sha256": "64f38f5ef5c53543ababc07f5373f220d77a43b4d89129f2c75129adfcc40547"
+    }
+  ]
+}

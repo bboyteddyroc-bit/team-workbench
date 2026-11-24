@@ -1,0 +1,11 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const src=fs.readFileSync('static/editor.js','utf8').replace(/\r\n/g,'\n');
+const match=src.match(/  function scrub\(e\)\{[\s\S]*?\n  \}\n  \$\('timeline-ruler'\)/);assert.ok(match);
+const listeners={},seeks=[];let queued=null,raf=0;
+const sandbox={project:{},pause(){},scroll:{focus(){}},head:{},$:()=>({getBoundingClientRect:()=>({left:0})}),window:{hubTimelineScale:32,addEventListener:(t,f)=>listeners[t]=f,removeEventListener(){}},requestAnimationFrame:f=>(queued=f,++raf),cancelAnimationFrame:()=>{queued=null},seek:t=>seeks.push(t),snapTime:t=>t,boundaries:()=>[],edgeScroll:()=>({stop(){}})};
+vm.runInNewContext(match[0].slice(0,match[0].lastIndexOf("  $('timeline-ruler')"))+';globalThis.scrub=scrub;',sandbox);
+const event=x=>({button:0,clientX:x,preventDefault(){},stopPropagation(){}});
+sandbox.scrub(event(136));listeners.pointerup();assert.deepEqual(seeks,[1],'click seeks only once');
+seeks.length=0;sandbox.scrub(event(136));listeners.pointermove({clientX:168});listeners.pointerup();assert.deepEqual(seeks,[1,2],'release flushes latest pending drag position');
+seeks.length=0;sandbox.scrub(event(136));listeners.pointermove({clientX:168});queued();listeners.pointerup();assert.deepEqual(seeks,[1,2],'painted drag is not repeated on release');
+console.log('Scrub passed: one seek per click; pending drag flush and completed drag preserved.');

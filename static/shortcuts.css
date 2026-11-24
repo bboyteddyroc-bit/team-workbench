@@ -1,0 +1,160 @@
+/* 快捷键设置窗口 */
+dialog.shortcut-dialog {
+  width: min(780px, 94vw);
+  max-height: 86vh;
+  padding: 0;
+  border-radius: var(--r-lg, 14px);
+  background: #191919;
+  border: 1px solid var(--line, rgba(255,255,255,.2));
+  color: var(--fg, #eaf6f1);
+  overflow: hidden;
+}
+dialog.shortcut-dialog::backdrop { background: rgba(0,0,0,.6); }
+dialog.shortcut-dialog[open] { display: flex; flex-direction: column; }
+
+.shortcut-dialog .sc-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--sp-4, 16px);
+  padding: 18px 20px 12px;
+  border-bottom: 1px solid var(--line-soft, rgba(255,255,255,.11));
+}
+.shortcut-dialog .sc-head h2 { margin: 0 0 4px; font-size: var(--fs-lg, 20px); line-height: 1.25; }
+.shortcut-dialog .sc-head p { margin: 0; max-width: 46ch; }
+.shortcut-dialog .sc-head-badge {
+  flex: 0 0 auto;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line-soft, rgba(255,255,255,.11));
+  background: rgba(255,255,255,.06);
+  font-size: var(--fs-xs, 12px);
+  color: var(--fg-dim, #bfbfbf);
+  white-space: nowrap;
+}
+
+.shortcut-dialog .sc-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line-soft, rgba(255,255,255,.11));
+}
+.shortcut-dialog .sc-search {
+  flex: 0 1 280px;
+  min-width: 160px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--line-soft, rgba(255,255,255,.11));
+  background: rgba(255,255,255,.04);
+  color: var(--fg, #eaf6f1);
+  font-size: var(--fs-base, 14px);
+}
+.shortcut-dialog .sc-search:focus-visible { outline: 2px solid rgba(255,255,255,.5); outline-offset: 1px; }
+.shortcut-dialog .sc-status { font-size: var(--fs-sm, 12px); color: var(--fg-mute, #b4b4b4); min-height: 16px; }
+
+.shortcut-dialog .sc-body {
+  flex: 1 1 auto;
+  overflow: auto;
+  padding: 4px 20px 16px;
+  scrollbar-width: thin;
+}
+.shortcut-dialog .sc-group { padding-top: 14px; }
+.shortcut-dialog .sc-group h3 {
+  margin: 0 0 6px;
+  font-size: var(--fs-xs, 12px);
+  letter-spacing: .08em;
+  color: var(--fg-mute, #b4b4b4);
+  font-weight: 600;
+}
+.shortcut-dialog .sc-list { display: flex; flex-direction: column; }
+.shortcut-dialog .sc-row {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 8px;
+  border-radius: 8px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.shortcut-dialog .sc-row:hover { background: rgba(255,255,255,.035); }
+.shortcut-dialog .sc-row.is-recording { background: rgba(255,255,255,.07); }
+.shortcut-dialog .sc-desc { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
+.shortcut-dialog .sc-desc strong { font-weight: 500; font-size: var(--fs-base, 14px); }
+.shortcut-dialog .sc-tags { display: flex; gap: 6px; }
+.shortcut-dialog .sc-tag {
+  font-size: 11px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  white-space: nowrap;
+}
+.shortcut-dialog .sc-tag.capcut { color: #9fe3c8; background: rgba(74,222,158,.10); border-color: rgba(74,222,158,.28); }
+.shortcut-dialog .sc-tag.changed { color: #ffd79a; background: rgba(255,190,90,.10); border-color: rgba(255,190,90,.28); }
+
+.shortcut-dialog .sc-keys { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.shortcut-dialog .sc-chip {
+  min-width: 46px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  border: 1px solid var(--line, rgba(255,255,255,.2));
+  border-bottom-width: 2px;
+  background: rgba(255,255,255,.05);
+  color: var(--fg, #eaf6f1);
+  font: 500 12px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.shortcut-dialog .sc-chip:hover { background: rgba(255,255,255,.12); }
+.shortcut-dialog .sc-chip.empty { color: var(--fg-mute, #b4b4b4); font-family: inherit; }
+.shortcut-dialog .sc-chip.is-fixed {
+  cursor: default;
+  border-style: dashed;
+  background: rgba(255,255,255,.02);
+  color: var(--fg-mute, #b4b4b4);
+  font-family: inherit;
+}
+.shortcut-dialog .sc-chip.is-fixed:hover { background: rgba(255,255,255,.02); }
+.shortcut-dialog .sc-tag.is-fixed { color: #bfe3ff; background: rgba(120,190,255,.10); border-color: rgba(120,190,255,.28); }
+.shortcut-dialog .sc-chip.recording {
+  border-color: #fff;
+  color: #111;
+  background: #fff;
+  animation: sc-pulse 1s ease-in-out infinite;
+}
+@keyframes sc-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(255,255,255,.45); } 50% { box-shadow: 0 0 0 4px rgba(255,255,255,0); } }
+@media (prefers-reduced-motion: reduce) { .shortcut-dialog .sc-chip.recording { animation: none; } }
+
+.shortcut-dialog .sc-chip-add,
+.shortcut-dialog .sc-chip-drop,
+.shortcut-dialog .sc-reset {
+  height: 30px;
+  border-radius: 8px;
+  border: 1px solid var(--line-soft, rgba(255,255,255,.11));
+  background: transparent;
+  color: var(--fg-mute, #b4b4b4);
+  cursor: pointer;
+  font: inherit;
+}
+.shortcut-dialog .sc-chip-add { width: 30px; font-size: 16px; line-height: 1; }
+.shortcut-dialog .sc-chip-drop { width: 26px; font-size: 14px; line-height: 1; }
+.shortcut-dialog .sc-reset { padding: 0 8px; font-size: 11px; }
+.shortcut-dialog .sc-chip-add:hover,
+.shortcut-dialog .sc-chip-drop:hover,
+.shortcut-dialog .sc-reset:hover:not(:disabled) { color: var(--fg, #eaf6f1); border-color: var(--line, rgba(255,255,255,.2)); }
+.shortcut-dialog .sc-reset:disabled { opacity: .35; cursor: default; }
+
+.shortcut-dialog .sc-empty { padding: 32px 0; text-align: center; color: var(--fg-mute, #b4b4b4); }
+.shortcut-dialog .sc-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--line-soft, rgba(255,255,255,.11));
+}
+.shortcut-dialog .sc-spacer { flex: 1 1 auto; }
+
+/* 时间轴工具条上的入口 */
+.clip-toolbar .shortcut-entry { white-space: nowrap; }

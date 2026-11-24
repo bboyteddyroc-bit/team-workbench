@@ -1,0 +1,119 @@
+/* ============================================================
+   交互反馈层
+   必须最后加载（index.html 中位于 multitrack.css 之后），
+   只处理四类状态：按下了 / 已选中 / 焦点在哪 / 选中的文字。
+   配色一律取当前主题令牌（--accent / --accent-hi / --fg-invert），
+   与「导出 MP4」「吸附」「素材 / 文本」页签等既有选中样式保持一致。
+   不改任何布局尺寸。
+   ============================================================ */
+
+/* ---------- 1. 选中的文字：深色底上必须一眼看见 ---------- */
+::selection {
+  background: var(--accent) !important;
+  color: var(--fg-invert) !important;
+}
+::-moz-selection {
+  background: var(--accent) !important;
+  color: var(--fg-invert) !important;
+}
+
+/* ---------- 2. 键盘焦点：亮青环 + 深色外沿 ---------- */
+:where(button, a, input, select, textarea, summary, [tabindex]:not([tabindex="-1"])):focus-visible {
+  outline: 2px solid var(--accent-hi) !important;
+  outline-offset: 2px !important;
+  box-shadow: 0 0 0 5px rgba(0, 0, 0, .85) !important;
+}
+
+/* ---------- 3. 按下瞬时反馈（浅底 / 深底都成立的双环） ---------- */
+button,
+summary,
+.nav,
+label.upload-button {
+  transition: background-color .12s ease, border-color .12s ease, color .12s ease,
+    box-shadow .12s ease, filter .08s ease;
+}
+button:not(:disabled):not(.timeline-block):active {
+  box-shadow: inset 0 0 0 2px rgba(0, 0, 0, .75), inset 0 0 0 3px rgba(255, 255, 255, .6) !important;
+  filter: brightness(1.1);
+}
+button:disabled {
+  opacity: .38 !important;
+  cursor: not-allowed !important;
+}
+
+/* ---------- 4. 已开启 / 已选中：实心强调色 + 反色文字 ---------- */
+/* 文本面板（对齐方式、B、I）—— 用户反馈的「看不出按了哪个」 */
+#editor .text-panel .text-align > button[aria-pressed="true"],
+#editor .text-panel button[aria-pressed="true"],
+/* 时间轴工具栏开关（吸附 / 主轨磁吸 / 联动） */
+#editor .timeline-tools .tl-tool[aria-pressed="true"],
+/* 变速倍率 */
+#editor .speed-presets button[aria-pressed="true"],
+#editor .speed-presets button.active,
+/* 素材分类等分段控件 */
+#editor .segmented button.active,
+#editor .segmented button[aria-pressed="true"] {
+  background: var(--accent) !important;
+  color: var(--fg-invert) !important;
+  border-color: var(--accent) !important;
+  font-weight: 700 !important;
+  box-shadow: 0 0 0 1px var(--accent-hi) !important;
+}
+
+/* 速度预设若用 .active 而非 aria-pressed，同样处理（见上） */
+
+/* 字幕列表里当前行：左侧竖条 + 提亮（原来的 3.5% 白几乎看不出） */
+#editor .edit-caption-row.selected {
+  background: rgba(35, 169, 189, .16) !important;
+  box-shadow: inset 3px 0 0 var(--accent) !important;
+}
+#editor .edit-caption-row.selected > .caption-preview {
+  border-color: var(--accent) !important;
+}
+
+/* 时间轴选中的片段 / 字幕块：加粗描边，统一用强调色 */
+#editor .track-scroll .track-selected {
+  outline: 3px solid var(--accent) !important;
+  outline-offset: -3px !important;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, .9) !important;
+}
+
+/* 预览里对应被选中的字幕行 */
+#editor .edit-caption-line.selected {
+  outline: 2px solid var(--accent-hi) !important;
+  outline-offset: 4px;
+  background: rgba(0, 0, 0, .38);
+  border-radius: 3px;
+}
+
+/* ---------- 5. 输入框：悬停有反应，聚焦有明确边界 ---------- */
+/* 注意：#editor input 的 border-color 带 !important 且带 id，
+   所以这里必须同样带 id 后才能真正生效。 */
+:where(input, select, textarea):hover {
+  border-color: var(--accent-line) !important;
+}
+:where(input, select, textarea):focus {
+  border-color: var(--accent) !important;
+  box-shadow: inset 0 0 0 1px var(--accent) !important;
+}
+#editor input:hover,
+#editor select:hover,
+#editor textarea:hover {
+  border-color: var(--accent-line) !important;
+}
+#editor input:focus,
+#editor select:focus,
+#editor textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: inset 0 0 0 1px var(--accent) !important;
+}
+/* 时间轴缩放 / 字号 等滑杆：拖动手柄本身要有颜色 */
+:where(input[type="range"]) {
+  accent-color: var(--accent);
+}
+
+/* ---------- 6. 弱化动效偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  button, summary, .nav, label.upload-button { transition: none; }
+  button:not(:disabled):active { filter: none; }
+}

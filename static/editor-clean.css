@@ -1,0 +1,72 @@
+/* Focused editing layout: media left, voice/captions right. */
+@media(min-width:1181px){#editor .edit-workspace{grid-template-columns:minmax(300px,1fr) minmax(360px,42%) minmax(360px,1.15fr)!important}}
+#editor .editor-retired-panel{display:none!important}
+#editor .edit-properties .editor-tool-panel{min-height:0;flex:1;overflow:auto;padding:16px;box-sizing:border-box}
+#editor .editor-tool-panel[hidden]{display:none!important}
+#editor .edit-library .fine,#editor #editor-tool-audio .fine,#editor #editor-tool-captions>.fine,#editor .edit-preview>.fine{display:none}
+#editor #voice-panel>h2,#editor #voice-panel>h3{display:none}
+#editor #voice-panel{border:0;padding:0;margin:0;background:transparent}
+#editor #voice-manual-field textarea{min-height:150px;resize:vertical;line-height:1.65}
+#editor #voice-panel .voice-hint:empty{display:none}
+#editor #voice-panel .voice-filters{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+#editor #voice-search{grid-column:1/-1}
+#editor #voice-list{max-height:none}
+#editor .voice-card{padding:12px;margin:8px 0}
+#editor .voice-card audio{width:100%;height:36px;margin-top:8px}
+#editor .voice-card audio[hidden]{display:none!important}
+#editor .edit-properties .voice-card-actions{display:flex;flex-wrap:wrap;gap:6px}
+#editor .voice-hint{font-size:11px;line-height:1.5}
+@media(max-width:1180px){#editor .edit-properties .editor-tool-panel{max-height:600px}}
+
+/* Only the editor's Images tab uses the compact four-up thumbnail grid. */
+#editor #editor-other-materials[data-material-category="image"]:not([hidden]){
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  align-content:start;
+  align-items:start;
+  gap:8px;
+  min-width:0;
+}
+#editor #editor-other-materials[data-material-category="image"]>.material-card{
+  display:flex;
+  flex-direction:column;
+  min-width:0;
+  margin:0;
+  padding:6px;
+  gap:5px;
+  overflow:hidden;
+  border-radius:8px;
+  box-shadow:none!important;
+  transform:none!important;
+}
+#editor #editor-other-materials[data-material-category="image"]>.material-card>img{
+  display:block;
+  flex:none;
+  width:100%;
+  height:auto;
+  min-height:0;
+  max-height:none;
+  aspect-ratio:1;
+  object-fit:contain;
+  border-radius:4px;
+  background:#111;
+}
+#editor #editor-other-materials[data-material-category="image"]>.material-card>span{
+  display:block;
+  min-width:0;
+  width:100%;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  font-size:12px;
+  line-height:1.5;
+}
+#editor #editor-other-materials[data-material-category="image"]>.material-card>small{
+  color:var(--fg-mute);
+  font-size:11px;
+  line-height:1.4;
+}
+#editor #editor-other-materials[data-material-category="image"]>.fine{
+  display:block;
+  grid-column:1/-1;
+}
