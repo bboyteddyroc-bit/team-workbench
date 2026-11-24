@@ -48,3 +48,9 @@
 /.desktop-*
 /_splice.py
 !/.gitmodules
+
+# Reviewed launch helpers and canonical design document.
+!/start.ps1
+!/start-lan.ps1
+!/project-runtime.ps1
+!/DESIGN.md
