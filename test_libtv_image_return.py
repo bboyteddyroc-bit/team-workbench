@@ -1,7 +1,7 @@
 """Regression: text-only CLI download success must publish pixels exactly once."""
-import io
 import json
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -11,21 +11,26 @@ from test_assistant_chat import AssistantTests
 
 
 class CliOutputTests(unittest.TestCase):
+    def setUp(self):
+        self.directory=self.enterContext(tempfile.TemporaryDirectory())
+        self.enterContext(patch('libtv_gateway.shutil.which',return_value='libtv.exe'))
+        self.enterContext(patch('libtv_gateway.profile_environment',return_value={}))
+
     def test_download_accepts_human_output(self):
         result=subprocess.CompletedProcess([],0,'已下载：图片.png\n','')
-        with patch('libtv_gateway.shutil.which',return_value='libtv.exe'),patch('libtv_gateway.subprocess.run',return_value=result) as run:
-            self.assertTrue(cli(['download','-p','a'*32],'.')['download_completed'])
+        with patch('libtv_gateway.run_bounded',return_value=result) as run:
+            self.assertTrue(cli(['download','-p','a'*32],self.directory)['download_completed'])
             self.assertEqual(run.call_count,1)
 
     def test_non_download_still_requires_json(self):
         result=subprocess.CompletedProcess([],0,'unknown response','')
-        with patch('libtv_gateway.shutil.which',return_value='libtv.exe'),patch('libtv_gateway.subprocess.run',return_value=result):
-            with self.assertRaisesRegex(RuntimeError,'返回格式无法识别'):cli(['node','create'],' .')
+        with patch('libtv_gateway.run_bounded',return_value=result):
+            with self.assertRaisesRegex(RuntimeError,'返回格式无法识别'):cli(['node','create'],self.directory)
 
     def test_download_nonzero_is_not_success(self):
         result=subprocess.CompletedProcess([],1,'已下载','unauthorized')
-        with patch('libtv_gateway.shutil.which',return_value='libtv.exe'),patch('libtv_gateway.subprocess.run',return_value=result):
-            with self.assertRaises(RuntimeError):cli(['download'],'.')
+        with patch('libtv_gateway.run_bounded',return_value=result):
+            with self.assertRaises(RuntimeError):cli(['download'],self.directory)
 
 
 class ImageReturnTests(unittest.TestCase):
@@ -55,17 +60,21 @@ class ImageReturnTests(unittest.TestCase):
         self.assertEqual(self.member.get('/api/assets/'+asset).status_code,200)
         self.assertEqual(self.admin.get('/api/assets/'+asset).status_code,404)
         self.assertEqual(self.member.get('/api/assistant/threads/'+tid).json()[0]['status'],'complete')
-        self.assertFalse((directory/'图片.png').exists())
+        self.assertTrue((directory/'图片.png').is_file())  # Keep the original download for inspection.
 
     def test_recovery_downloads_only_original_project(self):
         tid,turn,directory=self.make_failed()
+        with self.hub.db() as db:db.execute('INSERT INTO libtv_settings VALUES(1,?)',('42',))
         def fake(args,cwd):
+            self.assertEqual(json.loads((cwd/'hub-libtv-profile.json').read_text())['profile'],'legacy')
+            if args==['account','list']:
+                return {'accounts':[{'accountId':42,'isActive':True}]}
             self.assertEqual(args[:3],['download','-p','b'*32])
             Image.new('RGB',(16,24),'white').save(directory/'图片.png')
             return {'download_completed':True}
         with patch('libtv_gateway.cli',side_effect=fake) as mock:
             result=self.post(self.member,'/threads/'+tid+'/turns/'+turn+'/recover',{})
-            self.assertEqual(result.status_code,200,result.text);self.assertEqual(mock.call_count,1)
+            self.assertEqual(result.status_code,200,result.text);self.assertEqual(mock.call_count,2)
 
     def test_invalid_pixels_preserved_and_turn_unlocked(self):
         tid,turn,directory=self.make_failed();(directory/'图片.png').write_bytes(b'broken')
@@ -89,7 +98,7 @@ class ImageReturnTests(unittest.TestCase):
             else:payload={'ok':True}
             return subprocess.CompletedProcess(args,0,json.dumps(payload),'')
         data={'text':'flower','mode':'image','request_key':'text-download-request-001'}
-        with patch('libtv_gateway.shutil.which',return_value='libtv.exe'),patch('libtv_gateway.subprocess.run',side_effect=run):
+        with patch('libtv_gateway.shutil.which',return_value='libtv.exe'),patch('libtv_gateway.profile_environment',return_value={}),patch('libtv_gateway.run_bounded',side_effect=run):
             result=self.post(self.member,'/threads/'+tid+'/send',data)
             self.assertEqual(result.status_code,200,result.text)
             self.assertEqual(result.json()['status'],'complete')

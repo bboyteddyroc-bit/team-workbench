@@ -40,14 +40,23 @@ def save_result(hub,uid,tid,turn,payload):
         raise
 
 
-def generate_libtv(hub,uid,tid,turn,prompt,images,generation):
+def verify_image_account(cli, work, expected):
+    if not expected:
+        raise ValueError('原生图账号未授权，无法远程取回；不会使用其他账号。')
+    result=cli(['account','list'],work)
+    accounts=result.get('accounts') if isinstance(result,dict) else None
+    active=[a for a in accounts if isinstance(a,dict) and a.get('isActive') is True] if isinstance(accounts,list) else []
+    if len(active)!=1 or str(active[0].get('accountId'))!=expected:
+        raise ValueError('LibTV 生图账号身份与任务不匹配，请联系管理员；不会使用其他账号。')
+
+
+def generate_libtv(hub,uid,tid,turn,prompt,images,generation,route):
     from libtv_gateway import cli
+    from libtv_isolation import bind
     import re
     work=hub.directory/'libtv'/('image-'+turn);work.mkdir(parents=True,exist_ok=True)
-    with hub.db() as db:setting=db.execute('SELECT account FROM libtv_settings WHERE id=1').fetchone()
-    if not setting:raise ValueError('请管理员先连接共享 LibTV 账号')
-    result=cli(['account','list'],work)
-    if not any(str(a.get('accountId'))==setting['account'] and a.get('isActive') for a in result.get('accounts',[])):raise ValueError('共享 LibTV 账号已变更，请管理员重新连接')
+    bind(work,route.profile)
+    verify_image_account(cli,work,route.account)
     schema=cli(['model','lib-image-2.5-f'],work)
     model=schema.get('schema',{})
     if model.get('modelKey')!='lib-image-2.5-f':raise ValueError('LibTV 图片模型配置已变化')
@@ -65,17 +74,21 @@ def generate_libtv(hub,uid,tid,turn,prompt,images,generation):
         finally:path.unlink(missing_ok=True)
         links.extend(['--left','参考'+str(index)])
     cli(['node','create','图片','-p',project,'-t','image','--prompt',prompt,'-s','model=Lib Image 2.5 Fast','-s','modeType=image2image','-s','resolution='+generation['size'],'-s','ratio='+generation['ratio'],'-s','count='+str(count),*links,'--run'],work)
-    return import_libtv_result(hub,uid,tid,turn,project,work)
+    return import_libtv_result(hub,uid,tid,turn,project,work,route.profile,route.account,verified=True)
 
 
-def import_libtv_result(hub,uid,tid,turn,project,work):
-    """Import an existing download first; never create or rerun a generation."""
+def import_libtv_result(hub,uid,tid,turn,project,work,profile,account,*,verified=False):
+    """Import cached pixels first; remote recovery is limited to the original identity."""
     from libtv_gateway import cli
+    from libtv_isolation import bind
     output=work/'download';output.mkdir(parents=True,exist_ok=True)
     def downloaded():
         return [p for p in output.iterdir() if p.is_file() and p.suffix.lower() in ('.png','.jpg','.jpeg','.webp')]
     files=downloaded()
     if not files:
+        bind(work,profile)
+        if not verified:
+            verify_image_account(cli,work,account)
         cli(['download','-p',project,'-n','图片','-o',str(output.resolve())],work)
         files=downloaded()
     files=sorted(files)
