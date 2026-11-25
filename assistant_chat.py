@@ -165,7 +165,7 @@ def attach(app, hub, user, body):
             recover_interrupted(db,uid)
             old=db.execute('SELECT * FROM ai_turns WHERE owner=? AND request_key=?',(uid,key)).fetchone()
             if old:
-                old_generation={k:v for k,v in json.loads(old['generation']).items() if k!='project'}
+                old_generation={k:v for k,v in json.loads(old['generation']).items() if k not in ('project','terminal_failure')}
                 if old_generation.get('provider')=='libtv':old_generation.setdefault('count',1)
                 if old['thread']!=tid or old['prompt']!=prompt or old['images']!=image_json or old_generation!=generation:raise HTTPException(409,'请求标识冲突')
                 return dict(id=old['id'],answer=old['answer'],status=old['status'],result_asset=old['result_asset'],result_assets=json.loads(old['result_assets']))
@@ -215,7 +215,8 @@ def attach(app, hub, user, body):
             with hub.db() as db:db.execute("UPDATE ai_turns SET answer=?,status='complete' WHERE id=? AND owner=? AND thread=?",(answer,turn,uid,tid))
             return {'id':turn,'answer':answer,'status':'complete'}
         except Exception as exc:
-            with hub.db() as db:db.execute("UPDATE ai_turns SET status='failed' WHERE id=? AND owner=?",(turn,uid))
+            from assistant_images import record_image_failure
+            record_image_failure(hub,uid,turn,exc)
             if isinstance(exc,HTTPException):raise
             reason=getattr(exc,'reason',None)
             logging.getLogger('hub.assistant').warning('Assistant request failed: turn=%s type=%s reason_type=%s errno=%s winerror=%s',turn,type(exc).__name__,type(reason).__name__ if reason is not None else '-',getattr(reason,'errno',None),getattr(reason,'winerror',None))
@@ -242,6 +243,7 @@ def attach(app, hub, user, body):
             if row['status']=='complete':return dict(id=turn,status='complete',result_asset=row['result_asset'])
             generation=json.loads(row['generation']);project=generation.get('project')
             if generation.get('provider')!='libtv' or not isinstance(project,str) or not re.fullmatch(r'[a-zA-Z0-9-]{16,64}',project):raise HTTPException(409,'此消息没有可取回的 LibTV 图片')
+            if generation.get('terminal_failure') is True:raise HTTPException(409,row['answer'] or 'LibTV 已确认生图失败，没有可取回的图片。')
             if row['status']!='failed':raise HTTPException(409,'任务仍在处理中，请稍候再查看')
             if db.execute("SELECT 1 FROM ai_turns WHERE owner=? AND status='pending'",(u['id'],)).fetchone():raise HTTPException(409,'当前账号有请求正在处理，请稍候')
             profile,account=row['image_profile'],row['image_account']
@@ -255,7 +257,8 @@ def attach(app, hub, user, body):
             from assistant_images import import_libtv_result
             return import_libtv_result(hub,u['id'],tid,turn,project,hub.directory/'libtv'/('image-'+turn),profile,account)
         except Exception as exc:
-            with hub.db() as db:db.execute("UPDATE ai_turns SET status='failed' WHERE id=? AND owner=? AND status='pending'",(turn,u['id']))
+            from assistant_images import record_image_failure
+            record_image_failure(hub,u['id'],turn,exc)
             detail=str(exc) if isinstance(exc,(ValueError,RuntimeError)) else '图片尚未取回，请核对 LibTV 任务；不会重新生成'
             raise HTTPException(502,detail) from None
 

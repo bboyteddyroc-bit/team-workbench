@@ -105,4 +105,31 @@ class ImageReturnTests(unittest.TestCase):
             self.assertEqual(self.post(self.member,'/threads/'+tid+'/send',data).json()['result_asset'],result.json()['result_asset'])
         self.assertEqual(sum('--run' in a for a in calls),1)
 
+    def test_confirmed_failure_does_not_download_or_resubmit(self):
+        with self.hub.db() as db:db.execute('INSERT INTO libtv_settings VALUES(1,?)',('42',))
+        tid=self.post(self.member,'/threads',{}).json()['id']
+        endpoint='/threads/'+tid
+        def invoke(args,work):
+            if args[0]=='account':return {'accounts':[{'accountId':42,'isActive':True}]}
+            if args[0]=='model':return {'schema':{'modelKey':'lib-image-2.5-f'}}
+            if args[0]=='project':return {'projectMeta':{'uuid':'b'*32}}
+            if '--run' in args:raise RuntimeError('operation failed')
+            self.assertEqual(args,['node','图片','-p','b'*32])
+            return {'data':{'url':[],'taskInfo':{'status':3,'failedReason':'生成失败，积分已返还，请稍后再试'}}}
+        request={'text':'flower','mode':'image','request_key':'confirmed-failure-request'}
+        with patch('libtv_gateway.cli',side_effect=invoke) as mock:
+            self.assertEqual(self.post(self.member,endpoint+'/send',request).status_code,502)
+            turn=self.member.get('/api/assistant'+endpoint).json()[0]
+            self.assertTrue(json.loads(turn['generation'])['terminal_failure'])
+            self.assertIn('平台报告积分已返还',turn['answer'])
+            self.assertEqual(self.post(self.member,endpoint+'/turns/'+turn['id']+'/recover',{}).status_code,409)
+            self.assertEqual(self.post(self.member,endpoint+'/send',request).json()['id'],turn['id'])
+            self.assertEqual(mock.call_count,5)
+
+    def test_probe_preserves_partial_and_unknown_results(self):
+        from assistant_images import inspect_image_node
+        for data,expected in [({'url':['https://example.invalid/image.png'],'taskInfo':{'status':3}},'output'),
+                              ({'taskInfo':{'status':1,'failedReason':'积分已返还'}},'unknown')]:
+            self.assertEqual(inspect_image_node(lambda *_:{'data':data},'b'*32,None),expected)
+
 if __name__=='__main__':unittest.main()

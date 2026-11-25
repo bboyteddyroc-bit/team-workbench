@@ -73,8 +73,41 @@ def generate_libtv(hub,uid,tid,turn,prompt,images,generation,route):
         try:cli(['upload','参考'+str(index),'-p',project,'-t','image','-f',str(path.resolve())],work)
         finally:path.unlink(missing_ok=True)
         links.extend(['--left','参考'+str(index)])
-    cli(['node','create','图片','-p',project,'-t','image','--prompt',prompt,'-s','model=Lib Image 2.5 Fast','-s','modeType=image2image','-s','resolution='+generation['size'],'-s','ratio='+generation['ratio'],'-s','count='+str(count),*links,'--run'],work)
+    try:
+        cli(['node','create','图片','-p',project,'-t','image','--prompt',prompt,'-s','model=Lib Image 2.5 Fast','-s','modeType=image2image','-s','resolution='+generation['size'],'-s','ratio='+generation['ratio'],'-s','count='+str(count),*links,'--run'],work)
+    except RuntimeError:
+        if inspect_image_node(cli,project,work)!='output':raise
     return import_libtv_result(hub,uid,tid,turn,project,work,route.profile,route.account,verified=True)
+
+
+def inspect_image_node(cli,project,work):
+    """Only the original node's structured terminal state can rule out recovery."""
+    from libtv_gateway import ProviderGenerationFailed
+    try:
+        reply=cli(['node','图片','-p',project],work)
+    except (RuntimeError,OSError):
+        return 'unknown'
+    data=reply.get('data') if isinstance(reply,dict) else None
+    if not isinstance(data,dict):return 'unknown'
+    urls=data.get('url')
+    if isinstance(urls,list) and any(isinstance(u,str) and u.startswith(('http://','https://')) for u in urls):return 'output'
+    task=data.get('taskInfo')
+    if isinstance(task,dict) and str(task.get('status'))=='3' and not urls:
+        raise ProviderGenerationFailed(terminal_failure_message('积分已返还' in str(task.get('failedReason') or '')))
+    return 'unknown'
+
+
+def terminal_failure_message(refunded):
+    return 'LibTV 已确认生图失败，没有可取回的图片。'+('平台报告积分已返还。' if refunded else '积分状态请以 LibTV 为准。')+'中台未自动重试。'
+
+
+def record_image_failure(hub,uid,turn,exc):
+    from libtv_gateway import ProviderGenerationFailed
+    with hub.db() as db:
+        if isinstance(exc,ProviderGenerationFailed):
+            db.execute("UPDATE ai_turns SET status='failed',answer=?,generation=json_set(generation,'$.terminal_failure',json('true')) WHERE id=? AND owner=? AND status='pending'",(str(exc),turn,uid))
+        else:
+            db.execute("UPDATE ai_turns SET status='failed' WHERE id=? AND owner=? AND status='pending'",(turn,uid))
 
 
 def import_libtv_result(hub,uid,tid,turn,project,work,profile,account,*,verified=False):
@@ -89,8 +122,13 @@ def import_libtv_result(hub,uid,tid,turn,project,work,profile,account,*,verified
         bind(work,profile)
         if not verified:
             verify_image_account(cli,work,account)
-        cli(['download','-p',project,'-n','图片','-o',str(output.resolve())],work)
+        try:
+            cli(['download','-p',project,'-n','图片','-o',str(output.resolve())],work)
+        except RuntimeError:
+            if not downloaded():inspect_image_node(cli,project,work)
+            raise
         files=downloaded()
+        if not files:inspect_image_node(cli,project,work)
     files=sorted(files)
     if not 1<=len(files)<=4 or any(not 0<p.stat().st_size<=32*1024*1024 for p in files):raise ValueError('LibTV 返回的图片数量或大小异常，请核对原任务；不会重新生成')
     result=save_result(hub,uid,tid,turn,{'data':[{'b64_json':base64.b64encode(p.read_bytes()).decode()} for p in files]})
