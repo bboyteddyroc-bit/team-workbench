@@ -16,12 +16,30 @@ async function restoreComposer(){
   const saved=await api('/compositions');if(epoch!==composerEpoch||session!==sessionEpoch||!me)return;
   let local=null;try{local=JSON.parse(localStorage.getItem('hub-draft-pending:'+me.id)||'null');}catch{}compositions=Array.isArray(local?.items)&&local.items.length?local.items:(saved.items.length?saved.items:[blankComposition()]);composerLoaded=true;renderCompositions();window.dispatchEvent(new Event('hub-composer-restored'));if(local)window.hubAutoSave.schedule();
 }
+const libtvVideoModels={
+  'star-video2':{label:'Seedance 2.0 VIP',resolutions:['480p','720p','1080p','4k']},
+  'star-video2-fast':{label:'Seedance 2.0 Fast VIP',resolutions:['480p','720p']},
+  'star-video2-mini':{label:'Seedance 2.0 Mini',resolutions:['480p','720p']},
+  'magi-2':{label:'MAGI-2',resolutions:['1080p']}
+};
+function studioReferenceIssue(c,assets,libtv=window.hubLibTV?.selected()){
+  const magi=libtv&&c.libtv_model==='magi-2';
+  const total=magi?20:12,images=magi?10:9;
+  const count=kind=>assets.filter(a=>String(a.mime||a.type||'').startsWith(kind+'/')).length;
+  if(assets.length>total)return '每组最多 '+total+' 个参考素材';
+  if(count('image')>images)return '每组最多 '+images+' 张参考图';
+  if(magi&&(count('video')>5||count('audio')>5))return 'MAGI-2 最多 5 条参考视频、5 条参考音频';
+  return '';
+}
 function unavailableReason(c,libtv){
   const assets=c.assets||[],count=Number(c.count),duration=Number(c.duration),roles=new Set(assets.map(a=>a.role));
   if(!c.prompt.trim())return '请填写提示词';
   if(!Number.isInteger(count)||count<1||count>10)return '生成条数须为 1 至 10 条';
-  if(!Number.isInteger(duration)||duration<4||duration>15)return '时长须为 4 至 15 秒';
-  if(assets.length>12||new Set(assets.map(a=>a.id)).size!==assets.length)return '每组最多 12 个素材，不能重复';
+  const magi=libtv&&c.libtv_model==='magi-2',maxDuration=magi?30:15;
+  if(!Number.isInteger(duration)||duration<4||duration>maxDuration)return '时长须为 4 至 '+maxDuration+' 秒';
+  if(new Set(assets.map(a=>a.id)).size!==assets.length)return '请勿重复选择素材';
+  const assetIssue=studioReferenceIssue(c,assets,libtv);if(assetIssue)return assetIssue;
+  if(magi&&c.mode==='frames')return 'MAGI-2 请使用全能模式';
   if(c.mode==='frames'){
     if(!libtv&&!['auto','5000005'].includes(c.model))return '首尾帧请选择 Seedance 2.0';
     if(!roles.has('first')||roles.size!==assets.length||assets.some(a=>!a.mime.startsWith('image/')||!['first','last'].includes(a.role)))return '请添加一张首帧图片，可选一张尾帧';
@@ -268,8 +286,9 @@ function compositionNode(c,index){
   head.append(el('h3',`创作 ${index+1}`));if(c.relay_source){const from=compositions.findIndex(x=>x.id===c.relay_source);const badge=el('span',from>=0?`接力自 创作 ${from+1}`:(c.relay_label||'接力窗口'),'relay-badge');badge.title='继承来源视频尾帧作为参考；生成后自动接在来源右侧';head.append(badge);}if(compositions.length>1){const remove=el('button','移除','text-button');remove.type='button';remove.onclick=()=>{compositions=compositions.filter(x=>x!==c);requestKey=crypto.randomUUID();renderCompositions();};head.append(remove);}node.append(head);
   const preview=el('div',undefined,'simple-preview');preview.setAttribute('aria-live','polite');node.append(preview);renderCompositionPreview(c,preview);
   const options=el('details',undefined,'simple-options parameter-popover'),optionsTitle=el('summary',`参数 · ${c.mode==='frames'?'首尾帧':'全能'} · ${c.duration} 秒 · ${c.count} 条`);options.open=compositionOptionsOpen.has(c.id);const placeParameterPanel=()=>requestAnimationFrame(()=>{const panel=options.querySelector('.parameter-body');if(!panel)return;panel.style.maxHeight='';panel.classList.remove('flip-down');const rect=options.getBoundingClientRect(),box=document.querySelector('.canvas-viewport')?.getBoundingClientRect(),top=Math.max(box?box.top:0,0),bottom=Math.min(box?box.bottom:window.innerHeight,window.innerHeight),need=Math.min(panel.scrollHeight,420),above=rect.top-top-20,below=bottom-rect.bottom-20;if(above<300&&below>above)panel.classList.add('flip-down');const room=panel.classList.contains('flip-down')?below:above;panel.style.maxHeight=Math.max(200,Math.min(420,room))+'px';});options.reposition=placeParameterPanel;options.addEventListener('toggle',()=>{if(!options.isConnected)return;if(options.open){compositionOptionsOpen.add(c.id);placeParameterPanel();}else compositionOptionsOpen.delete(c.id);});options.append(optionsTitle);const parameterBody=el('div',undefined,'parameter-body');options.append(parameterBody);const refreshParameterSummary=()=>{optionsTitle.textContent=`参数 · ${c.mode==='frames'?'首尾帧':'全能'} · ${c.duration} 秒 · ${c.count} 条`;};
+  const libtv=window.hubLibTV?.selected(),magi=libtv&&c.libtv_model==='magi-2';
   const modes=el('div',undefined,'mode-switch');modes.setAttribute('role','group');modes.setAttribute('aria-label',`创作 ${index+1} 生成模式`);
-  for(const [v,title] of [['omni','全能模式'],['frames','首尾帧模式']]){const b=el('button',undefined,c.mode===v?'selected':'');b.append(el('strong',title),el('small',v==='omni'?'文字、图片、视频和声音参考':'使用首帧与尾帧控制画面起止')); b.type='button';b.setAttribute('aria-pressed',String(c.mode===v));b.onclick=()=>{c.mode=v;changed(c);renderCompositions();};modes.append(b);}parameterBody.append(modes);
+  for(const [v,title] of [['omni','全能模式'],['frames','首尾帧模式']]){const b=el('button',undefined,c.mode===v?'selected':'');b.append(el('strong',title),el('small',v==='omni'?'文字、图片、视频和声音参考':'使用首帧与尾帧控制画面起止')); b.type='button';b.disabled=magi&&v==='frames';if(b.disabled)b.title='MAGI-2 支持全能模式';b.setAttribute('aria-pressed',String(c.mode===v));b.onclick=()=>{c.mode=v;changed(c);renderCompositions();};modes.append(b);}parameterBody.append(modes);
   const references=composerReferences(c,node);
   const promptLabel=el('label',`提示词 ${index+1}`),textarea=el('textarea');textarea.rows=5;textarea.required=true;textarea.value=c.prompt;textarea.placeholder='描述主体、动作、镜头和声音。输入 @ 引用已上传的图片、视频或声音。';textarea.setAttribute('aria-label',`第 ${index+1} 组提示词`);if(Number(c.promptHeight)>0)textarea.style.height=Math.round(Number(c.promptHeight))+'px';promptLabel.className='compact-prompt';promptLabel.append(textarea);node.append(promptLabel);
   const suggestions=el('div',undefined,'mention-menu');suggestions.hidden=true;suggestions.setAttribute('aria-label','选择参考素材');promptLabel.append(suggestions);
@@ -301,14 +320,25 @@ function compositionNode(c,index){
   const sync=()=>{textarea.value=large.value;c.prompt=large.value;changed(c);renderChips();mentions.hide();};
   attachMentions(large,menu,sync);large.addEventListener('input',sync);textarea.addEventListener('input',()=>{large.value=textarea.value;});field.append(large,menu);promptPanel.append(title,field);promptPanel.hidden=true;window.hubPopover.mount(expand,promptPanel,'⤢','prompt');
 
-  const settings=el('div',undefined,'composition-settings');settings.append(selectControl('时长',Array.from({length:12},(_,i)=>[i+4,`${i+4} 秒`]),c.duration,v=>{c.duration=Number(v);changed(c);refreshParameterSummary();}),selectControl('同提示词生成条数',Array.from({length:10},(_,i)=>[i+1,`${i+1} 条`]),c.count,v=>{c.count=Number(v);changed(c);refreshParameterSummary();}));parameterBody.append(settings);
+  const durationOptions=Array.from({length:magi?27:12},(_,i)=>[i+4,`${i+4} 秒`]);
+  if(!durationOptions.some(([value])=>value===c.duration))durationOptions.unshift([c.duration,c.duration+' 秒 · 请调整']);
+  const settings=el('div',undefined,'composition-settings');settings.append(selectControl('时长',durationOptions,c.duration,v=>{c.duration=Number(v);changed(c);refreshParameterSummary();}),selectControl('同提示词生成条数',Array.from({length:10},(_,i)=>[i+1,`${i+1} 条`]),c.count,v=>{c.count=Number(v);changed(c);refreshParameterSummary();}));parameterBody.append(settings);
   if(!window.hubLibTV?.selected())settings.append(selectControl('模型优先顺序',[['auto','2.0 优先 · 额度不足切换 Mini / Fast'],['5000005','仅 Seedance 2.0'],['mini',features.references?'Seedance 2.0 Mini · 全能参考':'Seedance 2.0 Mini（上传待验证）'],['fast','Seedance 2.0 Fast · 全能参考']],c.model,v=>{c.model=v;changed(c);}));
-  if(window.hubLibTV?.selected()){
-    c.libtv_model=c.libtv_model||'star-video2';c.libtv_resolution=c.libtv_resolution||'720p';
-    const resolutions=c.libtv_model==='star-video2'?['480p','720p','1080p','4k']:['480p','720p'];
-    if(!resolutions.includes(c.libtv_resolution))c.libtv_resolution='720p';
+  if(libtv){
+    c.libtv_model=Object.hasOwn(libtvVideoModels,c.libtv_model)?c.libtv_model:'star-video2';
+    const {resolutions}=libtvVideoModels[c.libtv_model];
+    if(!resolutions.includes(c.libtv_resolution))c.libtv_resolution=magi?'1080p':'720p';
     const libtvSettings=el('div',undefined,'libtv-generation-settings');libtvSettings.setAttribute('aria-label','LibTV 生成参数');
-    libtvSettings.append(selectControl('LibTV 模型',[['star-video2','2.0 VIP'],['star-video2-fast','2.0 Fast'],['star-video2-mini','2.0 Mini']],c.libtv_model,v=>{c.libtv_model=v;changed(c);renderCompositions();}),selectControl('分辨率',resolutions.map(v=>[v,v.toUpperCase()]),c.libtv_resolution,v=>{c.libtv_resolution=v;changed(c);}));
+    libtvSettings.append(selectControl('LibTV 模型',Object.entries(libtvVideoModels).map(([id,model])=>[id,model.label]),c.libtv_model,v=>{
+      c.libtv_model=v;
+      if(v==='magi-2'&&c.mode==='frames'){
+        c.mode='omni';
+        c.assets.forEach(asset=>{asset.role='reference';});
+      }
+      if(v!=='magi-2'&&c.duration>15)c.duration=15;
+      changed(c);renderCompositions();
+    }),selectControl('分辨率',resolutions.map(v=>[v,v.toUpperCase()]),c.libtv_resolution,v=>{c.libtv_resolution=v;changed(c);}));
+    if(magi)libtvSettings.append(el('small','最多 10 张图、5 条视频、5 条音频','fine'));
     parameterBody.append(libtvSettings);
   }
   if(c.relay_source&&c.relay_task){parameterBody.prepend(relaySourcePanel(c));}
@@ -319,9 +349,9 @@ function compositionNode(c,index){
 }
 async function addAssets(c,files,role){
   if(!files.length)return;const epoch=composerEpoch,session=sessionEpoch;
-  const images=files.filter(f=>f.type.startsWith('image/')).length,remaining=c.assets.filter(a=>a.role!==role||role==='reference');
-  if(remaining.filter(a=>a.mime.startsWith('image/')).length+images>9){toast('每组最多 9 张图片',true);return;}
-  if(remaining.length+files.length>12){toast('每组最多 12 个素材',true);return;}
+  const remaining=c.assets.filter(a=>a.role!==role||role==='reference');
+  const assetIssue=studioReferenceIssue(c,[...remaining,...files]);
+  if(assetIssue){toast(assetIssue,true);return;}
   if(files.some(f=>f.size>64*1024*1024)){toast('当前中台单文件最大 64 MB，请先压缩文件',true);return;}
   pendingUploads++;updateCompositionSummary();
   try{for(const file of files){const r=await fetch('/api/assets',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type,'X-Hub-Request':'1','X-File-Name':encodeURIComponent(file.name)},body:file});const asset=await r.json();if(!r.ok)throw new Error(asset.detail||'素材上传失败');if(epoch!==composerEpoch||session!==sessionEpoch||!me)return;asset.role=role;asset.token=compositionToken(c,asset.mime);if(role!=='reference')c.assets=c.assets.filter(a=>a.role!==role);c.assets.push(asset);changed(c);}renderCompositions();toast('素材已保存到中台，尚未上传 TikTok');}catch(e){if(epoch===composerEpoch)toast(e.message,true);}finally{if(epoch===composerEpoch){pendingUploads--;renderCompositions();}}

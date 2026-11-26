@@ -8,8 +8,12 @@ from fastapi import HTTPException, Request
 import task_feedback as feedback
 from exception_center import safe_error
 
-VIDEO_MODELS={'star-video2':'Seedance 2.0 VIP','star-video2-fast':'Seedance 2.0 Fast VIP','star-video2-mini':'Seedance 2.0 Mini'}
-RESOLUTIONS={'star-video2':('480p','720p','1080p','4k'),'star-video2-fast':('480p','720p'),'star-video2-mini':('480p','720p')}
+VIDEO_MODELS={'star-video2':'Seedance 2.0 VIP','star-video2-fast':'Seedance 2.0 Fast VIP','star-video2-mini':'Seedance 2.0 Mini','magi-2':'MAGI-2'}
+RESOLUTIONS={'star-video2':('480p','720p','1080p','4k'),'star-video2-fast':('480p','720p'),'star-video2-mini':('480p','720p'),'magi-2':('1080p',)}
+MAGI_MODEL = 'magi-2'
+MAGI_MAX_SECONDS = 30
+MAGI_MAX_REFERENCES = 20
+MAGI_REFERENCE_LIMITS = {'image': 10, 'video': 5, 'audio': 5}
 
 def decoded(raw):
     """CLI output is UTF-8 on most hosts but GBK on Chinese Windows consoles."""
@@ -464,12 +468,16 @@ def attach(app,hub,user,body):
 
     def generate(uid,data):
         key=data.get('request_key');prompt=data.get('prompt');assets=data.get('assets',[]);duration=data.get('duration',5);mode=data.get('mode','omni')
-        model=data.get('model','star-video2');resolution=data.get('resolution','720p')
+        model=data.get('model','star-video2')
+        magi=model==MAGI_MODEL
+        resolution=data.get('resolution','1080p' if magi else '720p')
         if model not in VIDEO_MODELS or resolution not in RESOLUTIONS[model]:raise HTTPException(400,'模型或分辨率不支持')
         if not isinstance(key,str) or not 16<=len(key)<=100:raise HTTPException(400,'请求标识无效')
         if not isinstance(prompt,str) or not prompt.strip():raise HTTPException(400,'请填写提示词')
-        if type(duration) is not int or not 4<=duration<=15 or mode not in ('omni','frames'):raise HTTPException(400,'生成参数无效')
-        if not isinstance(assets,list) or len(assets)>12 or any(not isinstance(a,dict) or not isinstance(a.get('id'),str) for a in assets):raise HTTPException(400,'素材参数无效')
+        max_duration=MAGI_MAX_SECONDS if magi else 15
+        if type(duration) is not int or not 4<=duration<=max_duration or mode not in ('omni','frames'):raise HTTPException(400,'生成参数无效')
+        if magi and mode=='frames':raise HTTPException(400,'MAGI-2 请使用全能模式')
+        if not isinstance(assets,list) or len(assets)>(MAGI_MAX_REFERENCES if magi else 12) or any(not isinstance(a,dict) or not isinstance(a.get('id'),str) for a in assets):raise HTTPException(400,'素材参数无效')
         if len({a['id'] for a in assets})!=len(assets):raise HTTPException(400,'请勿重复选择素材')
         profile=str(data.get('libtv_profile') or 'legacy')
         if not re.fullmatch(r'[a-zA-Z0-9_-]{1,64}',profile):raise HTTPException(400,'LibTV 账号标识无效')
@@ -496,6 +504,10 @@ def attach(app,hub,user,body):
                 row=db.execute('SELECT * FROM assets WHERE id=? AND owner=?',(a['id'],uid)).fetchone()
                 if not row or row['mime'].split('/')[0] not in ('image','video','audio'):raise HTTPException(404,'参考素材不存在或无权限')
                 stored.append(dict(row,role=a['role'],token=a['token']))
+            if magi:
+                kinds=[a['mime'].split('/')[0] for a in stored]
+                if any(kinds.count(kind)>limit for kind,limit in MAGI_REFERENCE_LIMITS.items()):
+                    raise HTTPException(400,'MAGI-2 最多 10 张图、5 条视频、5 条音频')
             if mode=='frames':
                 if not 1<=len(stored)<=2 or any(a['mime'].split('/')[0]!='image' for a in stored) or {a['role'] for a in stored} not in ({'first'},{'first','last'}):raise HTTPException(400,'首尾帧需要首帧图片，可选尾帧')
                 stored.sort(key=lambda a:a['role']!='first')
@@ -543,7 +555,8 @@ def attach(app,hub,user,body):
                 if a['token']:prompt=re.sub('@'+re.escape(a['token'])+r'(?![0-9])','{{Node "'+name+'"}}',prompt)
             kind='frames2video' if mode=='frames' else 'mixed2video' if stored else 'text2video'
             stage('正在创建生成节点')
-            cli(['node','create','成片','-p',project,'-t','video','--prompt',prompt,'-s','model='+VIDEO_MODELS[model],'-s','modeType='+kind,'-s','ratio=9:16','-s','duration='+str(duration),'-s','resolution='+resolution,'-s','count=1',*links],jobdir)
+            count_settings=[] if model==MAGI_MODEL else ['-s','count=1']
+            cli(['node','create','成片','-p',project,'-t','video','--prompt',prompt,'-s','model='+VIDEO_MODELS[model],'-s','modeType='+kind,'-s','ratio=9:16','-s','duration='+str(duration),'-s','resolution='+resolution,*count_settings,*links],jobdir)
             run_video(project,jobdir,stage)
             importing=True  # from here on only read-only steps remain; safe to retry in the background
             return import_result(uid,jid,project,jobdir)

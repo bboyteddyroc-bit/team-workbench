@@ -60,6 +60,34 @@ class LibTVTests(unittest.TestCase):
                 self.assertEqual(self.post(self.member,'/jobs',{'prompt':'test','request_key':'invalid-model-test','model':model,'resolution':'1080p'}).status_code,400)
             mock.assert_not_called()
 
+    def test_magi_30_second_draft_and_generation(self):
+        with self.hub.db() as db:
+            db.execute('INSERT INTO libtv_settings VALUES(1,?)',('42',))
+        payload={'prompt':'A short product demo','duration':30,'model':'magi-2','request_key':'magi-30-second-draft'}
+        draft={**payload,'model':'auto','libtv_model':'magi-2','libtv_resolution':'1080p'}
+        saved=self.member.post('/api/compositions',json={'items':[draft]},headers=fixtures.H)
+        self.assertEqual(saved.status_code,200,saved.text)
+        self.assertEqual(self.member.get('/api/compositions').json()['items'][0]['duration'],30)
+        calls=[]
+        def fake(args,cwd):
+            calls.append(args)
+            if args[0]=='account':return {'accounts':[{'accountId':42,'isActive':True}]}
+            if args[0]=='model':return {'schema':{'modelKey':'magi-2'}}
+            if args[0]=='project':return {'projectMeta':{'uuid':'b'*32}}
+            if args[:2]==['node','成片'] and '--run' not in args:return {'data':{'url':['https://example.test/magi.mp4']}}
+            if args[0]=='download':(Path(args[-1])/'magi.mp4').write_bytes(b'video')
+            return {'ok':True}
+        with patch('libtv_gateway.cli',side_effect=fake),patch('editor.probe',return_value=(30,[{'codec_type':'video'}])):
+            for invalid in ({'resolution':'720p'},{'duration':31},{'mode':'frames'}):
+                self.assertEqual(self.post(self.member,'/jobs',{**payload,**invalid}).status_code,400)
+            self.assertFalse(calls)
+            result=self.post(self.member,'/jobs',payload)
+            self.assertEqual(result.status_code,200,result.text)
+        create=next(args for args in calls if args[:2]==['node','create'])
+        for expected in ('model=MAGI-2','duration=30','resolution=1080p','modeType=text2video'):
+            self.assertIn(expected,create)
+        self.assertEqual(sum('--run' in args for args in calls),1)
+
     def test_shared_account_generates_in_parallel(self):
         """中台的意义就是大家同时出片：别人正在生成时，任何人不该被拦住。"""
         with self.hub.db() as db:

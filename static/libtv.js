@@ -53,7 +53,7 @@ window.hubLibTV=(()=>{
    const payload={prompt:c.prompt,assets:JSON.parse(JSON.stringify(c.assets)),duration:c.duration,mode:c.mode,model:c.libtv_model||'star-video2',resolution:c.libtv_resolution||'720p',libtv_profile:profile,composition_id:c.id};
    const keys=Array.from({length:count},(_,i)=>count===1?baseKey:baseKey+'-'+(i+1));
    activeCompositions.add(c.id);
-   for(const key of keys)pending.set(key,{id:'pending-'+key,request_key:key,composition_id:c.id,state:'running',stage:'正在提交到 LibTV',created:Date.now()/1000,prompt:payload.prompt,model:({'star-video2':'Seedance 2.0 VIP','star-video2-fast':'Seedance 2.0 Fast VIP','star-video2-mini':'Seedance 2.0 Mini'})[payload.model],resolution:payload.resolution});
+   for(const key of keys)pending.set(key,{id:'pending-'+key,request_key:key,composition_id:c.id,state:'running',stage:'正在提交到 LibTV',created:Date.now()/1000,prompt:payload.prompt,model:libtvVideoModels[payload.model]?.label||payload.model,resolution:payload.resolution});
    renderTasks();window.hubCompositionPreview?.refresh?.();updateCompositionSummary();
    // Each clip has its own idempotency key and request. Never retry a failed or uncertain POST.
    let needsReview=false;

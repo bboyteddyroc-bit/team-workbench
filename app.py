@@ -759,17 +759,20 @@ def create_app(directory=None, provider=None, worker=True):
         return {'models':[{'id':'5000005','name':'Seedance 2.0','connected':True},{'id':'mini','name':'Seedance 2.0 Mini','connected':hub.reference_enabled},{'id':'fast','name':'Seedance 2.0 Fast','connected':hub.reference_enabled}],
                 'references':hub.reference_enabled,'reference_models':['auto','5000005','mini','fast'] if hub.reference_enabled else [],'frames':True,'media_references':True,'subaccount_switch':True,'quota_fallback':True,'duration_min':4,'duration_max':15,'max_batch':10,'inflight_per_account':MAX_INFLIGHT_PER_ACCOUNT}
 
-    def validate_compositions(db, owner, items):
+    def validate_compositions(db, owner, items, *, draft=False):
+        from libtv_gateway import MAGI_MODEL, MAGI_MAX_SECONDS, MAGI_MAX_REFERENCES, MAGI_REFERENCE_LIMITS
         if not isinstance(items,list) or not items or len(items)>100: raise HTTPException(400,'每次保存 1–100 组创作')
         for item in items:
             if not isinstance(item,dict): raise HTTPException(400,'创作内容格式有误')
             if not isinstance(item.get('prompt',''),str): raise HTTPException(400,'提示词格式有误')
-            if type(item.get('duration',5)) is not int or not 4<=item.get('duration',5)<=15: raise HTTPException(400,'时长需为 4–15 秒')
+            magi=draft and item.get('libtv_model')==MAGI_MODEL
+            max_duration=MAGI_MAX_SECONDS if magi else 15
+            if type(item.get('duration',5)) is not int or not 4<=item.get('duration',5)<=max_duration: raise HTTPException(400,f'时长需为 4–{max_duration} 秒')
             if type(item.get('count',1)) is not int or not 1<=item.get('count',1)<=10: raise HTTPException(400,'每组生成 1–10 条')
             if item.get('mode','omni') not in ('omni','frames'): raise HTTPException(400,'生成模式有误')
             if item.get('model','auto') not in ('auto','5000005','mini','fast'): raise HTTPException(400,'模型有误')
             assets=item.get('assets',[])
-            if not isinstance(assets,list) or len(assets)>12: raise HTTPException(400,'素材数量有误')
+            if not isinstance(assets,list) or len(assets)>(MAGI_MAX_REFERENCES if magi else 12): raise HTTPException(400,'素材数量有误')
             image_count=0; seen=set()
             for asset in assets:
                 if not isinstance(asset,dict) or not isinstance(asset.get('id'),str) or asset['id'] in seen: raise HTTPException(400,'素材引用有误')
@@ -778,7 +781,8 @@ def create_app(directory=None, provider=None, worker=True):
                 if not stored: raise HTTPException(400,'素材不存在或无权引用，请重新选择')
                 if stored['mime'].startswith('image/'): image_count+=1
                 if asset.get('role','reference') not in ('reference','first','last'): raise HTTPException(400,'素材用途有误')
-            if image_count>9: raise HTTPException(400,'平台参考图片最多 9 张')
+            max_images=MAGI_REFERENCE_LIMITS['image'] if magi else 9
+            if image_count>max_images: raise HTTPException(400,f'平台参考图片最多 {max_images} 张')
 
     @app.get('/api/compositions')
     def get_compositions(request: Request):
@@ -790,7 +794,7 @@ def create_app(directory=None, provider=None, worker=True):
     async def save_compositions(request: Request):
         u=user(request); data=await body(request); items=data.get('items')
         with hub.db() as db:
-            validate_compositions(db,u['id'],items)
+            validate_compositions(db,u['id'],items,draft=True)
             db.execute('INSERT INTO compositions VALUES(?,?,?) ON CONFLICT(owner) DO UPDATE SET content=excluded.content,updated=excluded.updated',(u['id'],json.dumps(items,ensure_ascii=False),time.time()))
         return {'ok':True}
 

@@ -159,7 +159,8 @@ window.hubMaterials=(()=>{
     if(c.mode==='frames'&&role==='reference')role=c.assets.some(a=>a.role==='first')?'last':'first';
     if(c.mode==='frames'&&(assets.length!==1||!assets[0].mime.startsWith('image/')))throw Error('首尾帧请每次选择一张图片');
     const next=c.assets.filter(a=>role==='reference'||a.role!==role),unique=assets.filter(a=>!next.some(x=>x.id===a.id));
-    if(next.length+unique.length>12||next.filter(a=>a.mime.startsWith('image/')).length+unique.filter(a=>a.mime.startsWith('image/')).length>9)throw Error('每组最多 9 张图片、12 个参考素材');
+    const assetIssue=studioReferenceIssue(c,[...next,...unique]);
+    if(assetIssue)throw Error(assetIssue);
     for(const a of unique){const item={...a,role};if(window.hubTakeToken)item.token=window.hubTakeToken(c,a.mime,next);next.push(item);}c.assets=next;changed(c);renderCompositions();
   }
   // 素材卡与预览台显示同一段素材，属于同一次预览，不能互相把对方停掉。
