@@ -1093,6 +1093,8 @@ def create_app(directory=None, provider=None, worker=True):
     attach_exception_center(app,hub,user)
     from assistant_chat import attach as attach_assistant
     attach_assistant(app,hub,user,body)
+    from assistant_actions import attach as attach_assistant_actions
+    attach_assistant_actions(app,hub,user,body)
     from comment_samples import attach as attach_comment_samples
     attach_comment_samples(app,hub,user,body)
     from product_research import attach as attach_own_goods_research

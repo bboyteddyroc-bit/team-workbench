@@ -155,6 +155,7 @@ TikTok 公司连接与 LibTV 账号配置分开。LibTV 多账号凭据按配置
 成员绑定自己的飞书身份与固定云盘主文件夹，启用自动上传后，系统在主文件夹按北京时间创建 YYMMDD 日期子文件夹，例如 2026-11-03 为 261103。设置影响之后提交的导出。失败时先查看归档设置中的具体状态，可重试上传已有成片；不需要因为上传失败重新生成视频。应用可用范围、授权、目录访问权限、网络和本地导出文件都影响结果。
 
 ## AI 助理
+聊天输入「把素材库图片全部重新分类」可预览当前账号的批量识别范围。省略「全部」时只处理待识别和识别失败的图片。确认卡有效 15 分钟，点击确认后才加入现有识别队列并使用 AI 额度。人工分类、队列中的图片、视频和音频会自动跳过；确认前若素材状态变化，会重新校验并跳过。结果可从确认卡刷新查看。此能力只授权给已经接入的批量分类操作，其他模块的写入仍需分别接入。
 文字助理可以读当前账号在模块页面可见的已保存数据。例如问「查 @账号 的已采集视频和分析，第 2 页」可查看采集覆盖、当页视频、Kalodata 补数、已有逐字稿、内容复用和评论分析。指定视频编号可查一条视频。长内容保留摘要或片段，源数据可回原页面。查询也支持素材、制作任务、剪辑工程、导出、配音、飞书归档、内容复用、自营商品、商品与店铺、文案、脚本任务、异常任务、账号池、团队成员、操作记录和存储等已登记入口；成员和日志沿用管理员权限。系统只读取已保存数据，不触发新的采集、分析或生成。
 助理的查询能力清单从当前已登记且已加载的页面查询入口实时生成，说明直接从本文件读取。新增功能时同步补充本文件。新增业务查询时，在 assistant_data.py 登记已有的权限校验查询入口和允许传给助理的返回字段，加载新版后自动出现在查询清单里。
 全局浮动入口，可拖动、调整大小、展开和还原。支持历史对话、新对话、删除对话、文本及图片附件、拖拽文件，并可在输入框直接粘贴剪贴板图片。文字回答显示等待状态和流式呈现效果，完成后可以复制并标记是否有帮助。对话与生图分开；生图走 LibTV Image 2.5 Fast，比例与清晰度从画面设置选择。生成图片可以下载或用作参考；这不代表文字对话具有自动操作制作台的工具权限。
@@ -472,6 +473,8 @@ LAN 唯一 worker 使用独立补数线程，Apify 采集无需等待 Kalodata �
 - `POST /api/users`（app.py）
 - `POST /api/users/{uid}`（app.py）
 - `POST /api/users/{uid}/reset-password`（app.py）
+- `GET /api/assistant/threads/{thread}/actions/{ident}`（assistant_actions.py）
+- `POST /api/assistant/threads/{thread}/actions/{ident}`（assistant_actions.py）
 - `GET /api/assistant/memory`（assistant_chat.py）
 - `GET /api/assistant/status`（assistant_chat.py）
 - `GET /api/assistant/threads`（assistant_chat.py）
@@ -603,4 +606,4 @@ LAN 唯一 worker 使用独立补数线程，Apify 采集无需等待 Kalodata �
 - `POST /api/workspace/materials/{aid}/classify`（workspace.py）
 - `POST /api/workspace/materials/{aid}/delete`（workspace.py）
 
-源内容指纹：`2a130b15395410003cadae92cd1cc74581bf618a3555843c41d63ed7bd9a92cc`
+源内容指纹：`2bb443c0d2eb0389bb701936b719da42567d0e7a7ed6ea70e8878c7bdb4665f8`
