@@ -104,6 +104,11 @@ class ImageReturnTests(unittest.TestCase):
             self.assertEqual(result.json()['status'],'complete')
             self.assertEqual(self.post(self.member,'/threads/'+tid+'/send',data).json()['result_asset'],result.json()['result_asset'])
         self.assertEqual(sum('--run' in a for a in calls),1)
+        self.assertFalse(any(a[0]=='upload' for a in calls))
+        node=next(a for a in calls if '--run' in a)
+        self.assertNotIn('--left',node)
+        self.assertFalse(any(a.startswith('modeType=') for a in node))
+        self.assertTrue({'model=Lib Image 2.5 Fast','resolution=1K','ratio=9:16','count=1'}.issubset(node))
 
     def test_confirmed_failure_does_not_download_or_resubmit(self):
         with self.hub.db() as db:db.execute('INSERT INTO libtv_settings VALUES(1,?)',('42',))

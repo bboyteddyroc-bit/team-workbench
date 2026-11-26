@@ -73,8 +73,11 @@ def generate_libtv(hub,uid,tid,turn,prompt,images,generation,route):
         try:cli(['upload','参考'+str(index),'-p',project,'-t','image','-f',str(path.resolve())],work)
         finally:path.unlink(missing_ok=True)
         links.extend(['--left','参考'+str(index)])
+    # Let LibTV infer text-to-image from the prompt when no media is linked.
+    # Its image2image override is only appropriate after references were uploaded.
+    mode_settings=['-s','modeType=image2image'] if links else []
     try:
-        cli(['node','create','图片','-p',project,'-t','image','--prompt',prompt,'-s','model=Lib Image 2.5 Fast','-s','modeType=image2image','-s','resolution='+generation['size'],'-s','ratio='+generation['ratio'],'-s','count='+str(count),*links,'--run'],work)
+        cli(['node','create','图片','-p',project,'-t','image','--prompt',prompt,'-s','model=Lib Image 2.5 Fast',*mode_settings,'-s','resolution='+generation['size'],'-s','ratio='+generation['ratio'],'-s','count='+str(count),*links,'--run'],work)
     except RuntimeError:
         if inspect_image_node(cli,project,work)!='output':raise
     return import_libtv_result(hub,uid,tid,turn,project,work,route.profile,route.account,verified=True)
