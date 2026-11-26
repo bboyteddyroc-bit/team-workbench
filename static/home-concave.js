@@ -1,6 +1,6 @@
 'use strict';
 
-document.addEventListener('DOMContentLoaded', () => {
+function mountSphereHome() {
   const home = document.querySelector('#home');
   const shell = document.querySelector('#shell');
   const sidebar = shell?.querySelector('.sidebar');
@@ -759,4 +759,7 @@ document.addEventListener('DOMContentLoaded', () => {
   visibility.observe(sidebar,{subtree:true,attributes:true,attributeFilter:['hidden']});
   document.addEventListener('visibilitychange',syncHome);
   syncHome();
-});
+}
+
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountSphereHome, {once:true});
+else mountSphereHome();

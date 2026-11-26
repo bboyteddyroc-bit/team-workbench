@@ -1,4 +1,9 @@
 /* Full-window sphere composition is scoped to the authenticated Home view. */
+#shell #home:not([hidden]):not(.sphere-home) {
+ position:fixed;inset:0;display:grid;place-items:center;width:100%;min-height:100dvh;
+ margin:0;padding:0!important;background:var(--bg-page);color:var(--fg-dim);
+}
+#shell #home .home-start-status {margin:0;font-size:13px}
 #home.sphere-home {
   &{color-scheme:light;position:fixed!important;inset:0;width:100%;height:100dvh;margin:0!important;padding:0!important;max-width:none!important;z-index:110;isolation:isolate;overflow:hidden;color:#141418;--muted:#545259;--line:#1c1b261f;--surface:#faf9f5}
   button{font:inherit;color:inherit;cursor:pointer}
