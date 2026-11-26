@@ -17,7 +17,17 @@ function coverVisual(g,thumb=false){
  return url?`<img src="${esc(url)}" alt="${thumb?'':esc(g.name+'主图')}" ${thumb?'loading="lazy"':''} decoding="async">`:coverPlaceholder;
 }
 const fillLabel={queued:'主图待补',running:'正在补主图',retry:'主图将重试',blocked:'主图待核对'};
-const productCell=g=>`<div class="og-list-product"><div class="og-list-thumb" aria-hidden="true">${coverVisual(g,true)}</div><div class="og-list-name"><strong>${esc(g.name)}</strong>${g.sku?`<small>SKU ${esc(g.sku)}</small>`:''}${researchTags(g.tag_profile,3)}<small data-image-fill ${fillLabel[g.cover_fill]?'':'hidden'}>${fillLabel[g.cover_fill]||''}</small><small class="og-compact-meta">${esc(g.shop)} · ${esc(g.market)}</small></div></div>`;
+const productCard=g=>`<button type="button" class="vc-card og-product-card" data-cover-row="${esc(g.id)}" data-id="${esc(g.id)}" aria-label="查看 ${esc(g.name)}">
+ <span class="og-product-card-head">
+  <span class="og-list-thumb" aria-hidden="true">${coverVisual(g,true)}</span>
+  <small data-image-fill ${fillLabel[g.cover_fill]?'':'hidden'}>${fillLabel[g.cover_fill]||''}</small>
+ </span>
+ <strong class="og-product-card-name">${esc(g.name)}</strong>
+ <small>${esc(g.shop)} · ${esc(g.market)}${g.sku?' · SKU '+esc(g.sku):''}</small>
+ ${researchTags(g.tag_profile,3)}
+ <span class="og-product-card-metric"><small>人工关联参考</small><strong>${esc(g.links)} 条</strong></span>
+ <small>${esc(g.topics)} 项判断</small>
+</button>`;
 async function api(path='',payload,signal){
  const post=payload!==undefined;
  const r=await fetch(base+path,{signal,method:post?'POST':'GET',headers:post?{'Content-Type':'application/json','X-Hub-Request':'1'}:{},body:post?JSON.stringify(payload):undefined});
@@ -36,9 +46,9 @@ export function open(host){
  function message(text,error=false){const el=$('[data-status]');el.setAttribute('role',error?'alert':'status');el.textContent=text;}
  function patchCover(g){
   const old=visibleGoods.get(g.id);if(!old)return;
-  const tr=list.querySelector(`[data-cover-row="${CSS.escape(g.id)}"]`);if(!tr)return;
-  if(g.cover_url!==old.cover_url)tr.querySelector('.og-list-thumb').innerHTML=coverVisual(g,true);
-  const hint=tr.querySelector('[data-image-fill]'),label=fillLabel[g.cover_fill]||'';
+  const card=list.querySelector(`[data-cover-row="${CSS.escape(g.id)}"]`);if(!card)return;
+  if(g.cover_url!==old.cover_url)card.querySelector('.og-list-thumb').innerHTML=coverVisual(g,true);
+  const hint=card.querySelector('[data-image-fill]'),label=fillLabel[g.cover_fill]||'';
   if(hint.textContent!==label){hint.textContent=label;hint.hidden=!label;}
   visibleGoods.set(g.id,g);
  }
@@ -64,7 +74,7 @@ export function open(host){
    visibleGoods=new Map(d.items.map(g=>[g.id,g]));
    if(offset&&offset>=d.total){offset=Math.max(0,Math.floor((d.total-1)/d.page_size)*d.page_size);return load();}
    message(`${d.total} 款自营商品 · 团队共享`);
-   list.innerHTML=d.items.length?`<div class="intel-table-wrap"><table><thead><tr><th scope="col">商品</th><th scope="col" class="og-wide">店铺 / 市场</th><th scope="col" class="og-wide">人工证据</th><th scope="col">操作</th></tr></thead><tbody>${d.items.map(r=>`<tr data-cover-row="${esc(r.id)}"><td>${productCell(r)}</td><td class="og-wide">${esc(r.shop)} · ${esc(r.market)}</td><td class="og-wide">${r.topics} 项判断 · ${r.links} 条参考</td><td class="og-open-cell"><button type="button" data-id="${esc(r.id)}" aria-label="查看 ${esc(r.name)}">查看详情</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="intel-empty"><h3>${query?'没有匹配商品':'还没有自营商品'}</h3><p>${query?'换一个关键词再查。':'先登记一款真实商品。不连接店铺、不付费取数也能开始。'}</p></div>`;
+   list.innerHTML=d.items.length?`<div class="vc-grid og-product-grid">${d.items.map(productCard).join('')}</div>`:`<div class="intel-empty"><h3>${query?'没有匹配商品':'还没有自营商品'}</h3><p>${query?'换一个关键词再查。':'先登记一款真实商品。不连接店铺、不付费取数也能开始。'}</p></div>`;
    pages.innerHTML=d.total>d.page_size?`<button type="button" data-page="${offset-d.page_size}" ${offset===0?'disabled':''}>上一页</button><span>第 ${Math.floor(offset/d.page_size)+1} / ${Math.ceil(d.total/d.page_size)} 页</span><button type="button" data-page="${offset+d.page_size}" ${offset+d.page_size>=d.total?'disabled':''}>下一页</button>`:'';
    pollSoon();
   }catch(e){if(e.name!=='AbortError'&&token===req&&active())message(e.message,true);}
