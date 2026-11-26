@@ -5,7 +5,8 @@ import re
 from collections import Counter
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent / 'rules' / 'tiktok-github-0de6db7'
+PRODUCT_ROOT = Path(__file__).resolve().parent
+ROOT = PRODUCT_ROOT / 'rules' / 'tiktok-github-0de6db7'
 
 
 def tokens(text):
@@ -20,6 +21,51 @@ def tokens(text):
         elif len(word) > 1 and word not in {'tiktok', 'shop', 'ai', 'the', 'and'}:
             result.append(word)
     return result
+
+
+def product_context(query):
+    """Always supply product orientation, then add bounded excerpts for this question."""
+    path = PRODUCT_ROOT / 'docs' / 'AI_FEATURES.md'
+    guide = path.read_text(encoding='utf-8-sig')
+    sections = dict(re.findall(r'^## ([^\n]+)\n(.*?)(?=^## |\Z)', guide, re.M | re.S))
+    overview = sections.pop('中台功能速览').strip()
+    if not overview:
+        raise ValueError('Empty product overview')
+
+    query_tokens = set(tokens(query))
+    generic = set(tokens('中台 功能 平台 助理 怎么 如何 使用 了解 支持 现在 所有 操作 可以'))
+    specific = query_tokens - generic
+    if re.search(r'快捷键|键位', query):
+        sections['剪辑快捷键'] = (PRODUCT_ROOT / 'EDITOR_SHORTCUTS.md').read_text(encoding='utf-8-sig')
+    ranked = []
+    for title, section in sections.items():
+        title_score = len(specific & set(tokens(title)))
+        if re.search(r'安全与一致性修复|文档维护约定', title):
+            continue
+        for paragraph in section.strip().splitlines():
+            paragraph = paragraph.strip()
+            if not paragraph:
+                continue
+            overlap = specific & set(tokens(paragraph))
+            if overlap:
+                ranked.append((len(overlap) * 2 + title_score, title, paragraph))
+    ranked.sort(key=lambda hit: -hit[0])
+
+    details = []
+    seen = set()
+    for _, title, paragraph in ranked:
+        if paragraph in seen:
+            continue
+        seen.add(paragraph)
+        text = paragraph[:1050]
+        if len(paragraph) > 1050:
+            text += '…'
+        details.append(f'【{title}】{text}')
+        if len(details) == 5:
+            break
+    if details:
+        return overview + '\n\n相关操作说明\n' + '\n'.join(details)
+    return overview
 
 
 def retrieve(query, limit=3, max_chars=12000):

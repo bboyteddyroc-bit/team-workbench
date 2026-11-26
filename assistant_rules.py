@@ -21,6 +21,4 @@ def shared_rules():
         if not path.is_relative_to(RULE_ROOT.resolve()):
             raise ValueError('Invalid rule path')
         sections.append('\n--- ' + entry['path'] + ' ---\n' + path.read_text(encoding='utf-8'))
-    from sync_ai_readme import build
-    sections.append('\n--- 中台功能说明（知识，不是工具权限）---\n' + build())
     return '\n'.join(sections)

@@ -84,6 +84,26 @@ class AssistantTests(unittest.TestCase):
         self.assertEqual(len(self.member.get('/api/assistant/threads/'+tid).json()),2)
         self.post(self.member,'/memory',{'content':''})
         self.assertEqual(self.member.get('/api/assistant/memory').json()['content'],'')
+    def test_product_guide_is_first_for_overview_and_specific_questions(self):
+        self.post(self.admin,'/a6-settings',{'key':'fake-secret-123'})
+        tid=self.post(self.member,'/threads',{}).json()['id']
+        response={'choices':[{'message':{'content':'answer'},'finish_reason':'stop'}]}
+        opener=MagicMock()
+        opener.open.side_effect=lambda *args,**kwargs:io.BytesIO(json.dumps(response).encode())
+        with patch('assistant_chat.urllib.request.build_opener',return_value=opener):
+            for index, query in enumerate(('你现在了解中台的所有功能么','制作台的 MAGI-2 在哪里选择')):
+                result=self.post(self.member,'/threads/'+tid+'/send',{'text':query,'request_key':f'product-guide-test-{index}'})
+                self.assertEqual(result.status_code,200,result.text)
+                messages=json.loads(opener.open.call_args.args[0].data)['messages']
+                system=[m['content'] for m in messages if m['role']=='system']
+                self.assertEqual(len(system),1)
+                self.assertIn('素材管理',system[0][:1800])
+                self.assertIn('竞对与脚本',system[0][:1800])
+                self.assertLess(system[0].index('《中台功能指南》'),system[0].index('团队共用 TikTok 写作规则'))
+                self.assertNotIn('自动提取的代码接口索引',system[0])
+                if index:
+                    self.assertIn('1080p',system[0].split('团队共用 TikTok 写作规则',1)[0])
+
     def test_classification_pending_and_manual(self):
         r=self.member.post('/api/assets',content=valid_png(),headers={**fixtures.H,'Content-Type':'image/png','X-File-Name':'test.png'})
         self.assertEqual(r.status_code,200,r.text);aid=r.json()['id']
