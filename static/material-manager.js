@@ -2,11 +2,11 @@
 // Management-only surface. Upload/reference pickers remain in materials.js.
 window.hubMaterialManager=(()=>{
  let stop=()=>{};
- const folders=[['all','全部素材'],['person','人物素材'],['product','产品素材'],['scene','场景素材'],['video','视频素材'],['audio','音频素材'],['other','其他素材']];
+ const folders=[['all','全部素材'],['person','人物素材'],['product','产品素材'],['scene','场景素材'],['video','视频素材'],['audio','音频素材'],['other','其他素材'],['unclassified','待归类']];
  const categories=folders.filter(([id])=>['person','product','scene','other'].includes(id));
  const el=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
  const day=t=>{const d=new Date(t*1000);return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;};
- function matchesFolder(a,id){return id==='all'||(['video','audio'].includes(id)?a.mime.startsWith(id+'/'):a.category===id);}
+ function matchesFolder(a,id){return id==='all'||(['video','audio'].includes(id)?a.mime.startsWith(id+'/'):window.hubMaterials.effectiveCategory(a)===id);}
  async function open(root){
   stop();const epoch=sessionEpoch,uploadGuard=new AbortController();let alive=true,assets=[],folder='all',browsing=false,filter={query:'',range:null},checking=false;
   const bar=el('div',undefined,'materials-toolbar'),content=el('div'),status=el('p','正在加载素材…','fine'),head=el('div',undefined,'material-manager-heading'),back=el('button','返回文件夹'),title=el('h2','全部素材'),count=el('span',undefined,'fine');

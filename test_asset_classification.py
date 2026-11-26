@@ -54,6 +54,14 @@ class ClassificationTests(unittest.TestCase):
         response = self.client.post('/api/workspace/materials/' + aid, json={'name': 'manual.png', 'category': category}, headers=HEADERS)
         self.assertEqual(response.status_code, 200, response.text)
 
+    def test_transparent_product_keeps_visible_silhouette_for_recognition(self):
+        image = Image.new('RGBA', (2, 1), (0, 0, 0, 0))
+        image.putpixel((1, 0), (0, 0, 0, 255))
+        prepared = classification.vision_image(image)
+        self.assertEqual(prepared.mode, 'RGB')
+        self.assertEqual(prepared.getpixel((0, 0)), (245, 245, 245))
+        self.assertEqual(prepared.getpixel((1, 0)), (0, 0, 0))
+
     def test_settings_promote_waiting_and_worker_updates_folder(self):
         aid = self.upload()
         self.assertEqual(self.state(aid)['status'], 'waiting_model')
