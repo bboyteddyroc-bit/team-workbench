@@ -16,13 +16,14 @@ window.hubLibTV=(()=>{
   const top=el('div',undefined,'task-top');
   const identity=['LibTV · 共享账号',job.created?new Date(job.created*1000).toLocaleString('zh-CN'):null].filter(Boolean).join(' · ');
   const issue=['failed','attention','unknown'].includes(job.state),feedbackUI=window.hubTaskFeedback;
-  const state=issue&&feedbackUI?feedbackUI.state(job.feedback_state||job.state):job.state==='running'?(job.stage||'生成中'):({failed:'生成失败',ready:'已完成',attention:'同步待恢复',importing:'正在取回原任务结果'})[job.state]||job.state;
+  const state=issue&&feedbackUI?feedbackUI.state(job.feedback_state||job.state):job.state==='running'?(job.stage||'生成中'):({failed:'生成失败',ready:'已完成',expired:'成片已过期',attention:'同步待恢复',importing:'正在取回原任务结果'})[job.state]||job.state;
   top.append(el('span',identity,'task-meta'),el('span',state,'status '+job.state));row.append(top);
   row.append(el('p',[job.model,job.duration?job.duration+' 秒':null,(job.resolution||'').toUpperCase()].filter(Boolean).join(' · '),'fine'));
   if(job.prompt.length>180){const details=el('details'),summary=el('summary',job.prompt.slice(0,90)+'…');details.append(summary,el('p',job.prompt,'task-prompt'));row.append(details);}else row.append(el('p',job.prompt,'task-prompt'));
   if(issue&&feedbackUI)row.append(feedbackUI.studio(job,'libtv'));else if(job.error){const d=el('details');d.append(el('summary','同步详情'),el('p',job.error,'fine'));row.append(d);}
   const actions=el('div',undefined,'task-actions');actions.append(originalWindowAction(job));
-  if(job.asset_id){
+  if(job.state==='expired'||job.state==='ready')actions.append(...(window.hubPromptTemplates?.videoActions({...job,libtv:true})||[]));
+  if(job.asset_id&&job.state==='ready'){
    const video=el('video');video.controls=true;window.hubMediaLazy.watch(video,'/api/assets/'+job.asset_id);video.setAttribute('aria-label','LibTV 生成的视频');row.append(video);
    if(job.state==='ready'){const source={...job,libtv:true};actions.append(window.hubRelay.button(source),window.hubRelay.editButton(source,false));}
    const download=el('a','下载 MP4');download.href='/api/assets/'+job.asset_id+'?download=1';actions.append(download);
@@ -50,7 +51,7 @@ window.hubLibTV=(()=>{
    if(!c.prompt.trim()){toast('请填写提示词',true);return;}
    const reason=profile?submissionCheck(items,{id:'libtv'}):'请选择已授权的 LibTV 账号';if(reason){toast(reason,true);return;}
    const epoch=sessionEpoch,baseKey=crypto.randomUUID();
-   const payload={prompt:c.prompt,assets:JSON.parse(JSON.stringify(c.assets)),duration:c.duration,mode:c.mode,model:c.libtv_model||'star-video2',resolution:c.libtv_resolution||'720p',libtv_profile:profile,composition_id:c.id};
+   const payload={prompt:c.prompt,assets:JSON.parse(JSON.stringify(c.assets)),duration:c.duration,mode:c.mode,model:c.libtv_model||'star-video2',resolution:c.libtv_resolution||'720p',libtv_profile:profile,composition_id:c.id,template_id:c.template_id};
    const keys=Array.from({length:count},(_,i)=>count===1?baseKey:baseKey+'-'+(i+1));
    activeCompositions.add(c.id);
    for(const key of keys)pending.set(key,{id:'pending-'+key,request_key:key,composition_id:c.id,state:'running',stage:'正在提交到 LibTV',created:Date.now()/1000,prompt:payload.prompt,model:libtvVideoModels[payload.model]?.label||payload.model,resolution:payload.resolution});

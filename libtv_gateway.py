@@ -440,8 +440,10 @@ def attach(app,hub,user,body):
         with hub.db() as db:
             recover_interrupted(db)
             rows=[dict(r) for r in db.execute('SELECT id,state,stage,request_key,created,updated,project,asset_id,error,payload,retry_at FROM libtv_jobs WHERE owner=? ORDER BY created DESC LIMIT 100',(u['id'],))]
+            pinned={r[0] for r in db.execute("SELECT job FROM retained_videos WHERE owner=? AND source='libtv'",(u['id'],))}
             diagnostics=feedback.latest_failures(db,[('libtv',r['id']) for r in rows if r['state'] in ('failed','attention')])
         for r in rows:
+            r['retained']=r['id'] in pinned
             p=json.loads(r.pop('payload'));r['prompt']=p['prompt'];r['duration']=p['duration'];r['model']=VIDEO_MODELS.get(p.get('model'),'Seedance 2.5');r['resolution']=p.get('resolution','720p');r['composition_id']=p.get('composition_id','')
             if r['state'] in ('failed','attention'):
                 waiting=r['state']=='attention' and (r['retry_at'] or 0)>0 and '仍在生成中' in (r['error'] or '')
@@ -484,6 +486,8 @@ def attach(app,hub,user,body):
         composition=str(data.get('composition_id') or '')
         if composition and not re.fullmatch(r'[a-zA-Z0-9-]{1,64}',composition):raise HTTPException(400,'创作窗口标识无效')
         clean={'profile':profile,'model':model,'resolution':resolution,'prompt':prompt.strip(),'duration':duration,'mode':mode,'composition_id':composition,'assets':[{'id':a['id'],'role':a.get('role','reference'),'token':str(a.get('token',''))[:100]} for a in assets]}
+        if data.get('template_id'):
+            clean['template_id']=data['template_id']
         encoded=json.dumps(clean,sort_keys=True,ensure_ascii=False);jid=secrets.token_hex(16)
         with hub.db() as db:
             db.execute('BEGIN IMMEDIATE')
@@ -513,6 +517,8 @@ def attach(app,hub,user,body):
                 stored.sort(key=lambda a:a['role']!='first')
             db.execute('INSERT INTO libtv_jobs(id,owner,request_key,payload,state,created,updated) VALUES(?,?,?,?,?,?,?)',(jid,uid,key,encoded,'running',time.time(),time.time()))
             db.execute('UPDATE libtv_jobs SET runner=?,profile=? WHERE id=?',(os.getpid(),profile,jid))
+            from prompt_templates import track
+            track(db,uid,clean.get('template_id'),'libtv',jid,re.sub(r'^(\w{8}-\w{4}-\w{4}-\w{4}-\w{12})-\d+$',r'\1',key))
             hub.log(db,uid,'libtv_submitted',jid)
         with feedback.bound(hub,'libtv',jid):
             return generate_video(uid,jid,profile,setting['account'],stored,clean)

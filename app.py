@@ -353,6 +353,7 @@ def create_app(directory=None, provider=None, worker=True):
         feishu_thread = None
         lock = None
         libtv_thread = None
+        retention_thread = None
         try:
             if worker:
                 lock = (hub.directory/'worker.lock').open('a+b')
@@ -412,6 +413,9 @@ def create_app(directory=None, provider=None, worker=True):
                 feishu_thread.start()
                 libtv_thread=threading.Thread(target=app.state.libtv_auto,daemon=True)
                 libtv_thread.start()
+                from video_retention import loop as retention_loop
+                retention_thread=threading.Thread(target=retention_loop,args=(hub,),name='video-retention',daemon=True)
+                retention_thread.start()
                 if os.getenv('HUB_VOICE_WORKER','1')=='1':
                     hub.voice.recover()
                     voice_thread=threading.Thread(target=hub.voice.loop,daemon=True)
@@ -421,7 +425,7 @@ def create_app(directory=None, provider=None, worker=True):
             from worker_lifecycle import drain_workers
             threads=[t for t in (thread,edit_thread,ai_edit_thread,voice_thread,classification_thread,
                      feishu_thread,script_thread,case_thread,case_data_thread,apify_thread,
-                     enrichment_thread,kalodata_thread,own_goods_thread,own_goods_cover_thread,libtv_thread) if t is not None]
+                     enrichment_thread,kalodata_thread,own_goods_thread,own_goods_cover_thread,libtv_thread,retention_thread) if t is not None]
             app.state.worker_drain=drain_workers(hub.stop,threads+comment_threads,lock)
 
     app = FastAPI(docs_url=None,redoc_url=None,openapi_url=None,lifespan=lifespan)
@@ -702,6 +706,7 @@ def create_app(directory=None, provider=None, worker=True):
         params=(int(u['role']=='admin'),u['id'],*(ids if ids is not None else (offset,)))
         with hub.db() as db:
             rows=db.execute("SELECT t.id,t.prompt,t.state,t.created,t.updated,t.remote_id,t.error,t.account_id,t.metadata,t.duration,t.config,t.batch_id,a.name account_name,a.scope account_scope,u.username owner_name,cr.error append_error,cr.state append_state FROM tasks t JOIN accounts a ON t.account_id=a.id JOIN users u ON t.owner=u.id LEFT JOIN continuation_results cr ON cr.task_id=t.id WHERE ((?=1 AND a.scope='shared') OR t.owner=?)"+selection+" ORDER BY t.created DESC,t.id DESC"+limit,params).fetchall()
+            pinned={r[0] for r in db.execute("SELECT job FROM retained_videos WHERE owner=? AND source='tiktok'",(u['id'],))}
             reasons={};positions={};account_reasons={}
             queued_accounts={r['account_id'] for r in rows if r['state']=='queued'}
             for account_id in queued_accounts:
@@ -716,6 +721,7 @@ def create_app(directory=None, provider=None, worker=True):
             diagnostics=feedback.latest_failures(db,[('tiktok',r['id']) for r in rows if r['state'] in ('failed','unknown','attention')])
         result=[dict({k:r[k] for k in ('id','prompt','state','created','updated','remote_id','error','account_name','account_scope','owner_name','metadata','duration','config','batch_id','append_error','append_state')},queue_reason=reasons.get(r['id'],''),queue_position=positions.get(r['id'])) for r in rows]
         for item in result:
+            item['retained']=item['id'] in pinned
             if item['state'] in ('failed','unknown','attention'):
                 item['feedback']=diagnostics.get(('tiktok',item['id']))
                 item['feedback_state']=feedback.outcome(item['state'],item['error'],item['feedback'])
@@ -794,6 +800,9 @@ def create_app(directory=None, provider=None, worker=True):
     async def save_compositions(request: Request):
         u=user(request); data=await body(request); items=data.get('items')
         with hub.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            from video_retention import assert_available
+            assert_available(db,items)
             validate_compositions(db,u['id'],items,draft=True)
             db.execute('INSERT INTO compositions VALUES(?,?,?) ON CONFLICT(owner) DO UPDATE SET content=excluded.content,updated=excluded.updated',(u['id'],json.dumps(items,ensure_ascii=False),time.time()))
         return {'ok':True}
@@ -882,6 +891,9 @@ def create_app(directory=None, provider=None, worker=True):
             if project_id:
                 from workspace import require_project
                 require_project(db,str(project_id),u['id'])
+            from video_retention import assert_available
+            from prompt_templates import track
+            assert_available(db,items)
             validate_compositions(db,u['id'],items)
             for item in items:
                 from workspace import validate_continuation
@@ -927,6 +939,7 @@ def create_app(directory=None, provider=None, worker=True):
                     account=min(pool,key=lambda a:load[a['id']]); load[account['id']]+=1
                     tid=secrets.token_hex(12); now=time.time(); index=len(ids)
                     db.execute('INSERT INTO tasks(id,owner,account_id,prompt,state,created,updated,request_key,duration,config,batch_id) VALUES(?,?,?,?,?,?,?,?,?,?,?)',(tid,u['id'],account['id'],item['prompt'].strip(),'queued',now,now,key+':'+str(index),item.get('duration',5),json.dumps(item,ensure_ascii=False),key))
+                    track(db,u['id'],item.get('template_id'),'tiktok',tid,key)
                     hub.log(db,u['id'],'task_queued',tid); ids.append(tid)
                     if project_id:
                         db.execute('INSERT INTO project_tasks VALUES(?,?,?,?)',(str(project_id),tid,u['id'],now))
@@ -1092,6 +1105,10 @@ def create_app(directory=None, provider=None, worker=True):
 
     from libtv_gateway import attach as attach_libtv
     attach_libtv(app,hub,user,body)
+    from video_retention import attach as attach_video_retention
+    from prompt_templates import attach as attach_prompt_templates
+    attach_video_retention(app,hub,user,body)
+    attach_prompt_templates(app,hub,user,body)
 
     app.mount('/static',StaticFiles(directory=ROOT/'static'),name='static')
     @app.get('/')

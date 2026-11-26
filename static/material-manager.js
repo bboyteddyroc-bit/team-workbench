@@ -12,6 +12,7 @@ window.hubMaterialManager=(()=>{
   const bar=el('div',undefined,'materials-toolbar'),content=el('div'),status=el('p','正在加载素材…','fine'),head=el('div',undefined,'material-manager-heading'),back=el('button','返回文件夹'),title=el('h2','全部素材'),count=el('span',undefined,'fine');
   root.classList.add('material-manager');status.setAttribute('role','status');back.type='button';head.append(back,title,count);root.replaceChildren(bar,status,head,content);head.hidden=true;
   window.hubMaterialFilters.mount(bar,[],value=>{filter=value;render();});
+  const templates=el('button','提示词库');templates.type='button';templates.onclick=()=>window.hubPromptTemplates?.library();bar.after(templates);
   const active=()=>alive&&epoch===sessionEpoch&&root.isConnected;
   const setStatus=(text,error=false)=>{status.textContent=text;status.classList.toggle('error',error);status.hidden=!text;};
   function updateControls(reset=false){window.hubMaterialFilters.update(bar,assets.filter(a=>!browsing||matchesFolder(a,folder)),reset);}

@@ -1,0 +1,13 @@
+.prompt-library{width:min(880px,94vw);max-height:88vh;overflow:auto}
+.prompt-library-head{display:flex;align-items:center;flex-wrap:wrap;gap:.65rem;justify-content:space-between}
+.prompt-library-body,.prompt-library-body form{display:grid;gap:.8rem;min-width:0}
+.prompt-library-body form>label{display:grid;gap:.35rem}
+.prompt-library-body form>.prompt-share{display:flex;align-items:center;gap:.55rem}
+.prompt-library-body form>button{justify-self:end}
+.prompt-library-body textarea,.prompt-library-body form input:not([type=checkbox]){width:100%}
+.prompt-template-text{white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;margin:.35rem 0}
+.prompt-ref-list{list-style:none;display:flex;flex-wrap:wrap;gap:.65rem;padding:0;margin:.4rem 0}
+.prompt-ref-list li{display:flex;align-items:center;gap:.4rem;max-width:100%;overflow-wrap:anywhere}
+.prompt-ref-list img{width:42px;height:42px;object-fit:contain}
+.prompt-history-result details>video,.prompt-history-result details>img{display:block;max-width:100%;max-height:320px;margin:.5rem auto}
+.prompt-library-body .task{padding:.7rem}

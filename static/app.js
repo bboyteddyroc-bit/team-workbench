@@ -4,7 +4,7 @@ const $$ = s => [...document.querySelectorAll(s)];
 let features={references:false};
 let me, setup=false, accounts=[], tasks=[], filter='all', view='studio', loading=false;
 let requestKey=crypto.randomUUID(), toastTimer, cachedTasks=new Map(), sessionEpoch=0, taskLimit=100;
-const labels={queued:'已排队',submitting:'正在提交',running:'生成中',ready:'已完成',failed:'生成失败',unknown:'正在确认任务',attention:'同步待恢复',cancelled:'已取消',closed:'已关闭追踪'};
+const labels={queued:'已排队',submitting:'正在提交',running:'生成中',ready:'已完成',failed:'生成失败',unknown:'正在确认任务',attention:'同步待恢复',cancelled:'已取消',closed:'已关闭追踪',expired:'成片已过期'};
 const activeStates=['queued','submitting','running','importing'];
 const attentionStates=['failed','unknown','attention'];
 function el(tag, text, cls){const n=document.createElement(tag); if(text!==undefined)n.textContent=text; if(cls)n.className=cls; return n;}
@@ -28,7 +28,7 @@ async function api(path,data){
 }
 function formData(form){return Object.fromEntries(new FormData(form));}
 async function busy(form,fn){const buttons=[...form.querySelectorAll('button')];buttons.forEach(b=>b.disabled=true);try{await fn();}catch(e){toast(e.message,true);}finally{buttons.forEach(b=>b.disabled=false);}}
-function showAuth(){window.hubTaskFeedback?.close();window.hubStudioHistory?.close();window.hubAIEdit?.reset();hubNotice.clear();window.hubIntelligence?.reset();window.hubFeishu?.reset();window.hubMobileTransfer?.reset();window.hubAudioLibrary?.reset();window.hubLibTV?.reset();window.hubAssistant?.reset();window.voicePanel?.reset();window.hubMaterials?.reset();window.hubUI?.reset();window.hubWorkspace?.reset();window.hubEditor?.reset();sessionEpoch++;me=null;features={references:false};accounts=[];tasks=[];taskLimit=100;loading=false;cachedTasks.clear();$$('form').forEach(f=>f.reset());resetConnect();$('#task-list').replaceChildren();window.hubAccountTable?.reset();window.hubAdminTables?.reset();$('#account-list').replaceChildren();$('#member-list').replaceChildren();$('#audit-list').replaceChildren();resetComposer();$('#shell').hidden=true;$('#auth').hidden=false;$('#auth-title').textContent=setup?'首次设置':'登录工作台';$('#auth-description').textContent=setup?'在本机创建管理员账号，密码至少 12 字符。':'使用管理员为你创建的工作台账号。';$('#auth-submit').textContent=setup?'创建管理员并登录':'登录';}
+function showAuth(){window.hubPromptTemplates?.reset();window.hubTaskFeedback?.close();window.hubStudioHistory?.close();window.hubAIEdit?.reset();hubNotice.clear();window.hubIntelligence?.reset();window.hubFeishu?.reset();window.hubMobileTransfer?.reset();window.hubAudioLibrary?.reset();window.hubLibTV?.reset();window.hubAssistant?.reset();window.voicePanel?.reset();window.hubMaterials?.reset();window.hubUI?.reset();window.hubWorkspace?.reset();window.hubEditor?.reset();sessionEpoch++;me=null;features={references:false};accounts=[];tasks=[];taskLimit=100;loading=false;cachedTasks.clear();$$('form').forEach(f=>f.reset());resetConnect();$('#task-list').replaceChildren();window.hubAccountTable?.reset();window.hubAdminTables?.reset();$('#account-list').replaceChildren();$('#member-list').replaceChildren();$('#audit-list').replaceChildren();resetComposer();$('#shell').hidden=true;$('#auth').hidden=false;$('#auth-title').textContent=setup?'首次设置':'登录工作台';$('#auth-description').textContent=setup?'在本机创建管理员账号，密码至少 12 字符。':'使用管理员为你创建的工作台账号。';$('#auth-submit').textContent=setup?'创建管理员并登录':'登录';}
 async function start(){try{const status=await api('/status');setup=status.needs_setup;$('#environment').textContent=status.local_only?'本机预览':'内网工作空间';if(setup)return showAuth();try{me=await api('/me');await enter();}catch{showAuth();}}catch(e){$('#auth').hidden=false;$('#auth-error').textContent=e.message;}}
 async function enter(){
   await window.hubLoginPass?.complete();
@@ -101,6 +101,7 @@ function taskNode(t){
   if(t.state==='attention'&&t.remote_id)row.append(el('p','“同步状态”只查询已有任务，不会重新提交生成。','fine'));
   if(t.state==='ready'){const video=el('video');video.controls=true;window.hubMediaLazy.watch(video,'/api/tasks/'+t.id+'/video');video.setAttribute('aria-label','生成的视频');row.append(video);}
   const actions=el('div',undefined,'task-actions');
+  if((t.state==='ready'||t.state==='expired')&&(!t.owner_name||t.owner_name===me?.username))actions.append(...(window.hubPromptTemplates?.videoActions(t)||[]));
   if(t.state==='ready'){const edit=el('button','加入剪辑');edit.onclick=()=>window.hubWorkspace?.add(t.id).catch(e=>toast(e.message,true));actions.append(edit);const a=el('a','下载 MP4');a.href='/api/tasks/'+t.id+'/video?download=true';a.download='video.mp4';actions.append(a);}
   if(t.state==='queued')actions.append(taskAction('取消排队',t,'cancel'));
   if(t.state==='running'||t.state==='attention')actions.append(taskAction('同步状态',t,'sync'));

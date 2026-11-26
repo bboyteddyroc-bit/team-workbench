@@ -794,6 +794,8 @@ def attach(app,hub,user,body):
         except (ValueError,TypeError,KeyError,AttributeError):raise HTTPException(400,'剪辑参数无效，请检查片段时长、素材权限和字幕时间') from None
         with hub.db() as db:
             db.execute('BEGIN IMMEDIATE')
+            from video_retention import assert_available
+            assert_available(db,content)
             if pid:
                 old=owned(db,pid,u)
                 if data.get('version')!=old['version']:raise HTTPException(409,'项目已在其他窗口更新，请重新打开后编辑')

@@ -44,6 +44,11 @@ function unavailableReason(c,libtv){
     if(!libtv&&!['auto','5000005'].includes(c.model))return '首尾帧请选择 Seedance 2.0';
     if(!roles.has('first')||roles.size!==assets.length||assets.some(a=>!a.mime.startsWith('image/')||!['first','last'].includes(a.role)))return '请添加一张首帧图片，可选一张尾帧';
   }
+  if(c.template_id){
+    const tokens=new Set(assets.map(asset=>asset.token));
+    if([...c.prompt.matchAll(/@(图片[0-9]+|视频[0-9]+|音频[0-9]+)/g)].some(match=>!tokens.has(match[1])))
+      return '模板缺少已引用的素材，请补齐或修改提示词';
+  }
   if(libtv)return '';
   if(c.mode!=='frames'&&assets.some(a=>a.role&&a.role!=='reference'))return '全能模式请使用参考素材，不使用首尾帧';
   const images=assets.filter(a=>a.mime.startsWith('image/')).length,videos=assets.filter(a=>a.mime.startsWith('video/')).length,audios=assets.filter(a=>a.mime.startsWith('audio/')).length;
@@ -198,7 +203,7 @@ function previewWaiting(item){
   box.append(ring,bars,el('strong',title),el('small',timing),el('small',hint));return box;
 }
 function resultSignature(item){
-  if(item.videoUrl)return JSON.stringify(['video',item.videoUrl]);
+  if(item.videoUrl)return JSON.stringify(['video',item.videoUrl,Boolean((item.libtv||item.relay)?.retained)]);
   const waiting=waitStates.has(item.state);
   return JSON.stringify([item.state,(item.libtv||item.relay)?.feedback_state,item.error,item.detail,waiting?Math.floor(Date.now()/60000):0,waiting?(item.libtv||item.relay)?.updated:0]);
 }
@@ -209,7 +214,7 @@ function resultCard(item,c){
       const source=item.libtv?{...item.libtv,libtv:true}:item.relay;
       const actions=el('div',undefined,'window-result-actions');
       actions.setAttribute('role','group');actions.setAttribute('aria-label','生成结果操作');
-      actions.append(window.hubRelay.button(source,c),window.hubRelay.editButton(source));box.append(actions);
+      actions.append(window.hubRelay.button(source,c),window.hubRelay.editButton(source),...(window.hubPromptTemplates?.videoActions(source)||[]));box.append(actions);
     }else if(waitStates.has(item.state)){box.append(previewWaiting(item));}
     else{
       const problem=attentionStates.includes(item.state),feedbackState=(item.libtv||item.relay)?.feedback_state||item.state;
@@ -217,6 +222,9 @@ function resultCard(item,c){
       if(problem){
         box.append(el('small',feedbackState==='unknown'?'请先核对原平台记录，不要重复提交。':'请在任务记录中查看具体原因。'));
         const more=el('button','打开任务记录','text-button');more.type='button';more.onclick=e=>{e.stopPropagation();window.hubStudioHistory?.open('failed');};box.append(more);
+      }else if(item.state==='expired'){
+        const task=item.libtv||item.relay;
+        if(task)box.append(...(window.hubPromptTemplates?.videoActions({...task,libtv:Boolean(item.libtv)})||[]));
       }else box.append(el('small',item.error||item.detail||'状态将自动更新'));
     }
     return box;
@@ -341,6 +349,9 @@ function compositionNode(c,index){
     if(magi)libtvSettings.append(el('small','最多 10 张图、5 条视频、5 条音频','fine'));
     parameterBody.append(libtvSettings);
   }
+  if(c.template_id){
+    const detach=el('button','取消模板关联');detach.type='button';detach.onclick=()=>{delete c.template_id;changed(c);renderCompositions();};parameterBody.append(detach);
+  }
   if(c.relay_source&&c.relay_task){parameterBody.prepend(relaySourcePanel(c));}
   const toolbar=el('div',undefined,'composer-compact-toolbar');toolbar.append(options,references.querySelector('.reference-actions'));node.append(toolbar,references);
   const check=el('div',undefined,'submit-check'),route=el('strong',undefined,'submit-route'),condition=el('small',undefined,'submit-condition');
@@ -356,6 +367,27 @@ async function addAssets(c,files,role){
   pendingUploads++;updateCompositionSummary();
   try{for(const file of files){const r=await fetch('/api/assets',{method:'POST',credentials:'same-origin',headers:{'Content-Type':file.type,'X-Hub-Request':'1','X-File-Name':encodeURIComponent(file.name)},body:file});const asset=await r.json();if(!r.ok)throw new Error(asset.detail||'素材上传失败');if(epoch!==composerEpoch||session!==sessionEpoch||!me)return;asset.role=role;asset.token=compositionToken(c,asset.mime);if(role!=='reference')c.assets=c.assets.filter(a=>a.role!==role);c.assets.push(asset);changed(c);}renderCompositions();toast('素材已保存到中台，尚未上传 TikTok');}catch(e){if(epoch===composerEpoch)toast(e.message,true);}finally{if(epoch===composerEpoch){pendingUploads--;renderCompositions();}}
 }
+window.hubApplyVideoTemplate=async data=>{
+  const session=sessionEpoch;
+  navigate('studio');await restoreComposer();
+  if(session!==sessionEpoch||!me)return;
+  if(compositions.length>=100)throw Error('当前已有 100 张创作卡片，请先移除不用的卡片');
+  const c=blankComposition();
+  Object.assign(c,data.settings,{prompt:data.prompt,template_id:data.id});
+  delete c.channel;
+  c.assets=data.refs.filter(ref=>ref.available&&ref.id).map(({available,...ref})=>ref);
+  if(data.refs.some(ref=>!ref.available)||/@(?:图片|视频|音频)\d+/.test(c.prompt)&&!c.assets.length)
+    toast('请补齐模板里的参考素材后再生成');
+  const channel=$('#generation-channel');
+  if(channel&&data.settings.channel&&channel.value!==data.settings.channel){
+    channel.value=data.settings.channel;
+    channel.dispatchEvent(new Event('change'));
+  }
+  compositions.push(c);
+  changed(c);renderCompositions();
+  window.hubStudioHistory?.locate?.(c.id);
+  toast('模板已载入为制作草稿');
+};
 async function saveCompositions(){const epoch=composerEpoch;await api('/compositions',{items:compositions});if(epoch===composerEpoch)toast('草稿已保存，下次登录可继续编辑');}
 async function submitCompositions(items,button,context={}){
   if(submissionPending)return;

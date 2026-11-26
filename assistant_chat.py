@@ -143,7 +143,11 @@ def attach(app, hub, user, body):
     def delete_thread(tid: str, request: Request):
         u=user(request)
         with hub.db() as db:
-            owned(db,tid,u['id']);db.execute('DELETE FROM ai_turns WHERE owner=? AND thread=?',(u['id'],tid));db.execute('DELETE FROM ai_threads WHERE owner=? AND id=?',(u['id'],tid))
+            db.execute('BEGIN IMMEDIATE')
+            owned(db,tid,u['id'])
+            from prompt_templates import detach_image_history
+            detach_image_history(db,u['id'],tid)
+            db.execute('DELETE FROM ai_turns WHERE owner=? AND thread=?',(u['id'],tid));db.execute('DELETE FROM ai_threads WHERE owner=? AND id=?',(u['id'],tid))
         return {'ok':True}
 
     def complete(uid,tid,key,prompt,images,generation,request):
@@ -184,6 +188,9 @@ def attach(app, hub, user, body):
             db.execute('''UPDATE ai_turns SET images=?,generation=?,runner_pid=?,runner_stamp=?,image_profile=?,image_account=?
                           WHERE id=? AND owner=?''',(image_json,generation_json,os.getpid(),process_stamp(os.getpid()) or 'unverifiable',
                           image_route.profile if image_route else LEGACY,image_route.account if image_route else '',turn,uid))
+            if generation:
+                from prompt_templates import track
+                track(db,uid,generation.get('template_id'),'image',turn,key)
             db.execute('UPDATE ai_threads SET title=CASE WHEN title=? THEN ? ELSE title END,updated=? WHERE id=? AND owner=?',('新对话',prompt[:40],now,tid,uid))
         if generation:
             messages=[]
@@ -302,5 +309,7 @@ def attach(app, hub, user, body):
             count=data.get('count',1)
             if type(count) is not int or count not in (1,2,4):raise HTTPException(400,'生图数量仅支持 1、2 或 4 张')
             generation={'size':size,'ratio':ratio,'provider':'libtv','model':'lib-image-2.5-f','count':count}
+            if data.get('template_id'):
+                generation['template_id']=data['template_id']
         images=await run_in_threadpool(normalize_images,data.get('images',[]))
         return await run_in_threadpool(complete,u['id'],tid,key,prompt.strip(),images,generation,request)
