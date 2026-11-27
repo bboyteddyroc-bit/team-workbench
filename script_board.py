@@ -188,6 +188,9 @@ def library_rows(db, directory):
     reviewed = {}
     for r in db.execute('SELECT case_id,field,claim,start,end FROM video_case_clip_reviews'):
         reviewed.setdefault(r['case_id'], {})[r['field']] = dict(r)
+    has_apify_subtitles = db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='apify_video_transcripts'").fetchone()
+    subtitles = {('tiktok:'+r['video']):r for r in db.execute("""SELECT video,transcript,cues,language
+        FROM apify_video_transcripts WHERE state='ready'""")} if has_apify_subtitles else {}
     archives = {r['id']:r for r in [*saved.values(),*standalone] if r['removed_at'] is None}
     for ident, base in rows.items():
         case = cases.get(ident,{})
@@ -195,13 +198,19 @@ def library_rows(db, directory):
         fields = projection(case)
         case_text = fields['transcript']['value'] or ''
         archive_text = archive.get('transcript_original') or ''
-        transcript = case_text or archive_text
+        subtitle = subtitles.get(ident)
+        subtitle_text = subtitle['transcript'] if subtitle else ''
+        transcript = case_text or archive_text or subtitle_text
+        subtitle_source = 'TikTok 字幕 · Apify' + (' · '+subtitle['language'] if subtitle and subtitle['language'] else '')
         base.update(category=archive.get('product_category') or fields['category']['value'],
-            transcript_source=fields['transcript']['source'] if case_text else archive.get('transcript_source'),
+            transcript_source=fields['transcript']['source'] if case_text else archive.get('transcript_source') if archive_text else subtitle_source if subtitle_text else '',
             transcript=transcript, tags=json_value(archive.get('tags'), []))
         details = [evidence.get((source, item, digest(transcript))) for source,item in
                    (('case',case.get('id')),('archive',archive.get('id')))] if transcript else []
         timing = next((json_value(d['timing'],[]) for d in details if d and d['timing'] != '[]'),[])
+        subtitle_timing = not timing and bool(subtitle_text) and transcript == subtitle_text
+        if subtitle_timing:
+            timing = json_value(subtitle['cues'],[])
         components = next((json_value(d['components'],[]) for d in details if d and d['components'] != '[]'),[])
         if transcript:
             existing = {'opening':fields['hook_example']['value'] or fields['opening']['value'] or archive.get('opening'),
@@ -211,9 +220,9 @@ def library_rows(db, directory):
             used = {c['phase'] for c in components}
             components = vetted_components([*components, *(c for c in existing if c['phase'] not in used)],transcript)
         if not components and transcript:
-            first = re.split(r'(?<=[.!?。！？])\s+|(?<=[。！？])',transcript,maxsplit=1)[0].strip()
+            first = timing[0]['text'] if subtitle_timing and timing else re.split(r'(?<=[.!?。！？])\s+|(?<=[。！？])',transcript,maxsplit=1)[0].strip()
             if len(first) <= 250:
-                components = [{'phase':'opening','text':first,'source':'逐字稿首句'}]
+                components = [{'phase':'opening','text':first,'source':'首条字幕' if subtitle_timing else '逐字稿首句'}]
         for component in components:
             if component['phase'] not in ('opening','demo','cta'):
                 continue
@@ -221,7 +230,12 @@ def library_rows(db, directory):
             review = reviewed.get(case.get('id'),{}).get(field)
             if review and review['claim']==fields[field]['value'] and tokens(review['claim'])==tokens(component['text']):
                 component.update(start=review['start'],end=review['end'],timing_source='人工确认区间')
-        base['components'] = [c if 'start' in c else locate(c,timing) for c in components]
+        located = [c if 'start' in c else locate(c,timing) for c in components]
+        if subtitle_timing:
+            for component in located:
+                if component.get('timing_source') == '语音识别分段':
+                    component['timing_source'] = 'TikTok 字幕时间'
+        base['components'] = located
         normalized_transcript = ' '.join(tokens(transcript))
         base['exact_script'] = digest(normalized_transcript) if normalized_transcript else ''
         if case and (directory/'case-analysis'/case['id']/'source.mp4').is_file():

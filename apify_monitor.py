@@ -90,6 +90,9 @@ class Monitor:
             CREATE TABLE IF NOT EXISTS apify_profiles(account TEXT PRIMARY KEY,profile TEXT NOT NULL,collected REAL NOT NULL);
             ''')
             db.execute('BEGIN IMMEDIATE')
+            import apify_run_archive, apify_transcripts
+            apify_run_archive.initialize(db)
+            apify_transcripts.initialize(db)
             for table, columns in {'apify_accounts':{'options':"TEXT NOT NULL DEFAULT '{}'",'times':'TEXT','deleted_at':'REAL'},'apify_runs':{'options':"TEXT NOT NULL DEFAULT '{}'",'start_at':'REAL','end_at':'REAL','warning':'TEXT','item_count':'INTEGER'},'apify_snapshots':{'cover':'TEXT','collects':'INTEGER'}}.items():
                 existing={r[1] for r in db.execute('PRAGMA table_info('+table+')')}
                 for name,kind in columns.items():
@@ -226,6 +229,9 @@ class Monitor:
                     zone=settings.get('timezone','UTC')
                     group=[{'owner':batch['owner'],'handle':m['handle'],'start_at':batch['start_at'],'end_at':batch['end_at'],'timezone':zone} for m in members]
                     request=build_request(group,max_items=MAX_ITEMS,max_charge=GROUP_MAX_CHARGE)
+                    if batch['automatic']:
+                        from apify_transcripts import DOWNLOAD_MODE
+                        request['json']['downloadSubtitlesOptions']=DOWNLOAD_MODE
                     data=self.submit_actor(trace,params=request['params'],json=request['json'])
                     remote=data.get('id')
                     if not isinstance(remote,str) or not remote.strip():
@@ -277,7 +283,8 @@ class Monitor:
                 rows=split['accounts'].get(str(member['handle']).strip().lstrip('@').lower(),[])
                 try:
                     with feedback.bound(self.hub,'apify_run',child), feedback.step('apify_save'):
-                        self.ingest({'id':child,'account':member['account'],'start_at':batch['start_at'],'end_at':batch['end_at'],'automatic':bool(batch['automatic'])},rows)
+                        self.ingest({'id':child,'account':member['account'],'start_at':batch['start_at'],'end_at':batch['end_at'],'automatic':bool(batch['automatic']),
+                            'subtitle_binding':'group:'+batch['id'] if batch['automatic'] else None},rows)
                 except Exception:
                     logger.exception('合并采集单账号入库失败：%s',member['account'])
                     with self.hub.db() as db:
@@ -303,6 +310,8 @@ class Monitor:
         with self.hub.db() as db:
             handle=db.execute('SELECT handle FROM apify_accounts WHERE id=?',(run['account'],)).fetchone()['handle']
         product_links=[]
+        import apify_transcripts
+        subtitle_sources={}
         from product_intel import products,record
         parsed=[]
         profile=None
@@ -320,10 +329,15 @@ class Monitor:
                 try:published=datetime.fromisoformat(item['createTimeISO'].replace('Z','+00:00')).timestamp()
                 except (KeyError,ValueError,TypeError):published=None
             if run.get('start_at') is not None and (published is None or not run['start_at']<=published<run['end_at']):continue
+            if run.get('subtitle_binding') and (caption:=apify_transcripts.subtitle(item)):
+                subtitle_sources[vid]=caption
             product_links.extend((vid,p) for p in products(item))
             parsed.append((run['id'],run['account'],vid,published,str(item.get('text') or '')[:10000],*[metric(item.get(k)) for k in ('playCount','diggCount','commentCount','shareCount','collectCount')],cover_url(item),time.time()))
         warning=('已触及单次熔断上限（%d 条），可能未采全。' % MAX_ITEMS if len(items)>=MAX_ITEMS else '')+('未取得范围内可核对的视频，不能据此认定发片为零。' if not parsed else '')
         with self.hub.db() as db:
+            db.execute('BEGIN IMMEDIATE')
+            if db.execute('SELECT 1 FROM apify_hidden_runs WHERE run=?',(run['id'],)).fetchone():
+                return
             if profile:
                 db.execute('INSERT OR REPLACE INTO apify_profiles VALUES(?,?,?)',(run['account'],json.dumps(profile,ensure_ascii=False),time.time()))
             from product_intel import enqueue
@@ -333,6 +347,8 @@ class Monitor:
             for vid,product in product_links:
                 record(db,vid,handle,product,'Apify')
             db.executemany('INSERT OR IGNORE INTO apify_snapshots(run,account,video,published,title,views,likes,comments,shares,collects,cover,collected) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)',parsed)
+            for vid,caption in subtitle_sources.items():
+                apify_transcripts.register(db,vid,run['id'],run['subtitle_binding'],caption)
             db.execute("UPDATE apify_runs SET state='ready',updated=?,error=NULL,warning=?,item_count=? WHERE id=?",(time.time(),warning,len(parsed),run['id']))
 
         from apify_cover_cache import warm
@@ -438,8 +454,13 @@ class Monitor:
                 db.execute('UPDATE apify_accounts SET interval_hours=0,times=NULL WHERE id=?',(run['account'],))
 
     def loop(self):
+        from apify_transcripts import tick as subtitle_tick
         while not self.hub.stop.is_set():
-            try:self.tick()
+            try:
+                self.tick()
+                pool=getattr(self.config,'pool',None)
+                if not pool or not hasattr(pool,'cooldown_until') or pool.cooldown_until()<=time.time():
+                    subtitle_tick(self.hub,self.config)
             except Exception as exc:
                 logger.error('Apify worker failure (%s)',type(exc).__name__)
             self.hub.stop.wait(10)
