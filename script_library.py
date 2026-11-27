@@ -19,6 +19,7 @@ def matches(row, thresholds):
     return reasons
 
 def attach(app, hub, user, body):
+    import script_board
     with hub.db() as db:
         db.executescript('''CREATE TABLE IF NOT EXISTS script_library (
           id TEXT PRIMARY KEY, video TEXT UNIQUE, account_handle TEXT, video_url TEXT, published REAL,
@@ -32,6 +33,7 @@ def attach(app, hub, user, body):
             db.execute('ALTER TABLE script_library ADD COLUMN removed_at REAL')
         import script_enrichment
         script_enrichment.initialize(db)
+        script_board.initialize(db)
         cols={r['name'] for r in db.execute('PRAGMA table_info(script_library)')}
         for name, default in [('tags', '[]'), ('pain_point', ''), ('reuse_framework', '')]:
             if name not in cols:
@@ -39,6 +41,7 @@ def attach(app, hub, user, body):
 
     import script_creation
     script_creation.attach(app,hub,user,body)
+    script_board.attach(app,hub,user)
 
     @app.get('/api/intelligence/scripts')
     def list_scripts(request: Request):

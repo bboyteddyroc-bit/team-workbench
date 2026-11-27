@@ -149,6 +149,7 @@ class Cases:
     def analysis(self,job,case):
         import asr
         from video_case_analysis import prepare,request_native_video,clean,save_answer
+        from script_board import save_evidence, vetted_components
         from video_consent import approved
         with feedback.step('ai_preflight','blocked'):
             if not approved(job.get('options','{}')):raise ValueError('旧任务没有授权发送完整视频和声音；请重新确认后发起新分析')
@@ -157,7 +158,10 @@ class Cases:
         self.checkpoint(job['id'],'准备视频分析')
         prepared=prepare(self.hub,self.kalodata,case,job['id'],lambda stage:self.checkpoint(job['id'],stage))
         if prepared['transcript']:
-            with self.hub.db() as db:db.execute("UPDATE video_cases SET transcript=?,transcript_source=? WHERE id=? AND length(trim(transcript))=0",(prepared['transcript'],prepared['transcript_source'],case['id']))
+            with self.hub.db() as db:
+                db.execute("UPDATE video_cases SET transcript=?,transcript_source=? WHERE id=? AND length(trim(transcript))=0",(prepared['transcript'],prepared['transcript_source'],case['id']))
+                if prepared.get('timing'):
+                    save_evidence(db,'case',case['id'],prepared['transcript'],timing=prepared['timing'])
         source=json.loads(case['source']);human=json.loads(case['human'])
         from video_case_fields import projection,ai_plan
         projected={**case,'source':source,'human':human,'ai':json.loads(case['ai'])}
@@ -229,10 +233,13 @@ class Cases:
                 elif job['kind']=='analysis':self.analysis(job,case)
                 elif job['kind']=='transcript':
                     from script_automation import transcribe
+                    from script_board import save_evidence
                     with feedback.step('transcript'):
-                        text,source=transcribe(case['handle'],case['video'])
+                        text,source,*timing=transcribe(case['handle'],case['video'],timing=True)
                     with feedback.step('data_save'), self.hub.db() as db:
                         db.execute('UPDATE video_cases SET transcript=?,transcript_source=?,updated=? WHERE id=?',(text,source,time.time(),case['id']))
+                        if timing:
+                            save_evidence(db,'case',case['id'],text,timing=timing[0])
                 elif job['kind']=='ai':
                     import asr
                     from script_enrichment import request_enrichment
@@ -246,6 +253,7 @@ class Cases:
                         if not key:raise ValueError('未配置 A6API Gemini 3.8 Flash 服务')
                     with feedback.step('ai_call'):
                         result=request_enrichment(text,resolved['title']['value'],key)
+                    components=result.pop('components',[])
                     result['summary']=result.get('expression','') or source.get('title','')[:300]
                     result['basis']='文字分析：逐字稿与发布文案；未分析画面，推断需人工核对' if (human.get('transcript') or case['transcript']) else '仅发布文案分析；未获得逐字稿，不代表真实口播或画面'
                     # Description-only text must not masquerade as a spoken transcript.
@@ -253,6 +261,9 @@ class Cases:
                     result={k:v for k,v in result.items() if k in missing_fields or k in ('tags','tag_groups','basis')}
                     with feedback.step('ai_save'), self.hub.db() as db:
                         db.execute('UPDATE video_cases SET ai=?,updated=? WHERE id=?',(json.dumps({'fields':result,'generated_at':time.time()},ensure_ascii=False),time.time(),case['id']))
+                        if resolved['transcript']['value'] and components:
+                            from script_board import save_evidence
+                            save_evidence(db,'case',case['id'],text,components=components)
                 with feedback.step('save_task'), self.hub.db() as db:
                     db.execute("UPDATE video_case_jobs SET state='ready',error='',error_code='',next_attempt=NULL,updated=? WHERE id=?",(time.time(),job['id']))
         except Exception as exc:

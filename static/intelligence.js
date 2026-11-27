@@ -30,7 +30,16 @@ function render(){window.hubVideoCases?.close();root.querySelectorAll('[data-int
   const pane=document.createElement('div');pane.innerHTML='<p role="status">正在打开自营商品…</p>';body.append(pane);
   import('/static/own-goods.js?v=auto-cover1').then(m=>{if(pane.parentElement===body)m.open(pane);}).catch(()=>{if(pane.parentElement===body){const p=pane.firstElementChild;p.textContent='自营商品加载失败，请刷新页面后再试。';p.setAttribute('role','alert');}});return;
  }
- if(active==='copy' && window.hubScriptLibrary){window.hubScriptLibrary.open(body);return;}
+ if(active==='copy'){
+  const pane=document.createElement('div');pane.textContent='正在读取爆款文案库…';body.append(pane);
+  import('/static/script-board.js?v=1').then(module=>{
+   if(pane.parentElement===body)module.open(pane,target=>{
+    if(target)window.hubScriptLibrary?.open(target);
+    else window.hubScriptLibrary?.close();
+   });
+  }).catch(()=>{if(pane.parentElement===body){pane.textContent='新版文案看板暂不可用。';window.hubScriptLibrary?.open(pane);}});
+  return;
+ }
  if(active==='tasks' && window.hubCreativeTasks){window.hubCreativeTasks.open(body);return;}
  if(active==='exceptions' && window.hubExceptionCenter){window.hubExceptionCenter.open(body);return;}
  if(active==='connections'){window.hubKalodata?.openConfig(body);return;}

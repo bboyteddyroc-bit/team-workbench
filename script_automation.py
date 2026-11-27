@@ -39,7 +39,7 @@ def local_asr_ready():
     s=asr.status()
     return bool(s['installed'] and s['model_ready'] and shutil.which('ffmpeg') and importlib.util.find_spec('yt_dlp'))
 
-def transcribe(handle, video):
+def transcribe(handle, video, *, timing=False):
     """Only a canonical TikTok URL is accepted; subprocess gets no cookies or arbitrary input URL."""
     import asr
     if not video.isdigit() or not handle or any(c not in 'abcdefghijklmnopqrstuvwxyz0123456789._' for c in handle):
@@ -60,10 +60,12 @@ def transcribe(handle, video):
         if source.stat().st_size>MAX_AUDIO_BYTES: raise ValueError('视频音频超过大小限制')
         # ASR consumes a local file; a ready model is mandatory to prevent implicit downloads.
         segments,info=asr.engine().transcribe(str(source),beam_size=5,vad_filter=True)
-        text=' '.join(segment.text.strip() for segment in segments if segment.text.strip()).strip()
+        from script_board import timed_transcript
+        text, spans = timed_transcript(segments, limit=30001)
         if not text: raise ValueError('未识别到可用语音，请人工核查')
         if len(text)>30000: raise ValueError('识别结果超过长度限制，请人工核查')
-        return text, 'faster-whisper '+asr.model_name()+'；语言 '+str(getattr(info,'language','未知'))
+        result = text, 'faster-whisper '+asr.model_name()+'；语言 '+str(getattr(info,'language','未知'))
+        return (*result,spans) if timing else result
 
 class Automation:
     def __init__(self,hub,monitor):
@@ -156,9 +158,12 @@ class Automation:
             import task_feedback as feedback
             with feedback.bound(self.hub,'script_transcript',row['item']):
                 with feedback.step('transcript'):
-                    text,source=transcribe(row['handle'],row['video'])
+                    text,source,*timing=transcribe(row['handle'],row['video'],timing=True)
                 with feedback.step('data_save'), self.hub.db() as db:
-                    db.execute("UPDATE script_library SET transcript_original=?,transcript_source=?,transcript_status='已提取',updated=? WHERE id=? AND transcript_original IS NULL",(text,source,time.time(),row['item']))
+                    changed=db.execute("UPDATE script_library SET transcript_original=?,transcript_source=?,transcript_status='已提取',updated=? WHERE id=? AND transcript_original IS NULL",(text,source,time.time(),row['item']))
+                    if changed.rowcount and timing:
+                        from script_board import save_evidence
+                        save_evidence(db,'archive',row['item'],text,timing=timing[0])
                     db.execute("UPDATE script_transcriptions SET state='ready',error=NULL,updated=? WHERE item=?",(time.time(),row['item']))
         except Exception as exc:
             error=str(exc)[:200] if isinstance(exc,ValueError) else '提取失败，请检查本地环境和视频可访问性'
