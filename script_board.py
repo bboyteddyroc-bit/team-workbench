@@ -111,7 +111,7 @@ def public_link(value):
 
 
 def key_for(platform, video, fallback):
-    return platform + ':' + video if video else fallback
+    return platform.casefold() + ':' + video if video else fallback
 
 
 def library_rows(db, directory):
@@ -159,7 +159,7 @@ def library_rows(db, directory):
         base.update(gm=gm['value'], currency=gm['currency'], gm_scope=gm['scope'])
 
     standalone = [dict(r) for r in db.execute('SELECT * FROM script_library WHERE video IS NULL AND removed_at IS NULL')]
-    case_keys = {c['library_id']:key for key,c in cases.items() if c['platform'] != 'tiktok' and c['library_id']}
+    case_keys = {c['library_id']:key for key,c in cases.items() if c['library_id']}
     for r in [*saved.values(),*standalone]:
         if r['removed_at'] is not None:
             continue
@@ -171,7 +171,23 @@ def library_rows(db, directory):
         base.update(archive_id=r['id'], account=base.get('account') or r['account_handle'], description=base.get('description') or r['description'],
             published=base.get('published') or r['published'], url=base.get('url') or public_link(r['video_url']))
 
-    evidence = {(r['source'],r['item'],r['transcript_hash']):r for r in db.execute('SELECT * FROM script_board_evidence')}
+    for r in db.execute('''SELECT * FROM (
+        SELECT j.*,row_number() OVER(PARTITION BY j.video ORDER BY j.updated DESC,j.rowid DESC) AS rank
+        FROM video_enrichment_jobs j JOIN apify_accounts a ON a.id=j.account JOIN users u ON u.id=a.owner
+        WHERE j.state='ready' AND j.result IS NOT NULL AND a.deleted_at IS NULL AND u.enabled=1) WHERE rank=1'''):
+        base = rows.get('tiktok:'+r['video'])
+        if base is None or base.get('gm') is not None:
+            continue
+        result = json_value(r['result'],{})
+        if numeric(result.get('gmv')) is not None:
+            base.update(gm=numeric(result['gmv']),currency=result.get('currency'),
+                        gm_scope=f"第三方区间估算 · {r['period_start']} — {r['period_end']}")
+
+    has_evidence = db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='script_board_evidence'").fetchone()
+    evidence = {(r['source'],r['item'],r['transcript_hash']):r for r in db.execute('SELECT * FROM script_board_evidence')} if has_evidence else {}
+    reviewed = {}
+    for r in db.execute('SELECT case_id,field,claim,start,end FROM video_case_clip_reviews'):
+        reviewed.setdefault(r['case_id'], {})[r['field']] = dict(r)
     archives = {r['id']:r for r in [*saved.values(),*standalone] if r['removed_at'] is None}
     for ident, base in rows.items():
         case = cases.get(ident,{})
@@ -187,13 +203,27 @@ def library_rows(db, directory):
                    (('case',case.get('id')),('archive',archive.get('id')))] if transcript else []
         timing = next((json_value(d['timing'],[]) for d in details if d and d['timing'] != '[]'),[])
         components = next((json_value(d['components'],[]) for d in details if d and d['components'] != '[]'),[])
-        if not components and transcript:
-            components = vetted_components([{'phase':'opening','text': fields['hook_example']['value']}], transcript)
+        if transcript:
+            existing = {'opening':fields['hook_example']['value'] or fields['opening']['value'] or archive.get('opening'),
+                        'pain':archive.get('pain_point'), 'demo':fields['replication_actions']['value'],
+                        'cta':fields['ending']['value'] or archive.get('ending')}
+            existing = vetted_components([{'phase':phase,'text':text} for phase,text in existing.items()],transcript)
+            used = {c['phase'] for c in components}
+            components = vetted_components([*components, *(c for c in existing if c['phase'] not in used)],transcript)
         if not components and transcript:
             first = re.split(r'(?<=[.!?。！？])\s+|(?<=[。！？])',transcript,maxsplit=1)[0].strip()
             if len(first) <= 250:
                 components = [{'phase':'opening','text':first,'source':'逐字稿首句'}]
-        base['components'] = [locate(c,timing) for c in components]
+        for component in components:
+            if component['phase'] not in ('opening','demo','cta'):
+                continue
+            field = {'opening':'opening','demo':'replication_actions','cta':'ending'}[component['phase']]
+            review = reviewed.get(case.get('id'),{}).get(field)
+            if review and review['claim']==fields[field]['value'] and tokens(review['claim'])==tokens(component['text']):
+                component.update(start=review['start'],end=review['end'],timing_source='人工确认区间')
+        base['components'] = [c if 'start' in c else locate(c,timing) for c in components]
+        normalized_transcript = ' '.join(tokens(transcript))
+        base['exact_script'] = digest(normalized_transcript) if normalized_transcript else ''
         if case and (directory/'case-analysis'/case['id']/'source.mp4').is_file():
             base['preview'] = '/api/intelligence/cases/'+case['id']+'/preview'
     return list(rows.values())

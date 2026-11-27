@@ -36,6 +36,7 @@ function similar(a,b) {
 function indexGroups(items) {
   const structures=[], phrases=[];
   const structureIndex=new Map(), phraseIndex=new Map();
+  const exact=new Map();
   function add(index, groupList, signature, shapes, row, component) {
     const candidates=index.get(signature) || [];
     let group=candidates.find(item=>item.shapes.every((shape,i)=>similar(shape,shapes[i])));
@@ -53,7 +54,15 @@ function indexGroups(items) {
     if(row.components.length>=2){
       const shapes=row.components.map(c=>words(c.text));
       if(shapes.every(s=>s.length))add(structureIndex,structures,row.components.map((c,i)=>c.phase+':'+shapes[i].length).join('|'),shapes,row);
+    }else if(row.exact_script && row.components.length){
+      if(!exact.has(row.exact_script))exact.set(row.exact_script,[]);
+      exact.get(row.exact_script).push(row);
     }
+  }
+  for(const rows of exact.values()){
+    if(rows.length<2)continue;
+    const base=rows[0];
+    structures.push({id:structures.length,items:rows,phases:base.components.map(c=>c.phase),text:base.components[0].text,exact:true});
   }
   return {structures,phrases};
 }
@@ -98,7 +107,7 @@ async function request(url){
 export function open(pane,archive){
   cssLink();
   pane.classList.add('script-board');
-  pane.innerHTML=`<div class="sb-head"><h2>爆款文案库</h2>${action('refresh','刷新')}</div>
+  pane.innerHTML=`<div class="sb-head"><h2>爆款文案库</h2><div class="sb-options"><small class="sb-total" role="status"></small>${action('refresh','刷新')}</div></div>
     <div class="sb-tabs" aria-label="文案库视图"></div>
     <div class="intel-direct-tools sb-tools">
       <input type="search" autocomplete="off" aria-label="搜索文案、脚本或账号" placeholder="搜索文案、脚本或账号">
@@ -107,7 +116,7 @@ export function open(pane,archive){
     </div><div class="sb-view"></div><dialog class="sb-dialog"></dialog>`;
   const view=pane.querySelector('.sb-view'), tools=pane.querySelector('.sb-tools');
   const tabs=pane.querySelector('.sb-tabs'), dialog=pane.querySelector('dialog'), search=tools.querySelector('input');
-  let current='groups', dataset=null, index=null, loadError=false, archiveOpen=false, loading=false;
+  let current='groups', dataset=null, index=null, loadError=false, archiveOpen=false, loading=false, choseTab=false;
   let query='', active='', phase='opening', page=0, matchedOnly=false, expanded=false, viral=false;
   let filters={rules:[],mode:'all',account:'',days:'',reuse:'',category:''};
   let openingWindow=false;
@@ -198,7 +207,7 @@ export function open(pane,archive){
     if(!groups.length)return `<section class="sb-panel sb-empty">当前范围还没有具备两个以上口播环节的脚本组。${action('tab','查看已收录视频','videos','class="sb-text-link"')}</section>${sampleTable(items.filter(matches))}`;
     const group=groups.find(g=>'g'+g.id===active)||groups[0];
     active='g'+group.id;
-    const summary=group.phases.map(p=>PHASES[p]).join(' → ');
+    const summary=group.exact?'完整口播一致 · 部分环节待拆解':group.phases.map(p=>PHASES[p]).join(' → ');
     const accounts=accountRows(group.items);
     const accountCells=(label,records)=>`<tr><td>${label}</td><td><div class="sb-meter">${records.length} 条
       <span aria-hidden="true"><i style="width:${100*records.length/group.videoCount}%"></i></span></div></td>
@@ -209,7 +218,7 @@ export function open(pane,archive){
     const example=lead?.components.find(c=>c.phase===phase);
     const shown=groups.slice(0,40);
     return `<div class="sb-top"><section class="sb-panel sb-group-list">${table(shown.map(g=>`<tr ${g===group?'class="sb-selected"':''}>
-      <td>${action('group',html(g.text),'g'+g.id,'class="sb-text-link sb-title"')}<small>${g.phases.map(p=>PHASES[p]).join(' → ')}</small></td>
+      <td>${action('group',html(g.text),'g'+g.id,'class="sb-text-link sb-title"')}<small>${g.exact?'完整口播一致':g.phases.map(p=>PHASES[p]).join(' → ')}</small></td>
       <td>${g.videoCount} 条</td><td>${g.accounts} 个</td><td>${performanceFilter()?g.passed+' / '+g.videoCount:'—'}</td></tr>`).join(''),
       ['脚本组','使用视频','账号数','符合指标'])}${groups.length>shown.length?`<p class="sb-empty">显示前 ${shown.length} 组，共 ${groups.length} 组，可搜索其余脚本。</p>`:''}</section>
     <section class="sb-panel sb-detail"><h3>${html(group.text)}</h3><small class="sb-route">${summary}</small>
@@ -280,8 +289,10 @@ export function open(pane,archive){
       view.innerHTML=loadError ? '<p role="alert" class="sb-panel sb-empty">视频读取失败，请点「刷新」重试。</p>' : '<p role="status" class="sb-panel sb-empty">正在读取文案和已采集视频…</p>';
       return;
     }
+    pane.querySelector('.sb-total').textContent=`已收录 ${dataset.items.length} 条视频 · ${dataset.items.filter(row=>row.has_transcript).length} 条有逐字稿`;
     const items=scoped();
     view.innerHTML=(current==='groups'?groupHTML(items):current==='phrases'?phraseHTML(items):current==='accounts'?accountHTML(items):sampleTable(items.filter(matches)))+
+      (dataset.failures ? '<p class="sb-note" role="status">部分已有资料读取失败，当前显示已取到的记录，可点刷新补齐。</p>' : '')+
       '<p class="sb-note">播放与互动率使用各视频同一数据快照。GMV 为带时间范围的估算，缺失值显示为 —。</p>';
   }
   async function load(){
@@ -291,20 +302,26 @@ export function open(pane,archive){
     refresh.disabled=true;
     render();
     try{
-      const first=await request(API);
-      const items=[...first.items];
-      for(let offset=items.length;offset<first.total;offset+=400){
-        if(!pane.isConnected)return;
-        const next=await request(API+'?offset='+offset);
-        items.push(...next.items);
+      let first;
+      try {
+        first=await request(API);
+        for(let offset=first.items.length;offset<first.total;offset+=400){
+          if(!pane.isConnected)return;
+          const next=await request(API+'?offset='+offset);
+          first.items.push(...next.items);
+        }
+      }catch(error){
+        if(error.status!==404)throw error;
+        const module=await import('/static/script-board-existing.js?v=1');
+        first=await module.loadExisting(request,()=>pane.isConnected);
       }
       if(!pane.isConnected)return;
-      dataset={...first, items:[...new Map(items.map(row=>[row.id,row])).values()]};
+      dataset={...first, items:[...new Map(first.items.map(row=>[row.id,row])).values()]};
       dataset.items.sort((a,b)=>dated(b.published).localeCompare(dated(a.published)));
       index=indexGroups([...dataset.items].sort((a,b)=>a.id.localeCompare(b.id)));
-    }catch(error){
+      if(!choseTab && !index.structures.some(group=>!group.exact))current='videos';
+    }catch{
       dataset=null;loadError=true;
-      if(error.status===404 && current==='groups' && archive)current='archive';
     }finally{loading=false;refresh.disabled=false;render();}
   }
   function showFilters(){
@@ -336,7 +353,7 @@ export function open(pane,archive){
     dialog.showModal();
     if(row.has_transcript){
       try{
-        const result=await request(API+'?transcript='+encodeURIComponent(id));
+        const result=dataset.existing ? {text:row.transcript} : await request(API+'?transcript='+encodeURIComponent(id));
         if(requested!==detailRequest || !dialog.open)return;
         dialog.querySelector('.sb-transcript').textContent=result.text||'暂无逐字稿';
       }catch{if(requested===detailRequest && dialog.open)dialog.querySelector('.sb-transcript').textContent='逐字稿读取失败。';}
@@ -368,7 +385,7 @@ export function open(pane,archive){
       case 'refresh':if(current==='archive' && archiveTarget){archive(archiveTarget);return;}void load();return;
       case 'tab':
         if(current==='archive' && value!=='archive'){archive(null);archiveOpen=false;archiveTarget=null;}
-        current=value;active='';page=0;break;
+        choseTab=true;current=value;active='';page=0;break;
       case 'filters':showFilters();return;
       case 'close':dialog.close();return;
       case 'add-rule':dialog.querySelector('.sb-rules').insertAdjacentHTML('beforeend',ruleControls({key:'views',op:'ge',value:''}));return;

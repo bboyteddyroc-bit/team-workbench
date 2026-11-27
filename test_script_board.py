@@ -17,6 +17,12 @@ class ScriptBoardTests(unittest.TestCase):
         ])
         item = self.a.post('/api/intelligence/scripts/from-snapshot',headers=HEADERS,
                            json={'account':account,'video':'123456789'}).json()['id']
+        with self.hub.db() as db:
+            db.execute("""INSERT INTO video_cases(id,canonical,platform,video,handle,url,created_by,updated_by,created,updated)
+                VALUES('case1','tt:123456789','TikTok','123456789','boarddemo','https://www.tiktok.com/@boarddemo/video/123456789','alice','alice',1,1)""")
+            db.execute("INSERT INTO video_case_members VALUES('case1','alice',1)")
+            db.execute("""INSERT INTO video_enrichment_jobs(id,account,video,period_start,period_end,state,created,updated,result)
+                VALUES('estimate',?,'123456780','2026-10-01','2026-10-31','ready',1,1,'{"gmv":120,"currency":"USD"}')""",(account,))
         transcript = 'Still dropping clothes on the floor? Hang it over the door.'
         components = [
             {'phase':'demo','text':'Hang it over the door.'}, {'phase':'opening','text':'Still dropping clothes on the floor?'},
@@ -35,6 +41,8 @@ class ScriptBoardTests(unittest.TestCase):
         board = self.b.get(path).json()
         self.assertEqual(board['total'],2)
         picked = next(item for item in board['items'] if item['has_transcript'])
+        self.assertEqual(picked['case_id'],'case1')
+        self.assertEqual(next(row for row in board['items'] if row['id']=='tiktok:123456780')['gm'],120)
         self.assertEqual([c['phase'] for c in picked['components']],['opening','demo'])
         self.assertEqual(picked['components'][1]['start'],4.2)
         self.assertNotIn('transcript',picked)

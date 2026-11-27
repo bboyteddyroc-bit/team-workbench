@@ -32,7 +32,7 @@ function render(){window.hubVideoCases?.close();root.querySelectorAll('[data-int
  }
  if(active==='copy'){
   const pane=document.createElement('div');pane.textContent='正在读取爆款文案库…';body.append(pane);
-  import('/static/script-board.js?v=1').then(module=>{
+  import('/static/script-board.js?v=existing-data1').then(module=>{
    if(pane.parentElement===body)module.open(pane,target=>{
     if(target)window.hubScriptLibrary?.open(target);
     else window.hubScriptLibrary?.close();
