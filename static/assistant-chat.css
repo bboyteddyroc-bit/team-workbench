@@ -38,3 +38,8 @@
 @media(max-width:600px){.assistant-redesign>header{padding:12px 8px;gap:4px}.assistant-redesign>header strong{font-size:14px}.assistant-header-actions{gap:2px}.assistant-header-actions button{padding:6px}.assistant-redesign .assistant-messages{padding:14px}.assistant-redesign .assistant-compose{margin:8px}.assistant-redesign .assistant-compose-toolbar span{display:none}}
 .assistant-action-card{display:grid;gap:.5rem;padding:.65rem .8rem;margin-top:.55rem;border:1px solid var(--line);border-radius:8px}
 .assistant-action-card>button{justify-self:start}
+
+.hub-assistant .assistant-compose-toolbar .assistant-mic{display:inline-grid;place-items:center;color:var(--muted)}
+.assistant-mic .assistant-mic-stop,.assistant-mic[data-phase="recording"] svg:first-child,.assistant-mic[data-phase="transcribing"] svg:first-child{display:none}
+.assistant-mic[data-phase="recording"] .assistant-mic-stop,.assistant-mic[data-phase="transcribing"] .assistant-mic-stop{display:block}
+.hub-assistant .assistant-compose-toolbar .assistant-mic[data-phase="recording"],.hub-assistant .assistant-compose-toolbar .assistant-mic[data-phase="transcribing"]{color:var(--accent);border-color:var(--accent)}

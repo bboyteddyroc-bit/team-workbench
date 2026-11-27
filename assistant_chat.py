@@ -62,8 +62,10 @@ def parse_answer(payload):
 
 def attach(app, hub, user, body):
     from a6_settings import attach as attach_a6_settings
+    from assistant_voice import attach as attach_dictation, ready as dictation_ready
     from assistant_actions import action_view, classify_intent, drop_thread, propose
     attach_a6_settings(app,hub,user,body)
+    attach_dictation(app,user)
     with hub.db() as db:
         db.executescript("""
         CREATE TABLE IF NOT EXISTS ai_settings(id INTEGER PRIMARY KEY CHECK(id=1), secret BLOB);
@@ -101,7 +103,8 @@ def attach(app, hub, user, body):
             ready=bool(db.execute('SELECT 1 FROM a6_settings WHERE id=1').fetchone())
             route=resolve_account(db)
         return dict(configured=ready,image_configured=route is not None,image_account_label=route.name if route else '',
-                    image_model='Lib Image 2.5 Fast',image_counts=[1,2,4],model=MODEL,can_configure=u['role']=='admin')
+                    image_model='Lib Image 2.5 Fast',image_counts=[1,2,4],model=MODEL,can_configure=u['role']=='admin',
+                    dictation_available=dictation_ready())
 
     @app.post('/api/assistant/settings')
     async def settings(request: Request):

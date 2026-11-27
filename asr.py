@@ -55,7 +55,7 @@ def status():
     }
 
 
-def engine(name=None):
+def engine(name=None, *, local_only=False):
     """Load and cache the local model. Raises ValueError with an actionable message."""
     name = name or model_name()
     if not available():
@@ -69,6 +69,8 @@ def engine(name=None):
             if (directory / 'model.bin').is_file():
                 created = WhisperModel(str(directory), device='cpu', compute_type='int8',
                                        cpu_threads=max(1, min(8, os.cpu_count() or 4)))
+            elif local_only:
+                raise ValueError('本机语音模型未就绪')
             else:
                 created = WhisperModel(name, device='cpu', compute_type='int8',
                                        download_root=str(MODEL_ROOT),
@@ -316,10 +318,10 @@ def caption_rows(segments):
 ZH_PROMPT = '以下是普通话的句子，请用简体中文书写字幕。'
 
 
-def transcribe(path, language=None):
+def transcribe(path, language=None, *, local_only=False):
     """Transcribe a wav file. Chinese is biased to Simplified output via a prompt."""
     from faster_whisper.audio import decode_audio
-    created = engine()
+    created = engine(local_only=True) if local_only else engine()
     audio = decode_audio(str(path))
     if not language:
         detected, probability, _ = created.detect_language(audio, vad_filter=True)
