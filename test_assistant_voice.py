@@ -29,6 +29,19 @@ class AssistantVoiceTests(unittest.TestCase):
             recognize.assert_called_once_with(b'recording', 'matroska')
         self.assertEqual(self.member.get('/api/assistant/threads').json(), [])
 
+    def test_speech_requires_login_and_serves_local_wav(self):
+        with patch('assistant_voice.synthesize', return_value=b'RIFF-test') as synthesize:
+            path = '/api/assistant/speech'
+            with TestClient(self.app, base_url=fixtures.BASE) as anonymous:
+                self.assertEqual(anonymous.post(path, json={'text': 'Hello', 'language': 'en'}, headers=fixtures.H).status_code, 401)
+            self.assertEqual(self.member.post(path, json={'text': 'Hello', 'language': 'xx'}, headers=fixtures.H).status_code, 400)
+            response = self.member.post(path, json={'text': 'Hello', 'language': 'en'}, headers=fixtures.H)
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.headers['Content-Type'], 'audio/wav')
+            self.assertEqual(response.headers['Cache-Control'], 'no-store')
+            self.assertEqual(response.content, b'RIFF-test')
+            synthesize.assert_called_once_with('Hello', 'en')
+
     def test_recording_is_removed_after_local_transcription(self):
         from assistant_voice import recognize
 
@@ -45,5 +58,5 @@ class AssistantVoiceTests(unittest.TestCase):
                 'asr._ffmpeg', side_effect=convert
             ), patch('asr.transcribe', return_value=('en', [{'text': 'Hello.'}, {'text': 'Test next.'}])) as transcribe:
                 self.assertEqual(recognize(b'voice', 'matroska'), 'Hello. Test next.')
-                transcribe.assert_called_once_with(Path(recorded[0]) / 'voice.wav', local_only=True)
+                transcribe.assert_called_once_with(Path(recorded[0]) / 'voice.wav', local_only=True, word_timestamps=False)
             self.assertFalse(recorded[0].exists())

@@ -38,7 +38,7 @@ window.hubAssistant=(()=>{
         stopPlayback();
         if(message)status.textContent=message;
       };
-      try{start(active,end);}catch(e){end(e.message||'语音播放失败');}
+      try{Promise.resolve(start(active,end)).catch(e=>end(e.message||'语音播放失败'));}catch(e){end(e.message||'语音播放失败');}
     });
     control.className='assistant-voice-play secondary';
     control.setAttribute('aria-pressed','false');
@@ -57,8 +57,8 @@ window.hubAssistant=(()=>{
     return playbackButton('播放回复',(active,end)=>{
       const synth=window.speechSynthesis;
       const language=/\p{Script=Han}/u.test(text)?'zh':'en';
-      const voice=synth.getVoices().find(v=>v.localService&&v.lang.toLowerCase().split(/[-_]/)[0]===language);
-      if(!voice){end('此设备未提供可用的'+(language==='zh'?'中文':'英文')+'本地朗读音色，可继续查看文字。');return;}
+      const voice=synth?.getVoices().find(v=>v.localService&&v.lang.toLowerCase().split(/[-_]/)[0]===language);
+      if(!voice||!window.SpeechSynthesisUtterance)return playServerReply(text,language,active,end);
       const pieces=text.match(/[^。！？\n.!?]{1,160}[。！？\n.!?]*|[。！？\n.!?]+/g)||[text];
       let next=0;
       const speak=()=>{
@@ -72,6 +72,37 @@ window.hubAssistant=(()=>{
       active.stop=()=>synth.cancel();speak();
     });
   }
+  async function playServerReply(text,language,active,end){
+    const controller=new AbortController();
+    const player=new Audio();
+    let url;
+    const release=()=>{if(url){URL.revokeObjectURL(url);url=undefined;}};
+    active.stop=()=>{controller.abort();player.pause();player.removeAttribute('src');release();};
+    const chunks=text.match(/.{1,1200}/gsu)||[text];
+    for(const chunk of chunks){
+      if(playback!==active)return;
+      if(!chunk.trim())continue;
+      const response=await fetch('/api/assistant/speech',{
+        method:'POST',headers:{'Content-Type':'application/json','X-Hub-Request':'1'},
+        body:JSON.stringify({text:chunk,language}),signal:controller.signal
+      });
+      if(!response.ok){
+        if(response.status===404)throw Error('中台朗读服务尚未更新，可继续查看文字。');
+        const result=await response.json().catch(()=>null);
+        throw Error(typeof result?.detail==='string'?result.detail:'中台朗读暂不可用，可继续查看文字。');
+      }
+      const audio=await response.blob();
+      if(playback!==active)return;
+      release();url=URL.createObjectURL(audio);player.src=url;
+      await new Promise((resolve,reject)=>{
+        player.onended=resolve;
+        player.onerror=()=>reject(Error('中台语音无法播放，可继续查看文字。'));
+        controller.signal.onabort=resolve;
+        player.play().catch(reject);
+      });
+    }
+    end();
+  }
   function voiceBubble(text,voice,label='你 · 语音'){
     const card=el('article',undefined,'assistant-message user-message assistant-voice-pending');
     card.append(el('small',label),recordingButton(voice),el('p',text));
@@ -84,9 +115,10 @@ window.hubAssistant=(()=>{
     opener.innerHTML='<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5.5 11v1a6.5 6.5 0 0 0 13 0v-1M12 18.5V22m-3 0h6"/></svg><svg class="assistant-mic-stop" viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>';
     const hold=button('按住说话',event=>{if(event.detail===0)toggle('voice');});
     hold.className='assistant-hold secondary';
-    const hint=el('span','按住录音，松开发送，上滑取消。键盘可按一下开始、再按一下发送。','assistant-sr-only');
+    hold.setAttribute('aria-keyshortcuts','Alt+1');
+    const hint=el('span','按住录音，松开发送，上滑取消。也可按住 Alt+1，松开任一键发送，按 Escape 取消。','assistant-sr-only');
     hint.id='assistant-hold-help';hold.setAttribute('aria-describedby',hint.id);
-    let available=false,current=null;
+    let available=false,current=null,shortcut=null;
     const canVoice=()=>ready&&mode?.value==='chat'&&!reading;
     function refresh(){
       const phase=current?.phase||'idle',draft=current?.kind==='draft';
@@ -104,7 +136,7 @@ window.hubAssistant=(()=>{
       hold.textContent=current&&!draft
         ?(current.willCancel?'松开取消':({requesting:'等待授权',recording:current.gesture?'松开发送':'结束并发送',capped:'松开发送',transcribing:'正在转写'})[phase])
         :'按住说话';
-      hold.title=hold.disabled?(!available?'中台本地语音识别未就绪':!supported()?'当前入口无法使用麦克风':'当前无法发送语音'):'松开发送，上滑取消';
+      hold.title=hold.disabled?(!available?'中台本地语音识别未就绪':!supported()?'当前入口无法使用麦克风':'当前无法发送语音'):'Alt+1 按住说话 · 松开发送 · Esc 取消';
       send.disabled=!ready||busy||!!current;
     }
 
@@ -187,7 +219,7 @@ window.hubAssistant=(()=>{
           }
           finishRecording(job);
         },60000);
-        status.textContent=gesture?'录音中 · 松开发送，上滑取消。':
+        status.textContent=gesture?.keyboard?'录音中 · 松开 Alt 或 1 发送，Esc 取消。':gesture?'录音中 · 松开发送，上滑取消。':
           kind==='voice'?'录音中 · 再按一次发送。':'录音中 · 再点一下结束。';
         refresh();
       }catch(error){
@@ -217,11 +249,10 @@ window.hubAssistant=(()=>{
       current.willCancel=willCancel;refresh();
       status.textContent=willCancel?'松开取消本次录音。':'录音中 · 松开发送，上滑取消。';
     });
-    document.addEventListener('pointerup',event=>{
-      if(!sameGesture(event))return;
-      if(current.willCancel||current.gesture.y-event.clientY>=52){cancel('已取消录音。');return;}
-      if(current.phase==='requesting'){cancel('麦克风授权完成后，请再按住说话。');return;}
+    function releaseRecording(){
       const job=current;
+      if(!job)return;
+      if(job.phase==='requesting'){cancel('麦克风授权完成后，请再按住说话。');return;}
       if(job.phase==='capped'){
         job.gesture=null;
         if(job.stopped)void finish(job);
@@ -229,13 +260,40 @@ window.hubAssistant=(()=>{
       }
       finishRecording(job);
       if(current?.phase==='transcribing')job.gesture=null;
+    }
+    document.addEventListener('pointerup',event=>{
+      if(!sameGesture(event))return;
+      if(current.willCancel||current.gesture.y-event.clientY>=52){cancel('已取消录音。');return;}
+      releaseRecording();
     });
+    document.addEventListener('keydown',event=>{
+      if(event.key==='Escape'&&shortcut){
+        shortcut=null;cancel('已取消录音。');event.preventDefault();event.stopPropagation();return;
+      }
+      if(event.code!=='Digit1'||!event.altKey||event.ctrlKey||event.metaKey||event.shiftKey||
+        event.isComposing||event.defaultPrevented||root.hidden||document.querySelector('dialog[open]'))return;
+      if(shortcut){event.preventDefault();return;}
+      if(event.repeat||current||busy||reading||mode.value!=='chat')return;
+      event.preventDefault();
+      const keyPress={keyboard:true};
+      shortcut=keyPress;
+      if(!panel.hidden&&!hold.disabled){void begin('voice',keyPress);return;}
+      void open().then(()=>{
+        if(shortcut===keyPress&&!panel.hidden&&!hold.disabled)void begin('voice',keyPress);
+      });
+    },true);
+    document.addEventListener('keyup',event=>{
+      if(!shortcut||!(event.code==='Digit1'||event.key==='Alt'))return;
+      const keyPress=shortcut;shortcut=null;event.preventDefault();
+      if(current?.gesture===keyPress)releaseRecording();
+    },true);
     document.addEventListener('pointercancel',event=>{if(sameGesture(event))cancel('录音已取消。');});
     window.addEventListener('blur',()=>{
+      if(shortcut){shortcut=null;cancel('录音已取消。');return;}
       if(current?.gesture&&current.phase!=='requesting')cancel('录音已取消。');
     });
     for(const type of ['contextmenu','dragstart'])hold.addEventListener(type,event=>event.preventDefault());
-    new MutationObserver(()=>{if(panel.hidden){cancel();stopPlayback();}}).observe(panel,{attributes:true,attributeFilter:['hidden']});
+    new MutationObserver(()=>{if(panel.hidden){shortcut=null;cancel();stopPlayback();}}).observe(panel,{attributes:true,attributeFilter:['hidden']});
     window.addEventListener('pagehide',()=>{cancel();stopPlayback();voiceRecordings.clear();});
     refresh();
     return {opener,hold,hint,cancel,refresh,active:()=>!!current,setAvailable:value=>{available=value;refresh();}};
@@ -273,7 +331,7 @@ window.hubAssistant=(()=>{
     }
     paint(action);return card;
   }
-  function render(turns){stopPlayback();messages.replaceChildren();for(const t of turns){const q=el('article',undefined,'assistant-message user-message'),a=el('article',undefined,'assistant-message');const voice=voiceRecordings.get(t.id);q.append(el('small',voice?'你 · 语音':'你'));if(voice)q.append(recordingButton(voice));q.append(el('p',t.prompt));const remember=button('记住这条',async()=>{try{const m=await call('/memory');memory.value=m.content+(m.content?'\n':'')+t.prompt;memory.parentElement.open=true;status.textContent='请核对个人记忆，点击保存后生效。';}catch(e){fail(e);}});for(const image of JSON.parse(t.images||'[]')){const preview=el('img',undefined,'assistant-history-image');preview.src=image.url;preview.alt=image.name;q.append(preview);}q.append(remember);a.append(el('small','AI 助理'),el('p',t.answer||(t.status==='pending'?'正在处理；可稍后重新打开对话查看。':JSON.parse(t.generation||'{}').project?'上次结果未入库，请先取回已有图片。':'上次请求未完成，请先核对原任务，避免重复提交。')));if(t.answer&&window.speechSynthesis&&window.SpeechSynthesisUtterance)a.append(replyButton(t.answer));for(const assetId of (JSON.parse(t.result_assets||'[]').length?JSON.parse(t.result_assets):t.result_asset?[t.result_asset]:[])){const preview=el('img',undefined,'assistant-history-image');preview.src='/api/assets/'+encodeURIComponent(assetId);preview.alt='AI 生成图片';a.append(preview);const download=el('a','下载图片');download.href=preview.src+'?download=1';a.append(download,button('用作参考图',async()=>{if(busy||reading)return;const stamp=epoch;try{const response=await fetch(preview.src);if(!response.ok)throw Error('图片读取失败');const blob=await response.blob();if(stamp!==epoch)return;await addFiles([new File([blob],'生成图片.png',{type:'image/png'})]);if(stamp!==epoch)return;mode.value='image';mode.onchange();}catch(e){if(stamp===epoch)fail(e);}}));}const generation=JSON.parse(t.generation||'{}');if(generation.provider==='libtv')a.append(window.hubPromptTemplates?.sourceButton('image',t.id)||document.createTextNode(''));if(t.status==='failed'&&generation.provider==='libtv'&&generation.project&&!generation.terminal_failure){a.append(el('p','图片可能已生成。可取回原任务的结果，不会重新生成或重复扣费。'),button('取回已生成图片',()=>recoverImage(t.id)));}if(t.action)a.append(actionCard(t.action,tid));messages.append(q,a);}if(!turns.length)messages.append(el('p','可以问我文案、提示词或制作思路。个人记忆会用于你的每次对话。','assistant-empty'));messages.scrollTop=messages.scrollHeight;}
+  function render(turns){stopPlayback();messages.replaceChildren();for(const t of turns){const q=el('article',undefined,'assistant-message user-message'),a=el('article',undefined,'assistant-message');const voice=voiceRecordings.get(t.id);q.append(el('small',voice?'你 · 语音':'你'));if(voice)q.append(recordingButton(voice));q.append(el('p',t.prompt));const remember=button('记住这条',async()=>{try{const m=await call('/memory');memory.value=m.content+(m.content?'\n':'')+t.prompt;memory.parentElement.open=true;status.textContent='请核对个人记忆，点击保存后生效。';}catch(e){fail(e);}});for(const image of JSON.parse(t.images||'[]')){const preview=el('img',undefined,'assistant-history-image');preview.src=image.url;preview.alt=image.name;q.append(preview);}q.append(remember);a.append(el('small','AI 助理'),el('p',t.answer||(t.status==='pending'?'正在处理；可稍后重新打开对话查看。':JSON.parse(t.generation||'{}').project?'上次结果未入库，请先取回已有图片。':'上次请求未完成，请先核对原任务，避免重复提交。')));if(t.answer)a.append(replyButton(t.answer));for(const assetId of (JSON.parse(t.result_assets||'[]').length?JSON.parse(t.result_assets):t.result_asset?[t.result_asset]:[])){const preview=el('img',undefined,'assistant-history-image');preview.src='/api/assets/'+encodeURIComponent(assetId);preview.alt='AI 生成图片';a.append(preview);const download=el('a','下载图片');download.href=preview.src+'?download=1';a.append(download,button('用作参考图',async()=>{if(busy||reading)return;const stamp=epoch;try{const response=await fetch(preview.src);if(!response.ok)throw Error('图片读取失败');const blob=await response.blob();if(stamp!==epoch)return;await addFiles([new File([blob],'生成图片.png',{type:'image/png'})]);if(stamp!==epoch)return;mode.value='image';mode.onchange();}catch(e){if(stamp===epoch)fail(e);}}));}const generation=JSON.parse(t.generation||'{}');if(generation.provider==='libtv')a.append(window.hubPromptTemplates?.sourceButton('image',t.id)||document.createTextNode(''));if(t.status==='failed'&&generation.provider==='libtv'&&generation.project&&!generation.terminal_failure){a.append(el('p','图片可能已生成。可取回原任务的结果，不会重新生成或重复扣费。'),button('取回已生成图片',()=>recoverImage(t.id)));}if(t.action)a.append(actionCard(t.action,tid));messages.append(q,a);}if(!turns.length)messages.append(el('p','可以问我文案、提示词或制作思路。个人记忆会用于你的每次对话。','assistant-empty'));messages.scrollTop=messages.scrollHeight;}
   async function sendTurn(text,voice=null){
     if(busy||dictation.active()||!ready||(voice&&mode.value!=='chat'))return;
     if(text.length>20000){status.textContent='消息与附件合计超过 20000 字，请拆分发送。';return;}

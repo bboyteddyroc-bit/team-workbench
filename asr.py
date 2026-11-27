@@ -318,7 +318,7 @@ def caption_rows(segments):
 ZH_PROMPT = '以下是普通话的句子，请用简体中文书写字幕。'
 
 
-def transcribe(path, language=None, *, local_only=False):
+def transcribe(path, language=None, *, local_only=False, word_timestamps=True):
     """Transcribe a wav file. Chinese is biased to Simplified output via a prompt."""
     from faster_whisper.audio import decode_audio
     created = engine(local_only=True) if local_only else engine()
@@ -329,7 +329,7 @@ def transcribe(path, language=None, *, local_only=False):
     prompt = ZH_PROMPT if language == 'zh' else None
     segments, info = created.transcribe(audio, language=language, vad_filter=True, beam_size=5,
                                         condition_on_previous_text=False, initial_prompt=prompt,
-                                        word_timestamps=True)
+                                        word_timestamps=word_timestamps)
     rows = []
     for segment in segments:
         text = (segment.text or '').strip()

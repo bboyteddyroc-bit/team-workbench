@@ -65,7 +65,7 @@ def attach(app, hub, user, body):
     from assistant_voice import attach as attach_dictation, ready as dictation_ready
     from assistant_actions import action_view, classify_intent, drop_thread, propose
     attach_a6_settings(app,hub,user,body)
-    attach_dictation(app,user)
+    attach_dictation(app,user,body)
     with hub.db() as db:
         db.executescript("""
         CREATE TABLE IF NOT EXISTS ai_settings(id INTEGER PRIMARY KEY CHECK(id=1), secret BLOB);

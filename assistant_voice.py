@@ -1,9 +1,12 @@
 """Temporary, server-local speech-to-text for the signed-in assistant."""
+import json
+import os
+import subprocess
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import BoundedSemaphore
 
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, Response
 from starlette.concurrency import run_in_threadpool
 
 import asr
@@ -13,6 +16,8 @@ DURATION = 60
 MAX_BYTES = 1536 * 1024
 FORMATS = {'audio/webm': 'matroska', 'audio/ogg': 'ogg', 'audio/mp4': 'mov'}
 _slot = BoundedSemaphore(1)
+_speech_slot = BoundedSemaphore(2)
+MAX_SPEECH_CHARS = 3600
 
 
 def ready():
@@ -37,7 +42,7 @@ def recognize(data, container):
         if audio.stat().st_size <= 128:
             raise HTTPException(422, '没有录到可识别的语音')
         try:
-            language, segments = asr.transcribe(audio, local_only=True)
+            language, segments = asr.transcribe(audio, local_only=True, word_timestamps=False)
         except ValueError:
             raise HTTPException(503, '本地语音识别暂不可用，请稍后重试') from None
         text = ' '.join(segment['text'] for segment in segments)
@@ -50,7 +55,65 @@ def recognize(data, container):
         return text.strip()
 
 
-def attach(app, user):
+# Text goes through UTF-8 stdin, never into the PowerShell command.
+_WINDOWS_SPEECH = r"""
+$ErrorActionPreference = 'Stop'
+[Console]::InputEncoding = [Text.UTF8Encoding]::new($false)
+$data = [Console]::In.ReadToEnd() | ConvertFrom-Json
+Add-Type -AssemblyName System.Speech
+$speaker = [System.Speech.Synthesis.SpeechSynthesizer]::new()
+try {
+    $voice = $speaker.GetInstalledVoices() | Where-Object {
+        $_.Enabled -and $_.VoiceInfo.Culture.TwoLetterISOLanguageName -eq $data.language
+    } | Select-Object -First 1
+    if (-not $voice) { exit 3 }
+    $speaker.SelectVoice($voice.VoiceInfo.Name)
+    $audio = [IO.MemoryStream]::new()
+    try {
+        $speaker.SetOutputToWaveStream($audio)
+        $speaker.Speak([string]$data.text)
+        $output = [Console]::OpenStandardOutput()
+        $audio.WriteTo($output)
+        $output.Flush()
+    } finally { $audio.Dispose() }
+} finally { $speaker.Dispose() }
+"""
+
+
+def synthesize(text, language):
+    if os.name != 'nt':
+        raise HTTPException(503, '中台没有可用的 Windows 朗读服务')
+    powershell = Path(os.environ.get('SystemRoot', r'C:\Windows')) / 'System32' / 'WindowsPowerShell' / 'v1.0' / 'powershell.exe'
+    try:
+        result = subprocess.run(
+            [str(powershell), '-NoProfile', '-NonInteractive', '-Command', _WINDOWS_SPEECH],
+            input=json.dumps({'text': text, 'language': language}, ensure_ascii=False).encode('utf-8'),
+            capture_output=True, timeout=25, creationflags=getattr(subprocess, 'CREATE_NO_WINDOW', 0),
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        raise HTTPException(503, '中台朗读暂不可用，可继续查看文字') from None
+    if result.returncode == 3:
+        raise HTTPException(503, '中台缺少所需语言的本地音色，可继续查看文字')
+    if result.returncode or not result.stdout.startswith(b'RIFF'):
+        raise HTTPException(503, '中台朗读失败，可继续查看文字')
+    return result.stdout
+
+def attach(app, user, body):
+    @app.post('/api/assistant/speech')
+    async def speech(request: Request):
+        user(request)
+        data = await body(request)
+        text = data.get('text')
+        language = data.get('language')
+        if not isinstance(text, str) or not text.strip() or len(text) > MAX_SPEECH_CHARS or language not in ('zh', 'en'):
+            raise HTTPException(400, '朗读内容或语言无效')
+        if not _speech_slot.acquire(blocking=False):
+            raise HTTPException(429, '中台正在朗读，请稍后再试')
+        try:
+            audio = await run_in_threadpool(synthesize, text, language)
+        finally:
+            _speech_slot.release()
+        return Response(audio, media_type='audio/wav', headers={'Cache-Control': 'no-store'})
     @app.post('/api/assistant/dictation')
     async def dictation(request: Request):
         user(request)
