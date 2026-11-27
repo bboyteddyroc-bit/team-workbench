@@ -10,7 +10,7 @@
 #editor .sticker-actions{flex-wrap:wrap}
 #editor .sticker-actions button{min-width:72px}
 /* Intrinsic grids remain usable in browsers without container-query support. */
-#editor #edit-library-list .edit-day-body{grid-template-columns:repeat(auto-fit,minmax(min(100%,116px),1fr))}
+#editor #edit-library-list .edit-day-body{grid-template-columns:repeat(auto-fill,minmax(min(100%,138px),1fr))}
 @container editor-library (max-width:300px){
  #editor .sticker-library-layout{grid-template-columns:64px minmax(0,1fr)}
  #editor .sticker-category-content{padding:10px 6px}
@@ -22,7 +22,7 @@
 }
 @container editor-library (min-width:390px){
  #editor #editor-tool-stickers .sticker-grid{grid-template-columns:repeat(auto-fit,minmax(76px,1fr))}
- #editor #edit-library-list .edit-day-body{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+ #editor #edit-library-list .edit-day-body{grid-template-columns:repeat(auto-fill,minmax(150px,1fr))}
 }
 @container editor-properties (max-width:300px){
  #editor .edit-properties .text-panel .text-row,
@@ -34,4 +34,48 @@
  #editor .edit-properties .speed-presets{grid-template-columns:repeat(2,minmax(0,1fr))}
  #editor .edit-properties .edit-caption-row{grid-template-columns:minmax(0,1fr) 48px 48px;gap:4px}
  #editor .edit-properties .edit-caption-row>button:last-child{grid-column:1/-1}
+}
+
+/* Keep file and folder import together without spending a row on each action. */
+#editor #editor-tool-materials .attachment-entry{
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;
+  gap:6px 8px;max-width:470px;
+}
+#editor #editor-tool-materials .attachment-entry > :first-child{min-width:0}
+#editor #editor-tool-materials .attachment-entry button.group{
+  flex-direction:row;justify-content:flex-start;gap:7px;min-height:40px;
+  padding:5px 8px;border:1px dashed var(--line);border-radius:8px;
+  background:var(--bg-surface);text-align:start;color:var(--fg);
+}
+#editor #editor-tool-materials .attachment-entry button.group:hover{
+  background:var(--bg-hover);border-color:var(--accent-line);
+}
+#editor #editor-tool-materials .attachment-entry button.group[data-dragging="true"]{
+  background:var(--accent-soft);border-color:var(--accent);
+}
+#editor #editor-tool-materials .attachment-entry button.group > span.absolute{display:none}
+#editor #editor-tool-materials .attachment-entry button.group > span[aria-hidden="true"]:not(.absolute){
+  flex:none;width:24px;height:24px;margin:0;border-radius:6px;
+}
+#editor #editor-tool-materials .attachment-entry button.group > .text-sm{font-size:12px;line-height:1.35}
+#editor #editor-tool-materials .attachment-entry button.group > .text-xs{
+  position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%);
+}
+#editor #editor-tool-materials .attachment-folder{margin:0}
+#editor #editor-tool-materials .attachment-folder button{
+  min-height:38px;padding-inline:8px;white-space:nowrap;
+}
+#editor #editor-tool-materials .attachment-entry > [role="status"]{grid-column:1/-1;margin:0}
+#editor #editor-tool-materials .editor-library-controls{
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:5px 8px;margin:8px 0;max-width:470px;
+}
+#editor #editor-tool-materials .editor-library-controls label{
+  display:flex;align-items:center;gap:8px;margin:0;white-space:nowrap;
+}
+#editor #editor-tool-materials .editor-library-controls .edit-section-heading{margin:0;padding:0;border:0}
+#editor #editor-tool-materials #library-scope{width:auto;max-width:100%;margin:0}
+@container editor-library (max-width:235px){
+  #editor #editor-tool-materials .attachment-entry{grid-template-columns:minmax(0,1fr)}
+  #editor #editor-tool-materials .attachment-folder{justify-content:flex-start}
 }

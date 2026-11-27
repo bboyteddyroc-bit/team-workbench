@@ -352,6 +352,9 @@ window.hubEditor=(()=>{
   function renderSource(item){
     const card=el('div',undefined,'edit-source source-card'), frame=el('div',undefined,'source-frame');
     const thumb=el('video');thumb.preload='metadata';thumb.muted=true;thumb.playsInline=true;
+    thumb.addEventListener('loadedmetadata',()=>{
+      if(thumb.videoWidth>0&&thumb.videoHeight>0)card.style.setProperty('--source-aspect',String(thumb.videoWidth/thumb.videoHeight));
+    });
     const url='/api/tasks/'+item.id+'/video';if(libraryObserver){thumb.dataset.lazySrc=url;libraryObserver.observe(thumb);}else{thumb.src=url;primeThumbnail(thumb,.1);}
     let start=0,end=item.duration;
     const duration=el('span',`${Math.floor(item.duration/60)}:${String(Math.floor(item.duration%60)).padStart(2,'0')}`,'source-duration');

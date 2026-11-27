@@ -203,6 +203,14 @@ document.addEventListener('DOMContentLoaded',()=>{
   materialPanel.id='editor-tool-materials';
   materialPanel.className='editor-tool-panel';
   [...library.children].filter(node=>!node.classList.contains('editor-column-resizer')).forEach(node=>materialPanel.append(node));
+  const scopeLabel=materialPanel.querySelector('label:has(> #library-scope)');
+  const libraryHeading=materialPanel.querySelector('.edit-section-heading');
+  if(scopeLabel&&libraryHeading){
+    const controls=document.createElement('div');
+    controls.className='editor-library-controls';
+    scopeLabel.before(controls);
+    controls.append(scopeLabel,libraryHeading);
+  }
   library.append(materialPanel);
 
   const bottomSections=[...bottom.querySelectorAll(':scope > section')].filter(node=>node.id!=='edit-text-section');
