@@ -1,0 +1,139 @@
+/* Shared operating controls. Existing classes and data attributes keep their roles. */
+html[data-theme="light"] {
+  --button-paper:linear-gradient(#fffefa,#f9f7f2 48%,#efece5);
+  --button-paper-hover:linear-gradient(#fffefa,#e9e5dc);
+  --button-graphite:linear-gradient(#353736,#252726 52%,#202221);
+  --button-graphite-hover:linear-gradient(#484b48,#2c2f2d);
+  --button-selected:linear-gradient(#eef7f4,#dcece8);
+  --button-depth:inset 0 1px 0 #fff,inset 0 -1px 0 #3b302810,0 1px 2px #28201415;
+  --button-motion:150ms cubic-bezier(.22,.75,.28,1);
+}
+html[data-theme="light"]:root :is(body,#shell) :where(
+  .secondary,.upload-button,.task-actions button,.task-actions a,.account-controls button,
+  .library-picker-button,.be-select-trigger,.channel-trigger,.tl-tool,.material-download,
+  .material-filter-reset,.material-date-trigger,
+  #libtv-profile-add,#libtv-profile-connect,
+  #editor .edit-actions button,#editor .editor-commandbar button,
+  #studio.simple-studio .simple-toolbar.simple-toolbar button,
+  #home.sphere-home :is(.button,.arrow),#shell .sidebar .nav,
+  .hub-assistant .assistant-launch
+) {
+  background:var(--button-paper)!important;border-color:var(--line)!important;
+  color:var(--fg)!important;box-shadow:var(--button-depth)!important;
+  transition:color var(--button-motion),border-color var(--button-motion),box-shadow var(--button-motion),translate var(--button-motion);
+}
+html[data-theme="light"]:root :is(body,#shell) :where(
+  .secondary,.upload-button,.task-actions button,.task-actions a,.account-controls button,
+  .library-picker-button,.be-select-trigger,.channel-trigger,.tl-tool,.material-download,
+  .material-filter-reset,.material-date-trigger,
+  #libtv-profile-add,#libtv-profile-connect,
+  #editor .edit-actions button,#editor .editor-commandbar button,
+  #studio.simple-studio .simple-toolbar.simple-toolbar button,#home.sphere-home :is(.button,.arrow),
+  .hub-assistant .assistant-launch
+):where(:hover:not(:disabled,[aria-disabled="true"])) {
+  background:var(--button-paper-hover)!important;border-color:#aaa397!important;
+}
+html[data-theme="light"]:root :is(body,#shell) :where(
+  .primary,#editor button.primary,#intelligence .primary,#home-enter,#auth.pass-login #auth-submit,
+  #studio.simple-studio .simple-toolbar.simple-toolbar>button:first-child,
+  #home.sphere-home .enter
+) {
+  background:var(--button-graphite)!important;color:var(--fg-invert)!important;border-color:#262828!important;
+  box-shadow:inset 0 1px 0 #ffffff2c,inset 0 -1px 0 #0005,0 2px 3px #18161424!important;
+  font-weight:650;
+}
+html[data-theme="light"]:root :is(body,#shell) :where(
+  .primary,#editor button.primary,#intelligence .primary,#home-enter,#auth.pass-login #auth-submit,
+  #studio.simple-studio .simple-toolbar.simple-toolbar>button:first-child,
+  #home.sphere-home .enter
+):where(:hover:not(:disabled,[aria-disabled="true"])) {
+  background:var(--button-graphite-hover)!important;border-color:#393d3a!important;
+}
+html[data-theme="light"]:root :is(body,#shell) :where(button,a[role="button"]):where(.primary,.secondary,.upload-button,.tl-tool,.channel-trigger,#studio .simple-toolbar button):where(:active:not(:disabled,[aria-disabled="true"])) {
+  translate:0 1px;box-shadow:inset 0 1px 3px #28201440!important;
+}
+html[data-theme="light"]:root :is(body,#shell) :where(
+  .text-button,.link-button,.icon-button,#shell .sidebar .nav,
+  #intelligence .intel-tabs>button,#intelligence .gi-tabs>button,
+  .beui-tabs button,#editor .segmented button
+) {
+  background:transparent!important;border-color:transparent!important;color:var(--fg-dim)!important;box-shadow:none!important;
+}
+html[data-theme="light"]:root :is(body,#shell) :where(
+  .text-button,.link-button,.icon-button,#shell .sidebar .nav,
+  #intelligence .intel-tabs>button,#intelligence .gi-tabs>button,.beui-tabs button,#editor .segmented button
+):where(:hover:not(:disabled,[aria-disabled="true"])) {
+  background:var(--bg-hover)!important;color:var(--fg)!important;
+}
+html[data-theme="light"]:root :is(body,#shell) :where(
+  #shell .sidebar .nav.active,.tl-tool[aria-pressed="true"],#editor .timeline-tools .tl-tool[aria-pressed="true"],
+  #editor .segmented button:is(.active,[aria-pressed="true"],[aria-selected="true"]),
+  button.secondary:is([aria-pressed="true"],[aria-selected="true"])
+) {
+  background:var(--button-selected)!important;color:#14585b!important;border-color:var(--accent-line)!important;
+}
+html[data-theme="light"]:root :is(body,#shell) :where(
+  #intelligence .intel-tabs>button,#intelligence .gi-tabs>button,.beui-tabs button
+):where(.active,[aria-selected="true"],[aria-current="page"]) {
+  background:transparent!important;color:var(--accent)!important;box-shadow:inset 0 -2px var(--accent)!important;
+}
+html[data-theme="light"] .beui-tabs:has(.beui-tab-indicator) button {box-shadow:none!important}
+html[data-theme="light"]:root :is(body,#shell) :where(
+  button.danger,a.danger,button.is-danger,.danger-button,.material-delete,#edit-remove,
+  #editor button[data-shortcut="delete"],button[data-action="delete"],button[data-action="remove"],button[data-remove],button[data-delete]
+) {
+  background:var(--bg-surface)!important;border-color:#c88d82!important;color:var(--danger)!important;
+}
+html[data-theme="light"]:root :is(body,#shell) :where(
+  button.danger,a.danger,button.is-danger,.danger-button,.material-delete,#edit-remove,
+  #editor button[data-shortcut="delete"],button[data-action="delete"],button[data-action="remove"],button[data-remove],button[data-delete]
+):where(:hover:not(:disabled,[aria-disabled="true"])) {background:var(--danger-bg)!important}
+html[data-theme="light"] :is(button:disabled,button[aria-disabled="true"],a[aria-disabled="true"]) {cursor:default}
+html[data-theme="light"] :is(button,a,input,select,textarea,summary):focus-visible {outline:2px solid var(--accent)!important;outline-offset:2px}
+html[data-theme="light"] :is(.competitor-monitor,[role="switch"]):focus-visible {outline-offset:3px}
+html[data-theme="light"] .competitor-monitor .competitor-switch-track {
+  width:35px;height:19px;border-color:#bdb6ac;background:linear-gradient(#dcd8d0,#e8e4db);
+  box-shadow:inset 0 1px 2px #382a2517;
+}
+html[data-theme="light"] .competitor-monitor .competitor-switch-track::after {
+  width:13px;height:13px;background:#fffefa;box-shadow:0 1px 2px #352e2940;
+}
+html[data-theme="light"] .competitor-monitor[aria-checked="true"] .competitor-switch-track {background:linear-gradient(#82ceca,#6bbfbc);border-color:#52918e}
+html[data-theme="light"] .competitor-monitor[aria-checked="true"] .competitor-switch-track::after {transform:translateX(16px);background:#fffefa}
+html[data-theme="light"] #editor#editor .edit-preview .edit-transport #edit-play {
+  border:1px solid var(--line)!important;border-radius:50%;
+  background:var(--button-paper)!important;box-shadow:var(--button-depth)!important;
+}
+html[data-theme="light"] #editor#editor .edit-preview .edit-transport #edit-play:hover:not(:disabled) {background:var(--button-paper-hover)!important}
+@media(prefers-reduced-motion:reduce) {
+  html[data-theme="light"] :is(.primary,.secondary,.tl-tool,.channel-trigger,.competitor-monitor,nav button) {transition:none!important;translate:none!important}
+  html[data-theme="light"] .competitor-switch-track::after {transition:none!important}
+}
+/* Keep the command row aligned with the same button roles as regular forms. */
+html[data-theme="light"] #studio.simple-studio .simple-toolbar.simple-toolbar .channel-trigger.channel-trigger {
+  background:var(--button-paper)!important;border-color:var(--line)!important;color:var(--fg)!important;
+}
+html[data-theme="light"] #studio.simple-studio .simple-toolbar.simple-toolbar .channel-trigger.channel-trigger:hover:not(:disabled) {background:var(--button-paper-hover)!important}
+html[data-theme="light"] #studio.simple-studio .simple-toolbar.simple-toolbar>button:first-child {
+  background:var(--button-graphite)!important;border-color:#262828!important;color:var(--fg-invert)!important;
+}
+html[data-theme="light"] #studio.simple-studio .simple-toolbar.simple-toolbar>button:first-child:hover:not(:disabled) {background:var(--button-graphite-hover)!important}
+html[data-theme="light"] .beui-tabs .beui-tab-indicator {
+  background:var(--accent-soft)!important;border-color:var(--accent-line)!important;
+}
+html[data-theme="light"] #editor#editor .timeline-tools .tl-tool[aria-pressed="true"] {
+  background:var(--button-selected)!important;border-color:var(--accent-line)!important;color:var(--accent)!important;
+}
+html[data-theme="light"] #editor .track-order-controls button {color:var(--fg-dim)}
+html[data-theme="light"] #editor .speed-presets {gap:1px}
+html[data-theme="light"] #editor .speed-presets button {border-radius:0}
+html[data-theme="light"] #editor .speed-presets button:nth-child(3n + 1) {border-radius:6px 0 0 6px}
+html[data-theme="light"] #editor .speed-presets button:nth-child(3n) {border-radius:0 6px 6px 0}
+html[data-theme="light"] #editor#editor .clip-toolbar #edit-remove {color:var(--danger)!important}
+html[data-theme="light"] #editor#editor .clip-toolbar #edit-remove:hover:not(:disabled) {background:var(--danger-bg)!important}
+html[data-theme="light"] #studio.simple-studio :is(.reference-actions .attachment-drop,.reference-actions .library-picker-button,.parameter-popover > summary) {
+  background:var(--button-paper)!important;color:var(--fg)!important;border-color:var(--line)!important;
+}
+html[data-theme="light"] #studio.simple-studio :is(.reference-actions .attachment-drop,.reference-actions .library-picker-button,.parameter-popover > summary):hover {
+  background:var(--button-paper-hover)!important;
+}

@@ -1,81 +1,81 @@
 /* Editor finish layer. Keep media, geometry and timeline coordinates untouched. */
-html[data-theme="obsidian"] #editor#editor {
-  --editor-edge:#3b4248; --editor-selected:#a9c0d0;
+html[data-theme="light"] #editor#editor {
+  --editor-edge:var(--line-soft); --editor-selected:var(--accent);
 }
-html[data-theme="obsidian"] #editor#editor :is(.timeline-tools,.clip-toolbar) {
+html[data-theme="light"] #editor#editor :is(.timeline-tools,.clip-toolbar) {
   gap:6px; padding:6px 12px!important; background:var(--bg-surface)!important;
   border-bottom:1px solid var(--editor-edge); align-items:center; min-height:38px;
 }
-html[data-theme="obsidian"] #editor#editor .clip-toolbar {display:flex;flex-wrap:wrap;overflow:visible}
-html[data-theme="obsidian"] #editor#editor :is(.timeline-tools,.clip-toolbar) button {
+html[data-theme="light"] #editor#editor .clip-toolbar {display:flex;flex-wrap:wrap;overflow:visible}
+html[data-theme="light"] #editor#editor :is(.timeline-tools,.clip-toolbar) button {
   min-height:28px; height:28px; padding:0 9px!important; border-radius:5px;
   font-size:11px; line-height:26px; font-weight:500; box-shadow:none!important;
   border:1px solid transparent!important; background:transparent!important; color:var(--fg-dim)!important;
 }
-html[data-theme="obsidian"] #editor#editor :is(.timeline-tools,.clip-toolbar) button:hover:not(:disabled) {
+html[data-theme="light"] #editor#editor :is(.timeline-tools,.clip-toolbar) button:hover:not(:disabled) {
   background:var(--bg-hover)!important; color:var(--fg)!important;
 }
-html[data-theme="obsidian"] #editor#editor :is(.timeline-tools,.clip-toolbar) button:is(.active,[aria-pressed="true"]) {
+html[data-theme="light"] #editor#editor :is(.timeline-tools,.clip-toolbar) button:is(.active,[aria-pressed="true"]) {
   background:var(--bg-active)!important; color:var(--accent-hi)!important; border-color:var(--accent)!important;
 }
-html[data-theme="obsidian"] #editor#editor :is(.timeline-tools,.clip-toolbar) button:disabled {opacity:.38}
-html[data-theme="obsidian"] #editor#editor .clip-toolbar>.fine {margin-left:auto;font-size:10px;color:var(--fg-mute)}
-html[data-theme="obsidian"] #editor#editor :is(button,summary,input,select,textarea):focus-visible {
+html[data-theme="light"] #editor#editor :is(.timeline-tools,.clip-toolbar) button:disabled {opacity:.38}
+html[data-theme="light"] #editor#editor .clip-toolbar>.fine {margin-left:auto;font-size:10px;color:var(--fg-mute)}
+html[data-theme="light"] #editor#editor :is(button,summary,input,select,textarea):focus-visible {
   outline:2px solid var(--editor-selected);outline-offset:2px;
 }
-html[data-theme="obsidian"] #editor#editor .editor-panel-tabs {
+html[data-theme="light"] #editor#editor .editor-panel-tabs {
   border-radius:0!important;border:0!important;border-bottom:1px solid var(--editor-edge)!important;
   background:transparent!important;padding:4px 8px!important;gap:2px;min-height:40px;
 }
-html[data-theme="obsidian"] #editor#editor .editor-panel-tabs button {
+html[data-theme="light"] #editor#editor .editor-panel-tabs button {
   border-radius:5px!important;min-height:30px;padding:5px 10px!important;font-size:12px;
   border:0!important;box-shadow:none!important;background:transparent!important;color:var(--fg-mute)!important;
 }
-html[data-theme="obsidian"] #editor#editor .editor-panel-tabs button.active {
+html[data-theme="light"] #editor#editor .editor-panel-tabs button.active {
   background:var(--bg-active)!important;color:var(--fg)!important;
 }
-html[data-theme="obsidian"] #editor#editor :is(.editor-tool-panel,.editor-side-panel) {padding:14px!important;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
-html[data-theme="obsidian"] #editor#editor :is(.editor-tool-panel,.editor-side-panel) :is(h2,h3) {font-size:13px;line-height:1.5;font-weight:600;margin:0 0 12px}
-html[data-theme="obsidian"] #editor#editor :is(.editor-tool-panel,.editor-side-panel) label {font-size:12px;line-height:1.5;color:var(--fg-dim)}
-html[data-theme="obsidian"] #editor#editor :is(.editor-tool-panel,.editor-side-panel) :is(input:not([type=range]):not([type=checkbox]):not([type=color]),select,textarea) {
+html[data-theme="light"] #editor#editor :is(.editor-tool-panel,.editor-side-panel) {padding:14px!important;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+html[data-theme="light"] #editor#editor :is(.editor-tool-panel,.editor-side-panel) :is(h2,h3) {font-size:13px;line-height:1.5;font-weight:600;margin:0 0 12px}
+html[data-theme="light"] #editor#editor :is(.editor-tool-panel,.editor-side-panel) label {font-size:12px;line-height:1.5;color:var(--fg-dim)}
+html[data-theme="light"] #editor#editor :is(.editor-tool-panel,.editor-side-panel) :is(input:not([type=range]):not([type=checkbox]):not([type=color]),select,textarea) {
   border-radius:6px!important;border:1px solid var(--line)!important;background:var(--bg-page)!important;
   color:var(--fg)!important;font-size:12px;box-shadow:none!important;padding:8px 10px;
 }
-html[data-theme="obsidian"] #editor#editor :is(.editor-tool-panel,.editor-side-panel) .fine {color:var(--fg-mute);font-size:11px;line-height:1.65}
-html[data-theme="obsidian"] #editor#editor .editor-preview-heading {font-size:11px;height:34px;margin-bottom:6px;color:var(--fg-mute)}
-html[data-theme="obsidian"] #editor#editor #edit-clock {font-variant-numeric:tabular-nums;white-space:nowrap}
-html[data-theme="obsidian"] #editor#editor .track-row {border-bottom-color:var(--editor-edge)!important}
-html[data-theme="obsidian"] #editor#editor .track-label {background:var(--bg-surface)!important;color:var(--fg-mute)!important;border-right:1px solid var(--editor-edge)}
-html[data-theme="obsidian"] #editor#editor :is(.edit-clip,.caption-segment,.audio-segment,.compound-block) {
+html[data-theme="light"] #editor#editor :is(.editor-tool-panel,.editor-side-panel) .fine {color:var(--fg-mute);font-size:11px;line-height:1.65}
+html[data-theme="light"] #editor#editor .editor-preview-heading {font-size:11px;height:34px;margin-bottom:6px;color:var(--fg-mute)}
+html[data-theme="light"] #editor#editor #edit-clock {font-variant-numeric:tabular-nums;white-space:nowrap}
+html[data-theme="light"] #editor#editor .track-row {border-bottom-color:var(--editor-edge)!important}
+html[data-theme="light"] #editor#editor .track-label {background:var(--bg-surface)!important;color:var(--fg-mute)!important;border-right:1px solid var(--editor-edge)}
+html[data-theme="light"] #editor#editor :is(.edit-clip,.caption-segment,.audio-segment,.compound-block) {
   border-radius:5px!important;box-shadow:none;font-size:11px;
 }
-html[data-theme="obsidian"] #editor#editor :is(.edit-clip,.caption-segment,.audio-segment,.compound-block):hover {border-color:#8496a3!important}
-html[data-theme="obsidian"] #editor#editor :is(.edit-clip,.caption-segment,.audio-segment,.compound-block):is(.selected,.track-selected) {
+html[data-theme="light"] #editor#editor :is(.edit-clip,.caption-segment,.audio-segment,.compound-block):hover {border-color:var(--accent-line)!important}
+html[data-theme="light"] #editor#editor :is(.edit-clip,.caption-segment,.audio-segment,.compound-block):is(.selected,.track-selected) {
   border-color:var(--editor-selected)!important;box-shadow:inset 0 0 0 1px var(--editor-selected)!important;
 }
-html[data-theme="obsidian"] #editor#editor .compound-context {padding:7px 12px;gap:10px;background:#2c363e!important;border-left-color:var(--editor-selected);font-size:11px}
-html[data-theme="obsidian"] #editor#editor .compound-context button {border-radius:5px;min-height:28px;background:var(--bg-active)!important}
-html[data-theme="obsidian"] #editor#editor .export-day {border:0!important;border-bottom:1px solid var(--editor-edge)!important;border-radius:0!important;background:transparent!important;margin:0 0 10px}
-html[data-theme="obsidian"] #editor#editor .export-day>summary {padding:10px 2px;font-size:12px;color:var(--fg-dim);font-variant-numeric:tabular-nums;cursor:pointer}
-html[data-theme="obsidian"] #editor#editor .edit-export-row {padding:12px 0!important;gap:10px;border-color:var(--editor-edge)!important;background:transparent!important}
-html[data-theme="obsidian"] .export-name-dialog {box-sizing:border-box;width:min(440px,calc(100vw - 32px));padding:24px!important;border:1px solid #454c52!important;border-radius:12px!important;background:#232629!important;color:#e5e4e2;box-shadow:0 24px 80px #0006}
-html[data-theme="obsidian"] .export-name-dialog::backdrop {background:rgba(10,12,14,.65)}
-html[data-theme="obsidian"] .export-name-dialog h2 {font-size:17px;margin:0 0 22px}
-html[data-theme="obsidian"] .export-name-dialog label {display:grid;gap:8px;font-size:12px;color:#c5c9cc}
-html[data-theme="obsidian"] .export-name-dialog input {box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid #536878;border-radius:6px;background:#191b1d;color:#e5e4e2}
-html[data-theme="obsidian"] .export-name-actions {display:flex;justify-content:flex-end;gap:8px;margin-top:24px}
-html[data-theme="obsidian"] .export-name-actions button {padding:8px 14px;border-radius:6px}
-html[data-theme="obsidian"] .export-name-actions button[type=submit] {background:#536878!important;color:#fff!important}
-html[data-theme="obsidian"] #editor#editor .editor-more {position:relative;margin:0;padding:0;border:0;background:transparent}
-html[data-theme="obsidian"] #editor#editor .editor-more>summary {list-style:none;padding:5px 9px;font-size:11px;border-radius:5px;cursor:pointer;color:var(--fg-dim)}
-html[data-theme="obsidian"] #editor#editor .editor-more>summary::-webkit-details-marker {display:none}
-html[data-theme="obsidian"] #editor#editor .editor-more[open]>summary {background:var(--bg-hover)}
-html[data-theme="obsidian"] #editor#editor .editor-more-panel {position:fixed;z-index:1000;display:grid;gap:2px;box-sizing:border-box;width:184px;padding:6px;background:#2c3034;border:1px solid #454c52;border-radius:8px;box-shadow:0 8px 28px #0005;overflow:auto;max-height:60vh}
-html[data-theme="obsidian"] #editor#editor .editor-more-panel button {text-align:left;width:100%;height:32px;min-height:32px;padding:0 10px!important}
-@media(max-width:1200px){html[data-theme="obsidian"] #editor#editor .clip-toolbar>.fine{display:none}}
-@media(prefers-reduced-motion:no-preference){html[data-theme="obsidian"] #editor#editor :is(.editor-panel-tabs button,.clip-toolbar button){transition:background-color .12s,color .12s}}
+html[data-theme="light"] #editor#editor .compound-context {padding:7px 12px;gap:10px;background:var(--accent-soft)!important;border-left-color:var(--editor-selected);font-size:11px}
+html[data-theme="light"] #editor#editor .compound-context button {border-radius:5px;min-height:28px;background:var(--bg-active)!important}
+html[data-theme="light"] #editor#editor .export-day {border:0!important;border-bottom:1px solid var(--editor-edge)!important;border-radius:0!important;background:transparent!important;margin:0 0 10px}
+html[data-theme="light"] #editor#editor .export-day>summary {padding:10px 2px;font-size:12px;color:var(--fg-dim);font-variant-numeric:tabular-nums;cursor:pointer}
+html[data-theme="light"] #editor#editor .edit-export-row {padding:12px 0!important;gap:10px;border-color:var(--editor-edge)!important;background:transparent!important}
+html[data-theme="light"] .export-name-dialog {box-sizing:border-box;width:min(440px,calc(100vw - 32px));padding:24px!important;border:1px solid var(--line)!important;border-radius:12px!important;background:var(--bg-surface)!important;color:var(--fg);box-shadow:0 24px 80px #0006}
+html[data-theme="light"] .export-name-dialog::backdrop {background:rgba(10,12,14,.65)}
+html[data-theme="light"] .export-name-dialog h2 {font-size:17px;margin:0 0 22px}
+html[data-theme="light"] .export-name-dialog label {display:grid;gap:8px;font-size:12px;color:var(--fg-dim)}
+html[data-theme="light"] .export-name-dialog input {box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid var(--accent);border-radius:6px;background:var(--bg-subtle);color:var(--fg)}
+html[data-theme="light"] .export-name-actions {display:flex;justify-content:flex-end;gap:8px;margin-top:24px}
+html[data-theme="light"] .export-name-actions button {padding:8px 14px;border-radius:6px}
+html[data-theme="light"] .export-name-actions button[type=submit] {background:var(--button-graphite)!important;color:var(--fg-invert)!important}
+html[data-theme="light"] #editor#editor .editor-more {position:relative;margin:0;padding:0;border:0;background:transparent}
+html[data-theme="light"] #editor#editor .editor-more>summary {list-style:none;padding:5px 9px;font-size:11px;border-radius:5px;cursor:pointer;color:var(--fg-dim)}
+html[data-theme="light"] #editor#editor .editor-more>summary::-webkit-details-marker {display:none}
+html[data-theme="light"] #editor#editor .editor-more[open]>summary {background:var(--bg-hover)}
+html[data-theme="light"] #editor#editor .editor-more-panel {position:fixed;z-index:1000;display:grid;gap:2px;box-sizing:border-box;width:184px;padding:6px;background:var(--bg-surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 8px 28px #0005;overflow:auto;max-height:60vh}
+html[data-theme="light"] #editor#editor .editor-more-panel button {text-align:left;width:100%;height:32px;min-height:32px;padding:0 10px!important}
+@media(max-width:1200px){html[data-theme="light"] #editor#editor .clip-toolbar>.fine{display:none}}
+@media(prefers-reduced-motion:no-preference){html[data-theme="light"] #editor#editor :is(.editor-panel-tabs button,.clip-toolbar button){transition:background-color .12s,color .12s}}
 /* Stable top-layer menu: never animate size/position or inherit popover margins. */
-html[data-theme="obsidian"] #editor#editor .editor-more-panel {margin:0;right:auto;inset-inline-end:auto;transition:none!important;animation:none!important;transform:none!important}
-html[data-theme="obsidian"] #editor#editor .editor-more-panel[hidden] {display:none!important}
-html[data-theme="obsidian"] #editor#editor .editor-more>button[aria-expanded=true] {background:var(--bg-hover)!important}
-html[data-theme="obsidian"] #editor#editor .editor-more-panel::backdrop {background:transparent;pointer-events:none}
+html[data-theme="light"] #editor#editor .editor-more-panel {margin:0;right:auto;inset-inline-end:auto;transition:none!important;animation:none!important;transform:none!important}
+html[data-theme="light"] #editor#editor .editor-more-panel[hidden] {display:none!important}
+html[data-theme="light"] #editor#editor .editor-more>button[aria-expanded=true] {background:var(--bg-hover)!important}
+html[data-theme="light"] #editor#editor .editor-more-panel::backdrop {background:transparent;pointer-events:none}
