@@ -43,3 +43,25 @@
 .assistant-mic .assistant-mic-stop,.assistant-mic[data-phase="recording"] svg:first-child,.assistant-mic[data-phase="transcribing"] svg:first-child{display:none}
 .assistant-mic[data-phase="recording"] .assistant-mic-stop,.assistant-mic[data-phase="transcribing"] .assistant-mic-stop{display:block}
 .hub-assistant .assistant-compose-toolbar .assistant-mic[data-phase="recording"],.hub-assistant .assistant-compose-toolbar .assistant-mic[data-phase="transcribing"]{color:var(--accent);border-color:var(--accent)}
+
+.hub-assistant .assistant-compose-toolbar .assistant-hold{
+  width:auto;min-width:88px;height:34px;min-height:34px;padding:0 10px;
+  border-radius:8px;font-size:12px;white-space:nowrap;touch-action:none;
+  user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
+}
+.hub-assistant .assistant-compose-toolbar .assistant-hold:is([data-phase=recording],[data-phase=capped]){
+  background:var(--accent-soft)!important;border-color:var(--accent-line)!important;color:var(--accent)!important;
+}
+.hub-assistant .assistant-compose-toolbar .assistant-hold[data-cancel=true]{
+  background:var(--danger-bg)!important;border-color:var(--danger)!important;color:var(--danger)!important;
+}
+.hub-assistant .assistant-message .assistant-voice-play{
+  display:block;min-height:32px;padding:5px 10px;margin-top:6px;font-size:12px;
+}
+.assistant-sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:0;overflow:hidden;clip-path:inset(50%);white-space:nowrap;
+}
+@media(max-width:450px){
+  .assistant-compose-toolbar>span:not(.assistant-sr-only){font-size:9px}
+  .assistant-compose-toolbar{gap:6px}
+}
