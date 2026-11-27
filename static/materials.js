@@ -20,7 +20,7 @@ window.hubMaterials=(()=>{
   }
   function drop(zone,receive,options={}){
     zone.classList.add('drop-zone');let busy=false;
-    const box=el('section',undefined,'attachment-upload'),pick=el('button',undefined,'attachment-drop'),icon=el('span',undefined,'attachment-icon'),title=el('strong','拖入文件，或点击选择'),hint=el('span',options.audio?'支持音频文件 · 单文件最大 64 MB':'图片、视频、音频 · 单文件最大 64 MB'),status=el('p',undefined,'attachment-status'),input=el('input');
+    const box=el('section',undefined,'attachment-upload'),pick=el('button',undefined,'attachment-drop'),icon=el('span',undefined,'attachment-icon'),title=el('strong',options.label||'拖入文件，或点击选择'),hint=el('span',options.audio?'支持音频文件 · 单文件最大 64 MB':'图片、视频、音频 · 单文件最大 64 MB'),status=el('p',undefined,'attachment-status'),input=el('input');
     icon.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M12 16V3m-4 4 4-4 4 4M4 15v5a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-5"/></svg>';
     pick.type='button';input.type='file';input.hidden=true;input.multiple=options.multiple!==false;input.accept=options.accept||'image/png,image/jpeg,image/webp,video/mp4,audio/mpeg,audio/wav,audio/x-wav,audio/mp4,audio/x-m4a,audio/aac,audio/ogg,audio/flac,.mp3,.wav,.m4a,.aac,.ogg,.flac';status.setAttribute('role','status');status.hidden=true;pick.append(icon,title,hint);box.append(pick,input,status);
     if(zone.parentElement)zone.before(box);else zone.prepend(box);
@@ -29,10 +29,11 @@ window.hubMaterials=(()=>{
     // An optional enclosing card accepts external files anywhere, including nested inputs.
     const card=options.dropTarget;
     if(card){
+      const capture={capture:true,signal:options.signal};
       const hasFiles=e=>Array.from(e.dataTransfer?.types||[]).includes('Files');
-      card.addEventListener('dragover',e=>{if(!hasFiles(e))return;e.preventDefault();e.stopPropagation();e.dataTransfer.dropEffect='copy';card.classList.add('file-drop-active');},true);
-      card.addEventListener('dragleave',e=>{if(!card.contains(e.relatedTarget))card.classList.remove('file-drop-active');},true);
-      card.addEventListener('drop',e=>{if(!hasFiles(e))return;e.preventDefault();e.stopPropagation();card.classList.remove('file-drop-active');submit(Array.from(e.dataTransfer.files||[]));},true);
+      card.addEventListener('dragover',e=>{if(!hasFiles(e))return;e.preventDefault();e.stopPropagation();e.dataTransfer.dropEffect='copy';card.classList.add('file-drop-active');},capture);
+      card.addEventListener('dragleave',e=>{if(!card.contains(e.relatedTarget))card.classList.remove('file-drop-active');},capture);
+      card.addEventListener('drop',e=>{if(!hasFiles(e))return;e.preventDefault();e.stopPropagation();card.classList.remove('file-drop-active');submit(Array.from(e.dataTransfer.files||[]));},capture);
     }
     for(const target of [box,zone]){
       target.addEventListener('dragover',e=>{if(e.dataTransfer.types.includes('Files')){e.preventDefault();e.stopPropagation();box.classList.add('drag-over');}});

@@ -1,9 +1,169 @@
-/* Existing dark brand retained; the material thumbnails carry the visual identity.
-   Fluid grid: n * minmax(208px,1fr) + (n-1) * 16px = available canvas width. */
-#materials>.page-heading{text-align:left;justify-content:flex-start;margin-bottom:24px}
-#materials-content.material-manager{display:block;flex:1;min-width:0}
-.material-manager .materials-toolbar{margin-bottom:22px;min-height:40px}
-.material-manager .material-manager-heading{display:flex;align-items:center;gap:16px;margin:24px 0 16px}
+/* Material library layout follows the same page edge from heading to folder grid. */
+#materials{
+  --material-width:88rem;
+}
+#materials>.page-heading,
+#materials-content.material-manager{
+  width:100%;
+  max-width:var(--material-width);
+  margin-inline:auto;
+}
+#materials>.page-heading{
+  text-align:left;
+  justify-content:flex-start;
+}
+#materials-content.material-manager{
+  display:block;
+  flex:1;
+  min-width:0;
+}
+.material-command{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:start;
+  gap:16px;
+  padding-bottom:16px;
+  border-bottom:1px solid var(--line-soft);
+}
+#materials .material-manager .materials-toolbar{
+  position:static;
+  margin:0;
+  padding:0!important;
+  min-width:0;
+}
+.material-command .material-filters{
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:8px;
+  width:100%;
+}
+.material-command .material-search{min-width:0;flex:1 1 15rem;max-width:32rem}
+#materials .material-command .material-filters input{min-width:0}
+.material-command-actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.material-command-actions .attachment-upload{width:auto;margin:0}
+#materials .material-command-actions>button,
+#materials .material-command-actions .attachment-drop{
+  min-height:var(--ctl-md);
+  height:var(--ctl-md);
+  padding:0 var(--sp-3)!important;
+  border-radius:var(--r-sm)!important;
+  font-size:var(--fs-sm);
+  white-space:nowrap;
+}
+#materials .material-command-actions .attachment-drop{
+  flex-direction:row;
+  gap:8px;
+  border:1px solid var(--accent-line)!important;
+  background:var(--accent)!important;
+  color:var(--fg-invert)!important;
+}
+html[data-theme="light"] #materials .material-command-actions .attachment-drop{
+  background:var(--button-graphite)!important;
+  border-color:var(--brand-primary)!important;
+}
+#materials .material-command-actions .attachment-drop:hover:not(:disabled),
+#materials.file-drop-active .material-command-actions .attachment-drop:not(:disabled){
+  background:var(--accent-hover)!important;
+  box-shadow:var(--focus)!important;
+}
+.material-command-actions .attachment-drop strong{font-size:inherit;font-weight:inherit}
+.material-command-actions .attachment-drop>span:last-child,
+.material-command-actions .attachment-status{display:none}
+#materials .material-command-actions .attachment-icon{
+  width:16px;
+  height:16px;
+  border:0;
+  background:transparent;
+  transform:none;
+}
+.material-command-actions .attachment-icon svg{width:16px;height:16px}
+.material-manager-status{margin:12px 0 0;color:var(--fg-dim)}
+.material-manager-status.error{color:var(--danger)}
+
+#materials .material-manager .asset-folders{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:12px;
+  width:100%;
+  max-width:none;
+  margin:20px 0 0;
+  padding:0;
+}
+#materials .material-manager .asset-folder{
+  box-sizing:border-box;
+  grid-column:auto;
+  display:grid;
+  grid-template-columns:clamp(62px,24%,94px) minmax(0,1fr);
+  align-items:center;
+  justify-self:stretch;
+  gap:14px;
+  width:100%;
+  max-width:none;
+  min-height:104px;
+  padding:12px 16px;
+  transform:none;
+  border:1px solid var(--line-soft)!important;
+  border-radius:var(--r-md)!important;
+  background:var(--bg-surface)!important;
+  color:var(--fg)!important;
+  text-align:left;
+}
+#materials .material-manager .asset-folder:is(:hover,:focus-visible){
+  border-color:var(--accent-line)!important;
+  background:var(--bg-hover)!important;
+}
+.material-manager .material-folder-info{display:grid;gap:3px;min-width:0}
+.material-manager .material-folder-info strong{
+  margin:0;
+  color:var(--fg);
+  font-size:var(--fs-md);
+  font-weight:650;
+  white-space:normal;
+}
+.material-manager .material-folder-info .folder-count{
+  margin:0;
+  color:var(--fg-dim);
+  font-size:var(--fs-xs);
+  font-weight:500;
+  font-variant-numeric:tabular-nums;
+}
+.material-manager .folder-art{width:100%;height:62px;max-width:none}
+.material-manager .folder-back{inset:15px 3px 0;border-radius:6px}
+.material-manager .folder-back::before{top:-7px;height:8px;border-radius:5px 8px 0 0}
+.material-manager .folder-sheet{top:15px;width:49%;height:44px;border-radius:4px}
+.material-manager .folder-front{inset:30px 0 0;border-radius:6px}
+.material-manager .folder-filetype{font-size:7px;letter-spacing:.04em}
+.material-manager .asset-folder:is(:hover,:focus-visible) .folder-sheet{
+  transform:translateX(calc(-50% + var(--offset)*11px)) translateY(-10px) rotate(calc(var(--offset)*6deg));
+}
+.material-manager .material-manager-heading{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  margin:20px 0 12px;
+}
+@media(max-width:1080px){
+  #materials .material-manager .asset-folders{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:680px){
+  .material-command{grid-template-columns:minmax(0,1fr);gap:8px}
+  .material-command-actions{justify-content:flex-end}
+  .material-command .material-search{max-width:none}
+  #materials .material-manager .asset-folder{
+    grid-template-columns:52px minmax(0,1fr);
+    gap:8px;
+    min-height:78px;
+    padding:8px;
+  }
+  .material-manager .folder-art{height:52px}
+  .material-manager .folder-sheet{height:35px}
+  .material-manager .folder-front{top:25px}
+}
 .material-manager-heading h2{font-size:20px;margin:0;font-weight:550}
 .material-manager-heading>span{margin:0 0 0 auto;white-space:nowrap;font-variant-numeric:tabular-nums}
 .material-manager [hidden]{display:none!important}
@@ -12,10 +172,6 @@
 .material-manager .material-day-summary::-webkit-details-marker{display:none}
 .material-manager .material-day-summary strong{font-weight:600}
 .material-manager .material-day>.materials-grid{padding:0 16px 16px;margin:0}
-.material-manager .asset-folders{margin:24px 0;max-width:none;padding:0;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:28px 20px}
-.material-manager .asset-folder:nth-child(n){grid-column:auto;transform:none;max-width:none;justify-self:stretch;padding:12px;align-items:flex-start;text-align:left}
-.material-manager .folder-art{height:140px;max-width:205px;align-self:center}
-.material-manager .folder-count{font-variant-numeric:tabular-nums}
 .material-manager .materials-grid{grid-template-columns:repeat(auto-fill,minmax(208px,1fr));gap:16px;align-items:start}
 .material-manager .material-card{min-width:0;padding:12px;border-radius:8px;box-shadow:none!important;transform:none!important;display:flex;flex-direction:column;gap:10px;overflow:visible}
 .material-manager .material-card>img,.material-manager .material-card>video{height:200px;width:100%;object-fit:contain;background:#121212;border-radius:6px}
@@ -58,4 +214,8 @@ body>[data-combobox-content],body>[data-morph-popover-portal]:has(.material-cale
 .material-calendar button:hover:not(:disabled){background:var(--bg-hover)}
 .material-calendar [role=gridcell][aria-selected=true] button{background:var(--accent)!important;color:var(--fg-invert)!important}
 .material-calendar :is(button:focus-visible,[role=grid]:focus-visible){outline:none;box-shadow:var(--focus)}
-@media(max-width:600px){.material-manager .asset-folders{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 12px}.material-manager .folder-art{height:110px}.material-manager .asset-folder{padding:8px!important}.material-manager .materials-grid{grid-template-columns:minmax(0,1fr)}.material-manager-heading{flex-wrap:wrap}.material-manager-heading>span{margin-left:0}#materials>.page-heading{margin-bottom:20px}}
+@media(max-width:600px){
+  .material-manager .materials-grid{grid-template-columns:minmax(0,1fr)}
+  .material-manager-heading{flex-wrap:wrap}
+  .material-manager-heading>span{margin-left:0}
+}

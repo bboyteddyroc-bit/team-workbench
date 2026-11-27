@@ -9,27 +9,43 @@ window.hubMaterialManager=(()=>{
  function matchesFolder(a,id){return id==='all'||(['video','audio'].includes(id)?a.mime.startsWith(id+'/'):window.hubMaterials.effectiveCategory(a)===id);}
  async function open(root){
   stop();const epoch=sessionEpoch,uploadGuard=new AbortController();let alive=true,assets=[],folder='all',browsing=false,filter={query:'',range:null},checking=false;
-  const bar=el('div',undefined,'materials-toolbar'),content=el('div'),status=el('p','正在加载素材…','fine'),head=el('div',undefined,'material-manager-heading'),back=el('button','返回文件夹'),title=el('h2','全部素材'),count=el('span',undefined,'fine');
-  root.classList.add('material-manager');status.setAttribute('role','status');back.type='button';head.append(back,title,count);root.replaceChildren(bar,status,head,content);head.hidden=true;
+  const surface=root.closest('#materials')||root;
+  const toolbar=el('div',undefined,'material-command');
+  const bar=el('div',undefined,'materials-toolbar');
+  const actions=el('div',undefined,'material-command-actions');
+  const content=el('div'),status=el('p','正在加载素材…','fine material-manager-status');
+  const head=el('div',undefined,'material-manager-heading'),back=el('button','返回文件夹'),title=el('h2','全部素材'),count=el('span',undefined,'fine');
+  root.classList.add('material-manager');status.setAttribute('role','status');back.type='button';head.append(back,title,count);
+  toolbar.append(bar,actions);root.replaceChildren(toolbar,status,head,content);head.hidden=true;
   window.hubMaterialFilters.mount(bar,[],value=>{filter=value;render();});
-  const templates=el('button','提示词库');templates.type='button';templates.onclick=()=>window.hubPromptTemplates?.library();bar.after(templates);
+  const templates=el('button','提示词库','secondary');
+  templates.type='button';templates.onclick=()=>window.hubPromptTemplates?.library();actions.append(templates);
   const active=()=>alive&&epoch===sessionEpoch&&root.isConnected;
   const setStatus=(text,error=false)=>{status.textContent=text;status.classList.toggle('error',error);status.hidden=!text;};
   function updateControls(reset=false){window.hubMaterialFilters.update(bar,assets.filter(a=>!browsing||matchesFolder(a,folder)),reset);}
-  back.onclick=()=>{folder='all';browsing=false;filter={query:'',range:null};updateControls(true);render();};
+  back.onclick=()=>{
+   const previous=folder;
+   folder='all';browsing=false;filter={query:'',range:null};updateControls(true);render();
+   content.querySelector(`[data-folder="${previous}"]`)?.focus();
+  };
   async function refresh(){const fresh=await api('/workspace/materials');if(!active())return;assets=fresh;updateControls();render();}
-  window.hubMaterials.drop(content,async files=>{
+  const upload=window.hubMaterials.drop(content,async files=>{
    const notice='upload:'+crypto.randomUUID();hubNotice.begin(notice,`正在上传 ${files.length} 个素材`,'查看素材','materials','#materials');setStatus('正在上传素材…');
    try{
     await window.hubMaterials.upload(files);if(epoch===sessionEpoch)hubNotice.finish(notice,`${files.length} 个素材已上传`,'success');
     if(!active())return;
     folder='all';browsing=false;filter={query:'',range:null};
     await refresh();if(!active())return;
-    updateControls(true);setStatus(`成功上传 ${files.length} 个素材，请在「全部素材」或「视频素材」中查看。`);
+    updateControls(true);setStatus(`已上传 ${files.length} 个素材，可在「全部素材」查看。`);
    }catch(err){if(epoch===sessionEpoch)hubNotice.finish(notice,'上传未全部完成','error','已成功的文件会保留，请核对素材库后再操作。');if(active()){try{await refresh();}catch{}setStatus('上传未全部完成：'+err.message+'；已成功的文件会保留在素材库，请核对后再重试。',true);}throw err;}
-  });
-  // Prevent the browser from navigating to a file dropped elsewhere on the management page.
-  for(const kind of ['dragover','drop'])root.addEventListener(kind,event=>{if(event.dataTransfer?.types?.includes('Files'))event.preventDefault();},{signal:uploadGuard.signal});
+  },{label:'上传素材',dropTarget:surface,signal:uploadGuard.signal});
+  const pick=upload.querySelector('.attachment-drop');
+  pick.classList.add('primary');
+  pick.title='点击选择文件，也可将文件拖到此页';
+  const help=upload.querySelector('.attachment-drop>span:last-child');
+  help.id='material-upload-types';
+  pick.setAttribute('aria-describedby',help.id);
+  actions.append(upload);
   function buildCard(a){
    const card=el('article',undefined,'material-card'),media=window.hubMaterials.preview(a),name=el('textarea',undefined,'material-name'),meta=el('p',`${day(a.created)} · ${Math.max(1,Math.round(a.size/1024)).toLocaleString()} KB`,'fine'),actions=el('div',undefined,'material-actions'),download=el('a','下载到本地','material-download'),details=el('details'),summary=el('summary','管理素材'),form=el('div',undefined,'material-edit');
    card.dataset.assetId=a.id;name.value=a.name;name.rows=2;name.maxLength=200;name.spellcheck=false;name.setAttribute('aria-label','素材名称：'+a.name);name.title='点击修改文件名；回车或移开焦点保存，Esc 取消';download.href='/api/assets/'+a.id+'?download=1';download.download=a.name;actions.append(download,details);details.append(summary,form);
@@ -62,11 +78,13 @@ window.hubMaterialManager=(()=>{
    head.hidden=!browsing&&!searching;back.hidden=!browsing;
    title.textContent=browsing?folders.find(([id])=>id===folder)[1]:'搜索结果';
    if(!browsing&&!searching){
-    const collection=el('div',undefined,'asset-folders');
+    const collection=el('div',undefined,'asset-folders');collection.setAttribute('role','group');collection.setAttribute('aria-label','素材文件夹');
     for(const [id,label]of folders){
      const list=assets.filter(a=>matchesFolder(a,id)),button=el('button',undefined,'asset-folder'),art=el('span',undefined,'folder-art'),rear=el('span',undefined,'folder-back'),fan=el('span',undefined,'folder-fan'),front=el('span',undefined,'folder-front');button.type='button';button.dataset.folder=id;art.setAttribute('aria-hidden','true');
      list.slice(0,3).forEach((a,i)=>{const sheet=el('span',undefined,'folder-sheet');sheet.style.setProperty('--offset',String(i-1));sheet.style.setProperty('--order',String(i));if(a.mime.startsWith('image/')){const img=el('img');img.src='/api/assets/'+a.id;img.alt='';img.loading='lazy';sheet.append(img);}else sheet.append(el('span',a.mime.startsWith('audio/')?'AUDIO':'VIDEO','folder-filetype'));fan.append(sheet);});
-     if(!list.length)front.append(el('span','暂无素材','folder-empty'));art.append(rear,fan,front);button.append(art,el('strong',label),el('span',`${list.length} 个素材`,'folder-count'));button.onclick=()=>{folder=id;browsing=true;filter={query:'',range:null};updateControls(true);render();back.focus();};collection.append(button);
+     const info=el('span',undefined,'material-folder-info');
+     info.append(el('strong',label),el('span',`${list.length} 个素材`,'folder-count'));
+     art.append(rear,fan,front);button.append(art,info);button.onclick=()=>{folder=id;browsing=true;filter={query:'',range:null};updateControls(true);render();back.focus();};collection.append(button);
     }content.append(collection);return;
    }
    const list=assets.filter(a=>(!browsing||matchesFolder(a,folder))&&a.name.toLocaleLowerCase().includes(filter.query.trim().toLocaleLowerCase())&&(!filter.range||(day(a.created)>=filter.range.from&&day(a.created)<=(filter.range.to||filter.range.from))));
@@ -92,7 +110,7 @@ window.hubMaterialManager=(()=>{
    const grid=el('div',undefined,'materials-grid');content.append(grid);
    for(const a of list)grid.append(buildCard(a));
   }
-  let timer;stop=()=>{alive=false;uploadGuard.abort();clearInterval(timer);window.hubMaterialFilters.unmount(bar);content.querySelectorAll('video,audio').forEach(m=>m.pause());};
+  let timer;stop=()=>{alive=false;uploadGuard.abort();surface.classList.remove('file-drop-active');clearInterval(timer);window.hubMaterialFilters.unmount(bar);content.querySelectorAll('video,audio').forEach(m=>m.pause());};
   try{await refresh();if(active())setStatus('');}catch(e){if(active()){setStatus('素材加载失败：'+e.message,true);const retry=el('button','重试');retry.onclick=()=>open(root);content.replaceChildren(retry);}}
   if(active())timer=setInterval(async()=>{if(!active()){stop();return;}if(checking||document.hidden||root.closest('.view')?.hidden||root.querySelector('details[open]:not(.material-day),.material-name:focus,.material-name[aria-busy]')||!assets.some(a=>['waiting_model','queued','running','retry_wait'].includes(a.classification_status)))return;checking=true;try{const fresh=await api('/workspace/materials');if(active()&&!root.querySelector('details[open]:not(.material-day),.material-name:focus,.material-name[aria-busy]')&&JSON.stringify(fresh)!==JSON.stringify(assets)){assets=fresh;updateControls();render();}}catch{}finally{checking=false;}},3000);
  }
