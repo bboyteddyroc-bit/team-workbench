@@ -24,7 +24,7 @@ html[data-theme="light"] :is(.text-button,.home-heading em,.assistant-message>a,
 html[data-theme="light"] :is(.queue-heading,.pool-summary,.connection-note,.workspace-bar,.mode-switch,.mode-card,.reference-card,.asset-card,.voice-card,.reference-library-dialog>footer) {background:var(--bg-subtle)!important;border-color:var(--line-soft)!important;color:var(--fg-dim)!important}
 html[data-theme="light"] :is(.mode-card.selected,.mode-switch .selected,.reference-masonry-card.is-selected) {background:var(--accent-soft)!important;border-color:var(--accent-line)!important;color:var(--fg)!important}
 /* Navigation retains its transparent, auto-hiding form. */
-html[data-theme="light"] .sidebar {background:var(--bg-page)!important;border-color:transparent!important}
+html[data-theme="light"] .sidebar {border-color:transparent!important}
 html[data-theme="light"] .sidebar .nav {background:transparent!important;color:var(--fg-mute)!important}
 html[data-theme="light"] .sidebar .nav.active {color:var(--accent-hi)!important}
 html[data-theme="light"] .sidebar .nav:hover {color:var(--fg)!important}
